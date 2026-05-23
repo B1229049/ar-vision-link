@@ -187,6 +187,13 @@ function QuizGame() {
 
           <button
             className="game-btn primary"
+            onClick={() => navigate(`/quiz/leaderboard/${sessionId}`)}
+          >
+            查看排行榜
+          </button>
+
+          <button
+            className="game-btn primary"
             onClick={() => navigate(`/quiz/lobby/${sessionId}`)}
           >
             回等待室
@@ -259,13 +266,6 @@ function QuizGame() {
             {currentIndex + 1 >= questions.length ? "完成遊戲" : "下一題"}
           </button>
         )}
-
-        <button
-            className="game-btn primary"
-            onClick={() => navigate(`/quiz/leaderboard/${sessionId}`)}
-        >
-            查看排行榜
-        </button>
 
         <button
           className="game-btn ghost"

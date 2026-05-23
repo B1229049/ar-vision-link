@@ -435,7 +435,15 @@ app.post("/api/game-sessions/create", async (req, res) => {
       .from("game_sessions")
       .insert([{ quiz_id, room_code: roomCode }])
       .select(GAME_SESSION_SELECT)
-      .single();
+      .single()
+      .insert([
+          {
+            quiz_id,
+            room_code: roomCode,
+            started_at: null,
+            ended_at: null,
+          },
+        ]);
 
     if (error) {
       return res.status(500).json({
