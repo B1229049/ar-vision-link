@@ -17,6 +17,7 @@ import WaitingLobby from "./pages/WaitingLobby";
 import Navbar from "./components/Navbar";
 import ProtectedRoute from "./components/ProtectedRoute";
 
+
 function App() {
   return (
     
