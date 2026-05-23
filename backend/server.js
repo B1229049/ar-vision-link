@@ -5,70 +5,47 @@ import { createClient } from "@supabase/supabase-js";
 const app = express();
 
 app.use(cors());
-
-app.use(express.json({
-  limit: "10mb",
-}));
+app.use(express.json({ limit: "10mb" }));
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-// =========================
-// Root
-// =========================
+const USER_SELECT = `
+  id,
+  name,
+  nickname,
+  description,
+  extra_info,
+  avatar_url,
+  is_active,
+  created_at,
+  updated_at,
+  face_embedding
+`;
 
 app.get("/", (req, res) => {
   res.send("AR Vision Link backend is running");
 });
 
-// =========================
-// Get Users
-// =========================
-
 app.get("/api/users", async (req, res) => {
   try {
     const { data, error } = await supabase
       .from("users")
-      .select(`
-        id,
-        name,
-        nickname,
-        description,
-        extra_info,
-        is_active,
-        created_at,
-        updated_at,
-        face_embedding
-      `)
+      .select(USER_SELECT)
       .eq("is_active", true)
       .order("id", { ascending: true });
 
     if (error) {
-      return res.status(500).json({
-        success: false,
-        error: error.message,
-      });
+      return res.status(500).json({ success: false, error: error.message });
     }
 
-    res.json({
-      success: true,
-      users: data || [],
-    });
+    res.json({ success: true, users: data || [] });
   } catch (err) {
-    console.error(err);
-
-    res.status(500).json({
-      success: false,
-      error: err.message,
-    });
+    res.status(500).json({ success: false, error: err.message });
   }
 });
-
-// =========================
-// Register User
-// =========================
 
 app.post("/api/users/register", async (req, res) => {
   try {
@@ -77,6 +54,7 @@ app.post("/api/users/register", async (req, res) => {
       nickname,
       description,
       extra_info,
+      avatar_url,
       face_embedding,
     } = req.body;
 
@@ -87,18 +65,14 @@ app.post("/api/users/register", async (req, res) => {
       });
     }
 
-    if (
-      !Array.isArray(face_embedding) ||
-      face_embedding.length === 0
-    ) {
+    if (!Array.isArray(face_embedding) || face_embedding.length === 0) {
       return res.status(400).json({
         success: false,
         error: "face_embedding 必須是數字陣列",
       });
     }
 
-    const cleanEmbedding =
-      face_embedding.map(Number);
+    const cleanEmbedding = face_embedding.map(Number);
 
     const { data, error } = await supabase
       .from("users")
@@ -108,47 +82,23 @@ app.post("/api/users/register", async (req, res) => {
           nickname: nickname?.trim() || "",
           description: description?.trim() || "",
           extra_info: extra_info?.trim() || "",
+          avatar_url: avatar_url || "",
           is_active: true,
           face_embedding: cleanEmbedding,
         },
       ])
-      .select(`
-        id,
-        name,
-        nickname,
-        description,
-        extra_info,
-        is_active,
-        created_at,
-        updated_at,
-        face_embedding
-      `)
+      .select(USER_SELECT)
       .single();
 
     if (error) {
-      return res.status(500).json({
-        success: false,
-        error: error.message,
-      });
+      return res.status(500).json({ success: false, error: error.message });
     }
 
-    res.json({
-      success: true,
-      user: data,
-    });
+    res.json({ success: true, user: data });
   } catch (err) {
-    console.error(err);
-
-    res.status(500).json({
-      success: false,
-      error: err.message,
-    });
+    res.status(500).json({ success: false, error: err.message });
   }
 });
-
-// =========================
-// Update User
-// =========================
 
 app.put("/api/users/:id", async (req, res) => {
   try {
@@ -159,6 +109,7 @@ app.put("/api/users/:id", async (req, res) => {
       nickname,
       description,
       extra_info,
+      avatar_url,
       is_active,
       face_embedding,
     } = req.body;
@@ -167,74 +118,35 @@ app.put("/api/users/:id", async (req, res) => {
       updated_at: new Date().toISOString(),
     };
 
-    if (name !== undefined) {
-      updateData.name = name;
-    }
-
-    if (nickname !== undefined) {
-      updateData.nickname = nickname;
-    }
-
-    if (description !== undefined) {
-      updateData.description = description;
-    }
-
-    if (extra_info !== undefined) {
-      updateData.extra_info = extra_info;
-    }
-
-    if (is_active !== undefined) {
-      updateData.is_active = is_active;
-    }
+    if (name !== undefined) updateData.name = name;
+    if (nickname !== undefined) updateData.nickname = nickname;
+    if (description !== undefined) updateData.description = description;
+    if (extra_info !== undefined) updateData.extra_info = extra_info;
+    if (avatar_url !== undefined) updateData.avatar_url = avatar_url;
+    if (is_active !== undefined) updateData.is_active = is_active;
 
     if (face_embedding !== undefined) {
-      updateData.face_embedding =
-        Array.isArray(face_embedding)
-          ? face_embedding.map(Number)
-          : face_embedding;
+      updateData.face_embedding = Array.isArray(face_embedding)
+        ? face_embedding.map(Number)
+        : face_embedding;
     }
 
     const { data, error } = await supabase
       .from("users")
       .update(updateData)
       .eq("id", id)
-      .select(`
-        id,
-        name,
-        nickname,
-        description,
-        extra_info,
-        is_active,
-        created_at,
-        updated_at,
-        face_embedding
-      `)
+      .select(USER_SELECT)
       .single();
 
     if (error) {
-      return res.status(500).json({
-        success: false,
-        error: error.message,
-      });
+      return res.status(500).json({ success: false, error: error.message });
     }
 
-    res.json({
-      success: true,
-      user: data,
-    });
+    res.json({ success: true, user: data });
   } catch (err) {
-    console.error(err);
-
-    res.status(500).json({
-      success: false,
-      error: err.message,
-    });
+    res.status(500).json({ success: false, error: err.message });
   }
 });
-
-// =========================
-// Soft Delete User
-// =========================
 
 app.delete("/api/users/:id", async (req, res) => {
   try {
@@ -247,43 +159,18 @@ app.delete("/api/users/:id", async (req, res) => {
         updated_at: new Date().toISOString(),
       })
       .eq("id", id)
-      .select(`
-        id,
-        name,
-        nickname,
-        description,
-        extra_info,
-        is_active,
-        created_at,
-        updated_at,
-        face_embedding
-      `)
+      .select(USER_SELECT)
       .single();
 
     if (error) {
-      return res.status(500).json({
-        success: false,
-        error: error.message,
-      });
+      return res.status(500).json({ success: false, error: error.message });
     }
 
-    res.json({
-      success: true,
-      user: data,
-    });
+    res.json({ success: true, user: data });
   } catch (err) {
-    console.error(err);
-
-    res.status(500).json({
-      success: false,
-      error: err.message,
-    });
+    res.status(500).json({ success: false, error: err.message });
   }
 });
-
-// =========================
-// Start Server
-// =========================
 
 const PORT = process.env.PORT || 3000;
 

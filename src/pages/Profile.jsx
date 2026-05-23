@@ -98,6 +98,10 @@ function Profile() {
           編輯個人資料
         </button>
 
+        <button className="profile-btn secondary" onClick={() => navigate("/re-register-face")}>
+          重新註冊臉部
+        </button>
+
         <button className="profile-btn primary" onClick={() => navigate("/camera")}>
           進入 AR Camera
         </button>

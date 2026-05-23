@@ -6,6 +6,7 @@ import Camera from "./pages/Camera";
 import FaceLogin from "./pages/FaceLogin";
 import Profile from "./pages/Profile";
 import EditProfile from "./pages/EditProfile";
+import ReRegisterFace from "./pages/ReRegisterFace";
 
 import Navbar from "./components/Navbar";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -44,6 +45,15 @@ function App() {
           element={
             <ProtectedRoute>
               <EditProfile />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/re-register-face"
+          element={
+            <ProtectedRoute>
+              <ReRegisterFace />
             </ProtectedRoute>
           }
         />
