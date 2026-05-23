@@ -12,6 +12,8 @@ function Home() {
 
         <Link to="/register">📝 Register</Link>
 
+        <Link to="/face-login">🔗 Login</Link>
+
         <Link to="/create">📅 創建會議</Link>
 
         <Link to="/join">🔗 加入會議</Link>

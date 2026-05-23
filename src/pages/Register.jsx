@@ -43,6 +43,10 @@ function Register() {
     }
 
     loadModels();
+
+    return () => {
+      stopCamera();
+    };
   }, []);
 
   function goStep2() {
@@ -173,7 +177,7 @@ function Register() {
         return;
       }
 
-      const embedding = Array.from(detection.descriptor);
+      const embedding = Array.from(detection.descriptor).map(Number);
 
       const response = await fetch(`${BACKEND_URL}/api/users/register`, {
         method: "POST",
@@ -181,19 +185,25 @@ function Register() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          name,
-          nickname,
-          description,
-          extra_info: extraInfo,
+          name: name.trim(),
+          nickname: nickname.trim(),
+          description: description.trim(),
+          extra_info: extraInfo.trim(),
+          is_active: true,
           face_embedding: embedding,
         }),
       });
 
       const result = await response.json();
 
-      if (!response.ok) {
-        console.error(result);
-        alert("註冊失敗：" + (result.error || "未知錯誤"));
+      if (!response.ok || result.success === false) {
+        console.error("register failed:", result);
+
+        alert(
+          "註冊失敗：" +
+            (result.error || result.message || JSON.stringify(result))
+        );
+
         setRegistering(false);
         return;
       }
@@ -202,6 +212,7 @@ function Register() {
       alert("註冊成功！");
 
       stopCamera();
+
       setName("");
       setNickname("");
       setDescription("");
@@ -211,7 +222,7 @@ function Register() {
       setStep(1);
     } catch (err) {
       console.error(err);
-      alert("註冊過程發生錯誤");
+      alert("註冊過程發生錯誤：" + err.message);
     }
 
     setRegistering(false);
@@ -251,7 +262,7 @@ function Register() {
               <input
                 value={nickname}
                 onChange={(e) => setNickname(e.target.value)}
-                placeholder="Simon"
+                placeholder="例如：Simon"
               />
             </div>
 

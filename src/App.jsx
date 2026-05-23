@@ -1,17 +1,56 @@
-import { HashRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+
 import Home from "./pages/Home";
 import Register from "./pages/Register";
 import Camera from "./pages/Camera";
+import FaceLogin from "./pages/FaceLogin";
+import Profile from "./pages/Profile";
+import EditProfile from "./pages/EditProfile";
+
+import Navbar from "./components/Navbar";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
   return (
-    <HashRouter>
+    
+    <BrowserRouter basename="/ar-vision-link">
+      <Navbar />
+
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/camera" element={<Camera />} />
+        <Route path="/face-login" element={<FaceLogin />} />
+
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/camera"
+          element={
+            <ProtectedRoute>
+              <Camera />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/edit-profile"
+          element={
+            <ProtectedRoute>
+              <EditProfile />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
-    </HashRouter>
+
+      
+    </BrowserRouter>
   );
 }
 

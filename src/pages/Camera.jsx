@@ -27,7 +27,9 @@ function Camera() {
   useEffect(() => {
     init();
 
-    return () => cleanup();
+    return () => {
+      cleanup();
+    };
   }, []);
 
   async function init() {
@@ -63,7 +65,7 @@ function Camera() {
       const response = await fetch(`${BACKEND_URL}/api/users`);
       const result = await response.json();
 
-      if (!response.ok) {
+      if (!response.ok || result.error) {
         console.error(result);
         alert("載入使用者失敗：" + (result.error || "未知錯誤"));
         setIsReloadingUsers(false);
@@ -73,6 +75,7 @@ function Camera() {
       const data = result.users || [];
 
       const users = data
+        .filter((u) => u.is_active !== false)
         .map((u) => {
           let embedding = u.face_embedding;
 
@@ -91,8 +94,16 @@ function Camera() {
           }
 
           return {
-            ...u,
-            embedding: new Float32Array(embedding),
+            id: u.id,
+            name: u.name || "",
+            nickname: u.nickname || "",
+            description: u.description || "",
+            extra_info: u.extra_info || "",
+            is_active: u.is_active,
+            created_at: u.created_at || "",
+            updated_at: u.updated_at || "",
+            face_embedding: embedding,
+            embedding: new Float32Array(embedding.map(Number)),
           };
         })
         .filter(Boolean);
@@ -223,7 +234,10 @@ function Camera() {
         users.forEach((user) => {
           if (usedUsers.has(user.id)) return;
 
-          if (!user.embedding || user.embedding.length !== det.descriptor.length) {
+          if (
+            !user.embedding ||
+            user.embedding.length !== det.descriptor.length
+          ) {
             return;
           }
 
@@ -243,12 +257,6 @@ function Camera() {
             bestUser = user;
           }
         });
-
-        console.log(
-          `[best] detection ${detIndex}:`,
-          bestUser?.name,
-          bestDistance
-        );
 
         if (!bestUser || bestDistance >= MATCH_THRESHOLD) return;
 
@@ -299,17 +307,10 @@ function Camera() {
       setOpenedIds((prev) => {
         const next = {};
         results.forEach((face) => {
-          if (prev[face.id]) {
-            next[face.id] = true;
-          }
+          if (prev[face.id]) next[face.id] = true;
         });
         return next;
       });
-
-      console.log(
-        "[multi match]",
-        results.map((r) => `${r.user.name}: ${r.distance.toFixed(3)}`)
-      );
     } catch (err) {
       console.error("[recognizeMultiFaces] 失敗：", err);
     } finally {
@@ -331,16 +332,67 @@ function Camera() {
     }));
   }
 
+  function formatDate(dateString) {
+    if (!dateString) return "無";
+
+    const date = new Date(dateString);
+
+    if (Number.isNaN(date.getTime())) return "無";
+
+    return date.toLocaleString("zh-TW", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
+
   function cleanup() {
     if (mediaPipeCameraRef.current) {
-      mediaPipeCameraRef.current.stop();
+      try {
+        mediaPipeCameraRef.current.stop();
+      } catch (e) {
+        console.warn("MediaPipe camera stop failed:", e);
+      }
+
       mediaPipeCameraRef.current = null;
     }
 
-    if (videoRef.current?.srcObject) {
-      videoRef.current.srcObject.getTracks().forEach((track) => track.stop());
-      videoRef.current.srcObject = null;
+    const video = videoRef.current;
+
+    if (video) {
+      const stream = video.srcObject;
+
+      if (stream && typeof stream.getTracks === "function") {
+        stream.getTracks().forEach((track) => {
+          track.stop();
+        });
+      }
+
+      video.pause();
+      video.srcObject = null;
+      video.removeAttribute("src");
+      video.load();
     }
+
+    if (canvasRef.current) {
+      const ctx = canvasRef.current.getContext("2d");
+
+      ctx.clearRect(
+        0,
+        0,
+        canvasRef.current.width,
+        canvasRef.current.height
+      );
+    }
+
+    userCacheRef.current = [];
+    latestLandmarksRef.current = [];
+    recognizingRef.current = false;
+
+    setTrackedFaces([]);
+    setOpenedIds({});
   }
 
   return (
@@ -376,9 +428,26 @@ function Camera() {
               className="nameplate nameplate-show"
               onClick={() => closeNameplate(face.id)}
             >
-              <div className="name">{face.user.name}</div>
+              <div className="name">{face.user.name || "未命名"}</div>
+
               <div className="nickname">
                 @{face.user.nickname || "unknown"}
+              </div>
+
+              <div className="description">
+                {face.user.description || "尚無介紹"}
+              </div>
+
+              <div className="extra-info">
+                {face.user.extra_info || "無額外資訊"}
+              </div>
+
+              <div className="time-info">
+                建立：{formatDate(face.user.created_at)}
+              </div>
+
+              <div className="time-info">
+                更新：{formatDate(face.user.updated_at)}
               </div>
             </div>
           )}
