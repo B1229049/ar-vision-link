@@ -13,10 +13,10 @@ import CreateQuiz from "./pages/CreateQuiz";
 import JoinQuiz from "./pages/JoinQuiz";
 import HostLobby from "./pages/HostLobby";
 import WaitingLobby from "./pages/WaitingLobby";
+import QuizGame from "./pages/QuizGame";
 
 import Navbar from "./components/Navbar";
 import ProtectedRoute from "./components/ProtectedRoute";
-
 
 function App() {
   return (
@@ -106,6 +106,15 @@ function App() {
           element={
             <ProtectedRoute>
               <WaitingLobby />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/quiz/game/:sessionId"
+          element={
+            <ProtectedRoute>
+              <QuizGame />
             </ProtectedRoute>
           }
         />

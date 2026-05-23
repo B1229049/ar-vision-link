@@ -687,6 +687,39 @@ app.delete("/api/users/:id", async (req, res) => {
   }
 });
 
+app.put("/api/player-records/:recordId/score", async (req, res) => {
+  try {
+    const { recordId } = req.params;
+    const { score } = req.body;
+
+    const { data, error } = await supabase
+      .from("player_records")
+      .update({
+        score: Number(score) || 0,
+      })
+      .eq("record_id", recordId)
+      .select(PLAYER_RECORD_SELECT)
+      .single();
+
+    if (error) {
+      return res.status(500).json({
+        success: false,
+        error: error.message,
+      });
+    }
+
+    res.json({
+      success: true,
+      record: data,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message,
+    });
+  }
+});
+
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
