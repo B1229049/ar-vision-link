@@ -14,6 +14,7 @@ function WaitingLobby() {
   const [questions, setQuestions] = useState([]);
   const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [starting, setStarting] = useState(false);
 
   useEffect(() => {
     const savedUser = localStorage.getItem("currentUser");
@@ -53,6 +54,11 @@ function WaitingLobby() {
       setQuiz(result.quiz);
       setQuestions(result.questions || []);
 
+      if (result.session?.started_at) {
+        navigate(`/quiz/game/${result.session.session_id}`);
+        return;
+      }
+
       await loadPlayers();
     } catch (err) {
       console.error(err);
@@ -88,8 +94,41 @@ function WaitingLobby() {
     alert("房號已複製！");
   }
 
-  function startGame() {
-    navigate(`/quiz/game/${session.session_id}`);
+  async function startGame() {
+    if (!session?.session_id) return;
+
+    if (players.length === 0) {
+      const ok = window.confirm("目前沒有玩家加入，仍然要開始嗎？");
+      if (!ok) return;
+    }
+
+    setStarting(true);
+
+    try {
+      const response = await fetch(
+        `${BACKEND_URL}/api/game-sessions/${session.session_id}/start`,
+        {
+          method: "PUT",
+        }
+      );
+
+      const result = await response.json();
+
+      if (!response.ok || result.error) {
+        alert("開始遊戲失敗：" + (result.error || "未知錯誤"));
+        setStarting(false);
+        return;
+      }
+
+      localStorage.setItem("currentGameSession", JSON.stringify(result.session));
+
+      navigate(`/quiz/game/${result.session.session_id}`);
+    } catch (err) {
+      console.error(err);
+      alert("開始遊戲時發生錯誤");
+    }
+
+    setStarting(false);
   }
 
   if (loading) {
@@ -138,6 +177,11 @@ function WaitingLobby() {
           </div>
 
           <div className="info-row">
+            <span>狀態</span>
+            <strong>{session?.started_at ? "已開始" : "等待中"}</strong>
+          </div>
+
+          <div className="info-row">
             <span>身分</span>
             <strong>{isHost ? "主持人" : "玩家"}</strong>
           </div>
@@ -177,8 +221,12 @@ function WaitingLobby() {
         </div>
 
         {isHost ? (
-          <button className="waiting-btn primary" onClick={startGame}>
-            開始遊戲
+          <button
+            className="waiting-btn primary"
+            onClick={startGame}
+            disabled={starting}
+          >
+            {starting ? "開始中..." : "開始遊戲"}
           </button>
         ) : (
           <div className="waiting-message">等待主持人開始遊戲...</div>

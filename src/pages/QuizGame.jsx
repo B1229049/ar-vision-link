@@ -261,6 +261,13 @@ function QuizGame() {
         )}
 
         <button
+            className="game-btn primary"
+            onClick={() => navigate(`/quiz/leaderboard/${sessionId}`)}
+        >
+            查看排行榜
+        </button>
+
+        <button
           className="game-btn ghost"
           onClick={() => navigate(`/quiz/lobby/${sessionId}`)}
         >

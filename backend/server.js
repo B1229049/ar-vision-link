@@ -794,6 +794,38 @@ app.get("/api/leaderboard/:sessionId", async (req, res) => {
   }
 });
 
+app.put("/api/game-sessions/:sessionId/start", async (req, res) => {
+  try {
+    const { sessionId } = req.params;
+
+    const { data: session, error } = await supabase
+      .from("game_sessions")
+      .update({
+        started_at: new Date().toISOString(),
+      })
+      .eq("session_id", sessionId)
+      .select(GAME_SESSION_SELECT)
+      .single();
+
+    if (error) {
+      return res.status(500).json({
+        success: false,
+        error: error.message,
+      });
+    }
+
+    res.json({
+      success: true,
+      session,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message,
+    });
+  }
+});
+
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
