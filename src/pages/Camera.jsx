@@ -1,37 +1,33 @@
 import { useEffect, useRef, useState } from "react";
 import * as faceapi from "@vladmandic/face-api";
-import { supabase } from "../lib/supabase";
 import "../styles/Camera.css";
 
 function Camera() {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
-  const chestRef = useRef(null);
 
   const mediaPipeCameraRef = useRef(null);
-  const faceMeshRef = useRef(null);
-
   const userCacheRef = useRef([]);
+  const modelsReadyRef = useRef(false);
   const recognizingRef = useRef(false);
   const lastRecognizeTimeRef = useRef(0);
-  const modelsReadyRef = useRef(false);
+  const latestLandmarksRef = useRef([]);
 
-  const [showNameplate, setShowNameplate] = useState(false);
-  const [recognizedUser, setRecognizedUser] = useState(null);
   const [modelsReady, setModelsReady] = useState(false);
   const [userCount, setUserCount] = useState(0);
+  const [trackedFaces, setTrackedFaces] = useState([]);
+  const [openedIds, setOpenedIds] = useState({});
   const [isReloadingUsers, setIsReloadingUsers] = useState(false);
-  const [chestOpening, setChestOpening] = useState(false);
 
-  const MATCH_THRESHOLD = 0.7;
-  const RECOGNIZE_INTERVAL_MS = 800;
+  const BACKEND_URL = "https://ar-vision-link.onrender.com";
+
+  const MATCH_THRESHOLD = 0.85;
+  const RECOGNIZE_INTERVAL_MS = 900;
 
   useEffect(() => {
     init();
 
-    return () => {
-      cleanup();
-    };
+    return () => cleanup();
   }, []);
 
   async function init() {
@@ -53,10 +49,9 @@ function Camera() {
 
       modelsReadyRef.current = true;
       setModelsReady(true);
-
       console.log("[face-api] 模型載入完成");
     } catch (err) {
-      console.error(err);
+      console.error("[face-api] 模型載入失敗：", err);
       alert("face-api 模型載入失敗");
     }
   }
@@ -64,47 +59,54 @@ function Camera() {
   async function loadUserCache() {
     setIsReloadingUsers(true);
 
-    const { data, error } = await supabase
-      .from("users")
-      .select("id, name, nickname, description, extra_info, face_embedding");
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/users`);
+      const result = await response.json();
 
-    if (error) {
-      console.error("[supabase] 載入 users 失敗：", error);
-      alert("重新載入使用者失敗：" + error.message);
-      setIsReloadingUsers(false);
-      return;
-    }
+      if (!response.ok) {
+        console.error(result);
+        alert("載入使用者失敗：" + (result.error || "未知錯誤"));
+        setIsReloadingUsers(false);
+        return;
+      }
 
-    const users = (data || [])
-      .map((u) => {
-        let embedding = u.face_embedding;
+      const data = result.users || [];
 
-        if (typeof embedding === "string") {
-          try {
-            embedding = JSON.parse(embedding);
-          } catch {
-            console.warn(`[supabase] ${u.name} embedding JSON 解析失敗`);
+      const users = data
+        .map((u) => {
+          let embedding = u.face_embedding;
+
+          if (typeof embedding === "string") {
+            try {
+              embedding = JSON.parse(embedding);
+            } catch {
+              console.warn(`[backend] ${u.name} embedding JSON 解析失敗`);
+              return null;
+            }
+          }
+
+          if (!Array.isArray(embedding) || embedding.length === 0) {
+            console.warn(`[backend] ${u.name} 沒有有效 embedding`);
             return null;
           }
-        }
 
-        if (!Array.isArray(embedding) || embedding.length === 0) {
-          console.warn(`[supabase] ${u.name} 沒有有效 embedding`);
-          return null;
-        }
+          return {
+            ...u,
+            embedding: new Float32Array(embedding),
+          };
+        })
+        .filter(Boolean);
 
-        return {
-          ...u,
-          embedding: new Float32Array(embedding),
-        };
-      })
-      .filter(Boolean);
+      userCacheRef.current = users;
+      setUserCount(users.length);
 
-    userCacheRef.current = users;
-    setUserCount(users.length);
+      console.log("[backend] user cache:", users.length);
+    } catch (err) {
+      console.error("[backend] 載入使用者失敗：", err);
+      alert("載入使用者失敗，請確認 Render 後端是否啟動");
+    }
+
     setIsReloadingUsers(false);
-
-    console.log("[supabase] user cache:", users.length);
   }
 
   async function startFaceMesh() {
@@ -129,13 +131,12 @@ function Camera() {
     window.addEventListener("resize", resizeCanvas);
 
     const faceMesh = new window.FaceMesh({
-      locateFile: (file) => {
-        return `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`;
-      },
+      locateFile: (file) =>
+        `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`,
     });
 
     faceMesh.setOptions({
-      maxNumFaces: 1,
+      maxNumFaces: 5,
       refineLandmarks: true,
       minDetectionConfidence: 0.6,
       minTrackingConfidence: 0.6,
@@ -144,40 +145,14 @@ function Camera() {
     faceMesh.onResults(async (results) => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      if (
-        !results.multiFaceLandmarks ||
-        results.multiFaceLandmarks.length === 0
-      ) {
-        if (chestRef.current) {
-          chestRef.current.style.display = "none";
-        }
+      const landmarksList = results.multiFaceLandmarks || [];
+      latestLandmarksRef.current = landmarksList;
 
-        setRecognizedUser(null);
-        setShowNameplate(false);
-        setChestOpening(false);
+      if (landmarksList.length === 0) {
+        setTrackedFaces([]);
+        setOpenedIds({});
         return;
       }
-
-      const landmarks = results.multiFaceLandmarks[0];
-
-      const forehead = landmarks[10];
-      const chin = landmarks[152];
-
-      const headHeight = (chin.y - forehead.y) * canvas.height;
-
-      const x = forehead.x * canvas.width;
-      const y = forehead.y * canvas.height - headHeight * 0.7;
-
-      if (chestRef.current) {
-        chestRef.current.style.display = "flex";
-        chestRef.current.style.left = `${x}px`;
-        chestRef.current.style.top = `${y}px`;
-      }
-
-      ctx.beginPath();
-      ctx.arc(x, y, 6, 0, Math.PI * 2);
-      ctx.fillStyle = "red";
-      ctx.fill();
 
       const now = Date.now();
 
@@ -186,11 +161,9 @@ function Camera() {
         now - lastRecognizeTimeRef.current > RECOGNIZE_INTERVAL_MS
       ) {
         lastRecognizeTimeRef.current = now;
-        await recognizeCurrentFace();
+        await recognizeMultiFaces();
       }
     });
-
-    faceMeshRef.current = faceMesh;
 
     const camera = new window.Camera(video, {
       onFrame: async () => {
@@ -206,23 +179,22 @@ function Camera() {
     camera.start();
   }
 
-  async function recognizeCurrentFace() {
+  async function recognizeMultiFaces() {
     if (recognizingRef.current) return;
 
     const video = videoRef.current;
-    if (!video || video.readyState < 2) return;
-
+    const canvas = canvasRef.current;
     const users = userCacheRef.current;
-    if (!users.length) {
-      console.warn("[recognize] userCache 為空");
-      return;
-    }
+    const landmarksList = latestLandmarksRef.current;
+
+    if (!video || !canvas || video.readyState < 2) return;
+    if (!users.length || !landmarksList.length) return;
 
     recognizingRef.current = true;
 
     try {
-      const detection = await faceapi
-        .detectSingleFace(
+      const detections = await faceapi
+        .detectAllFaces(
           video,
           new faceapi.TinyFaceDetectorOptions({
             inputSize: 320,
@@ -230,66 +202,133 @@ function Camera() {
           })
         )
         .withFaceLandmarks()
-        .withFaceDescriptor();
+        .withFaceDescriptors();
 
-      if (!detection) {
-        setRecognizedUser(null);
-        setShowNameplate(false);
-        setChestOpening(false);
+      if (!detections.length) {
+        setTrackedFaces([]);
         return;
       }
 
-      const descriptor = detection.descriptor;
+      const videoW = video.videoWidth || 1280;
+      const videoH = video.videoHeight || 720;
 
-      let bestUser = null;
-      let bestDistance = Infinity;
+      const results = [];
+      const usedUsers = new Set();
+      const usedMeshes = new Set();
 
-      for (const user of users) {
-        if (!user.embedding || user.embedding.length !== descriptor.length) {
-          continue;
-        }
+      detections.forEach((det, detIndex) => {
+        let bestUser = null;
+        let bestDistance = Infinity;
 
-        const distance = faceapi.euclideanDistance(descriptor, user.embedding);
+        users.forEach((user) => {
+          if (usedUsers.has(user.id)) return;
 
-        if (distance < bestDistance) {
-          bestDistance = distance;
-          bestUser = user;
-        }
-      }
+          if (!user.embedding || user.embedding.length !== det.descriptor.length) {
+            return;
+          }
 
-      console.log("bestUser =", bestUser?.name);
-      console.log("bestDistance =", bestDistance);
+          const distance = faceapi.euclideanDistance(
+            det.descriptor,
+            user.embedding
+          );
 
-      if (bestUser && bestDistance < MATCH_THRESHOLD) {
-        setRecognizedUser(bestUser);
-      } else {
-        setRecognizedUser(null);
-        setShowNameplate(false);
-        setChestOpening(false);
-      }
+          console.log(
+            `[debug] detection ${detIndex} vs ${user.name}: ${distance.toFixed(
+              3
+            )}`
+          );
+
+          if (distance < bestDistance) {
+            bestDistance = distance;
+            bestUser = user;
+          }
+        });
+
+        console.log(
+          `[best] detection ${detIndex}:`,
+          bestUser?.name,
+          bestDistance
+        );
+
+        if (!bestUser || bestDistance >= MATCH_THRESHOLD) return;
+
+        const box = det.detection.box;
+        const faceCx = (box.x + box.width / 2) / videoW;
+        const faceCy = (box.y + box.height / 2) / videoH;
+
+        let bestMeshIndex = -1;
+        let bestMeshDistance = Infinity;
+
+        landmarksList.forEach((landmarks, index) => {
+          if (usedMeshes.has(index)) return;
+
+          const nose = landmarks[1];
+
+          const dx = nose.x - faceCx;
+          const dy = nose.y - faceCy;
+          const dist = dx * dx + dy * dy;
+
+          if (dist < bestMeshDistance) {
+            bestMeshDistance = dist;
+            bestMeshIndex = index;
+          }
+        });
+
+        if (bestMeshIndex === -1) return;
+
+        const landmarks = landmarksList[bestMeshIndex];
+        const forehead = landmarks[10];
+        const chin = landmarks[152];
+
+        const headHeight = (chin.y - forehead.y) * canvas.height;
+
+        results.push({
+          id: bestUser.id,
+          user: bestUser,
+          distance: bestDistance,
+          x: forehead.x * canvas.width,
+          y: forehead.y * canvas.height - headHeight * 0.7,
+        });
+
+        usedUsers.add(bestUser.id);
+        usedMeshes.add(bestMeshIndex);
+      });
+
+      setTrackedFaces(results);
+
+      setOpenedIds((prev) => {
+        const next = {};
+        results.forEach((face) => {
+          if (prev[face.id]) {
+            next[face.id] = true;
+          }
+        });
+        return next;
+      });
+
+      console.log(
+        "[multi match]",
+        results.map((r) => `${r.user.name}: ${r.distance.toFixed(3)}`)
+      );
     } catch (err) {
-      console.error("[recognize] 失敗：", err);
+      console.error("[recognizeMultiFaces] 失敗：", err);
     } finally {
       recognizingRef.current = false;
     }
   }
 
-  function openChest() {
-    if (!recognizedUser) {
-      alert("尚未辨識到已註冊使用者");
-      return;
-    }
-
-    setChestOpening(true);
-
-    setTimeout(() => {
-      setShowNameplate(true);
-    }, 220);
+  function openChest(id) {
+    setOpenedIds((prev) => ({
+      ...prev,
+      [id]: true,
+    }));
   }
 
-  function closeNameplate() {
-    setShowNameplate(false);
-    setChestOpening(false);
+  function closeNameplate(id) {
+    setOpenedIds((prev) => ({
+      ...prev,
+      [id]: false,
+    }));
   }
 
   function cleanup() {
@@ -302,15 +341,6 @@ function Camera() {
       videoRef.current.srcObject.getTracks().forEach((track) => track.stop());
       videoRef.current.srcObject = null;
     }
-
-    if (canvasRef.current) {
-      const ctx = canvasRef.current.getContext("2d");
-      ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-    }
-
-    if (chestRef.current) {
-      chestRef.current.style.display = "none";
-    }
   }
 
   return (
@@ -319,34 +349,48 @@ function Camera() {
 
       <canvas ref={canvasRef} className="canvas" />
 
-      <div ref={chestRef} className="user-tag">
-        {!showNameplate && (
-          <button
-            className={`treasure-chest ${chestOpening ? "chest-opening" : ""}`}
-            onClick={openChest}
-          >
-            <img src="./chest.png" className="chest-img" alt="chest" />
-          </button>
-        )}
+      {trackedFaces.map((face) => (
+        <div
+          key={face.id}
+          className="user-tag"
+          style={{
+            left: `${face.x}px`,
+            top: `${face.y}px`,
+          }}
+        >
+          {!openedIds[face.id] && (
+            <button
+              className="treasure-chest"
+              onClick={() => openChest(face.id)}
+            >
+              <img
+                src={`${import.meta.env.BASE_URL}chest.png`}
+                className="chest-img"
+                alt="chest"
+              />
+            </button>
+          )}
 
-        {showNameplate && recognizedUser && (
-          <div className="nameplate nameplate-show" onClick={closeNameplate}>
-            <div className="name">{recognizedUser.name}</div>
-            <div className="nickname">
-              @{recognizedUser.nickname || "unknown"}
+          {openedIds[face.id] && (
+            <div
+              className="nameplate nameplate-show"
+              onClick={() => closeNameplate(face.id)}
+            >
+              <div className="name">{face.user.name}</div>
+              <div className="nickname">
+                @{face.user.nickname || "unknown"}
+              </div>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      ))}
 
       <div className="status-panel">
         {modelsReady ? "模型已載入" : "模型載入中..."}
         <br />
         使用者快取：{userCount} 筆
         <br />
-        {recognizedUser
-          ? `辨識到：${recognizedUser.name}`
-          : "尚未辨識到使用者"}
+        辨識人數：{trackedFaces.length}
 
         <button
           className="reload-users-btn"

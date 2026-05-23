@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import * as faceapi from "@vladmandic/face-api";
-import { supabase } from "../lib/supabase";
 import "../styles/Register.css";
 
 function Register() {
@@ -20,6 +19,8 @@ function Register() {
 
   const [modelsReady, setModelsReady] = useState(false);
   const [registering, setRegistering] = useState(false);
+
+  const BACKEND_URL = "https://ar-vision-link.onrender.com";
 
   useEffect(() => {
     async function loadModels() {
@@ -174,23 +175,30 @@ function Register() {
 
       const embedding = Array.from(detection.descriptor);
 
-      const { error } = await supabase.from("users").insert([
-        {
+      const response = await fetch(`${BACKEND_URL}/api/users/register`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
           name,
           nickname,
           description,
           extra_info: extraInfo,
           face_embedding: embedding,
-        },
-      ]);
+        }),
+      });
 
-      if (error) {
-        console.error(error);
-        alert("註冊失敗：" + error.message);
+      const result = await response.json();
+
+      if (!response.ok) {
+        console.error(result);
+        alert("註冊失敗：" + (result.error || "未知錯誤"));
         setRegistering(false);
         return;
       }
 
+      console.log("註冊成功：", result);
       alert("註冊成功！");
 
       stopCamera();
@@ -213,7 +221,10 @@ function Register() {
     <div className="register-page">
       <div className="card">
         <h2>建立新帳戶</h2>
-        <div className="subtitle">請先填寫基本資料，再進行臉部註冊。</div>
+
+        <div className="subtitle">
+          請先填寫基本資料，再進行臉部註冊。
+        </div>
 
         <div className="step-indicator">
           <span className={step === 1 ? "step-active" : ""}>
