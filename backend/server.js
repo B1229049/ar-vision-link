@@ -42,9 +42,55 @@ const QUESTION_SELECT = `
   created_at
 `;
 
+const GAME_SESSION_SELECT = `
+  session_id,
+  quiz_id,
+  room_code,
+  started_at,
+  ended_at
+`;
+
+function generateRoomCode(length = 6) {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let code = "";
+
+  for (let i = 0; i < length; i++) {
+    code += chars[Math.floor(Math.random() * chars.length)];
+  }
+
+  return code;
+}
+
+async function createUniqueRoomCode() {
+  for (let i = 0; i < 10; i++) {
+    const roomCode = generateRoomCode();
+
+    const { data, error } = await supabase
+      .from("game_sessions")
+      .select("session_id")
+      .eq("room_code", roomCode)
+      .is("ended_at", null)
+      .maybeSingle();
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    if (!data) {
+      return roomCode;
+    }
+  }
+
+  throw new Error("無法產生唯一房號，請重試");
+}
+
 app.get("/", (req, res) => {
   res.send("AR Vision Link backend is running");
 });
+
+/* =========================
+   User API
+========================= */
 
 app.get("/api/users", async (req, res) => {
   try {
@@ -369,6 +415,151 @@ app.delete("/api/quizzes/:quizId", async (req, res) => {
     });
   }
 });
+
+/* =========================
+   Game Session API
+========================= */
+
+app.post("/api/game-sessions/create", async (req, res) => {
+  try {
+    const { quiz_id } = req.body;
+
+    if (!quiz_id) {
+      return res.status(400).json({
+        success: false,
+        error: "quiz_id 為必填",
+      });
+    }
+
+    const roomCode = await createUniqueRoomCode();
+
+    const { data: session, error } = await supabase
+      .from("game_sessions")
+      .insert([
+        {
+          quiz_id,
+          room_code: roomCode,
+        },
+      ])
+      .select(GAME_SESSION_SELECT)
+      .single();
+
+    if (error) {
+      return res.status(500).json({
+        success: false,
+        error: error.message,
+      });
+    }
+
+    res.json({
+      success: true,
+      session,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message,
+    });
+  }
+});
+
+app.get("/api/game-sessions/join/:roomCode", async (req, res) => {
+  try {
+    const roomCode = req.params.roomCode.toUpperCase();
+
+    const { data: session, error } = await supabase
+      .from("game_sessions")
+      .select(GAME_SESSION_SELECT)
+      .eq("room_code", roomCode)
+      .is("ended_at", null)
+      .maybeSingle();
+
+    if (error) {
+      return res.status(500).json({
+        success: false,
+        error: error.message,
+      });
+    }
+
+    if (!session) {
+      return res.status(404).json({
+        success: false,
+        error: "找不到房間或房間已結束",
+      });
+    }
+
+    res.json({
+      success: true,
+      session,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message,
+    });
+  }
+});
+
+app.get("/api/game-sessions/:sessionId", async (req, res) => {
+  try {
+    const { sessionId } = req.params;
+
+    const { data: session, error: sessionError } = await supabase
+      .from("game_sessions")
+      .select(GAME_SESSION_SELECT)
+      .eq("session_id", sessionId)
+      .single();
+
+    if (sessionError) {
+      return res.status(404).json({
+        success: false,
+        error: sessionError.message,
+      });
+    }
+
+    const { data: quiz, error: quizError } = await supabase
+      .from("quizzes")
+      .select(QUIZ_SELECT)
+      .eq("quiz_id", session.quiz_id)
+      .single();
+
+    if (quizError) {
+      return res.status(500).json({
+        success: false,
+        error: quizError.message,
+      });
+    }
+
+    const { data: questions, error: questionsError } = await supabase
+      .from("questions")
+      .select(QUESTION_SELECT)
+      .eq("quiz_id", session.quiz_id)
+      .order("question_id", { ascending: true });
+
+    if (questionsError) {
+      return res.status(500).json({
+        success: false,
+        error: questionsError.message,
+      });
+    }
+
+    res.json({
+      success: true,
+      session,
+      quiz,
+      questions: questions || [],
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message,
+    });
+  }
+});
+
+/* =========================
+   Delete User
+========================= */
 
 app.delete("/api/users/:id", async (req, res) => {
   try {

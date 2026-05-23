@@ -10,6 +10,7 @@ import ReRegisterFace from "./pages/ReRegisterFace";
 
 import QuizHome from "./pages/QuizHome";
 import CreateQuiz from "./pages/CreateQuiz";
+import JoinQuiz from "./pages/JoinQuiz";
 
 import Navbar from "./components/Navbar";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -75,6 +76,15 @@ function App() {
           element={
             <ProtectedRoute>
               <CreateQuiz />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/quiz/join"
+          element={
+            <ProtectedRoute>
+              <JoinQuiz />
             </ProtectedRoute>
           }
         />
