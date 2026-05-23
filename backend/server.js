@@ -50,6 +50,14 @@ const GAME_SESSION_SELECT = `
   ended_at
 `;
 
+const PLAYER_RECORD_SELECT = `
+  record_id,
+  session_id,
+  user_id,
+  score,
+  joined_at
+`;
+
 function generateRoomCode(length = 6) {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   let code = "";
@@ -72,13 +80,8 @@ async function createUniqueRoomCode() {
       .is("ended_at", null)
       .maybeSingle();
 
-    if (error) {
-      throw new Error(error.message);
-    }
-
-    if (!data) {
-      return roomCode;
-    }
+    if (error) throw new Error(error.message);
+    if (!data) return roomCode;
   }
 
   throw new Error("無法產生唯一房號，請重試");
@@ -242,12 +245,7 @@ app.post("/api/quizzes/create", async (req, res) => {
 
     const { data: quiz, error: quizError } = await supabase
       .from("quizzes")
-      .insert([
-        {
-          host_id,
-          title: title.trim(),
-        },
-      ])
+      .insert([{ host_id, title: title.trim() }])
       .select(QUIZ_SELECT)
       .single();
 
@@ -435,12 +433,7 @@ app.post("/api/game-sessions/create", async (req, res) => {
 
     const { data: session, error } = await supabase
       .from("game_sessions")
-      .insert([
-        {
-          quiz_id,
-          room_code: roomCode,
-        },
-      ])
+      .insert([{ quiz_id, room_code: roomCode }])
       .select(GAME_SESSION_SELECT)
       .single();
 
@@ -548,6 +541,115 @@ app.get("/api/game-sessions/:sessionId", async (req, res) => {
       session,
       quiz,
       questions: questions || [],
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message,
+    });
+  }
+});
+
+/* =========================
+   Player Records API
+========================= */
+
+app.post("/api/player-records/join", async (req, res) => {
+  try {
+    const { session_id, user_id } = req.body;
+
+    if (!session_id || !user_id) {
+      return res.status(400).json({
+        success: false,
+        error: "session_id 和 user_id 為必填",
+      });
+    }
+
+    const { data: existingRecord, error: existingError } = await supabase
+      .from("player_records")
+      .select(PLAYER_RECORD_SELECT)
+      .eq("session_id", session_id)
+      .eq("user_id", user_id)
+      .maybeSingle();
+
+    if (existingError) {
+      return res.status(500).json({
+        success: false,
+        error: existingError.message,
+      });
+    }
+
+    if (existingRecord) {
+      return res.json({
+        success: true,
+        record: existingRecord,
+        message: "玩家已經加入過",
+      });
+    }
+
+    const { data: record, error } = await supabase
+      .from("player_records")
+      .insert([
+        {
+          session_id,
+          user_id,
+          score: 0,
+        },
+      ])
+      .select(PLAYER_RECORD_SELECT)
+      .single();
+
+    if (error) {
+      return res.status(500).json({
+        success: false,
+        error: error.message,
+      });
+    }
+
+    res.json({
+      success: true,
+      record,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message,
+    });
+  }
+});
+
+app.get("/api/player-records/session/:sessionId", async (req, res) => {
+  try {
+    const { sessionId } = req.params;
+
+    const { data: records, error } = await supabase
+      .from("player_records")
+      .select(`
+        record_id,
+        session_id,
+        user_id,
+        score,
+        joined_at,
+        users (
+          id,
+          name,
+          nickname,
+          avatar_url
+        )
+      `)
+      .eq("session_id", sessionId)
+      .order("joined_at", { ascending: true });
+
+    if (error) {
+      return res.status(500).json({
+        success: false,
+        error: error.message,
+      });
+    }
+
+    res.json({
+      success: true,
+      players: records || [],
     });
   } catch (err) {
     res.status(500).json({

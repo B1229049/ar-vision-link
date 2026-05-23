@@ -11,6 +11,8 @@ import ReRegisterFace from "./pages/ReRegisterFace";
 import QuizHome from "./pages/QuizHome";
 import CreateQuiz from "./pages/CreateQuiz";
 import JoinQuiz from "./pages/JoinQuiz";
+import HostLobby from "./pages/HostLobby";
+import WaitingLobby from "./pages/WaitingLobby";
 
 import Navbar from "./components/Navbar";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -85,6 +87,24 @@ function App() {
           element={
             <ProtectedRoute>
               <JoinQuiz />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/quiz/host"
+          element={
+            <ProtectedRoute>
+              <HostLobby />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/quiz/lobby/:sessionId"
+          element={
+            <ProtectedRoute>
+              <WaitingLobby />
             </ProtectedRoute>
           }
         />

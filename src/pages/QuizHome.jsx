@@ -47,6 +47,13 @@ function QuizHome() {
         <div className="quiz-actions">
           <button
             className="quiz-btn primary"
+            onClick={() => navigate("/quiz/host")}
+          >
+            主持遊戲
+          </button>
+          
+          <button
+            className="quiz-btn primary"
             onClick={() => navigate("/quiz/create")}
           >
             建立測驗
