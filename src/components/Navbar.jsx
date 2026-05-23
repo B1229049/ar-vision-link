@@ -30,6 +30,7 @@ function Navbar() {
           <>
             <button onClick={() => navigate("/profile")}>個人頁面</button>
             <button onClick={() => navigate("/camera")}>AR Camera</button>
+            <button onClick={() => navigate("/quiz")}>Quiz</button>
             <button className="logout" onClick={logout}>登出</button>
           </>
         )}

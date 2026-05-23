@@ -25,6 +25,23 @@ const USER_SELECT = `
   face_embedding
 `;
 
+const QUIZ_SELECT = `
+  quiz_id,
+  host_id,
+  title,
+  created_at
+`;
+
+const QUESTION_SELECT = `
+  question_id,
+  quiz_id,
+  question_text,
+  options,
+  correct_answer,
+  time_limit,
+  created_at
+`;
+
 app.get("/", (req, res) => {
   res.send("AR Vision Link backend is running");
 });
@@ -145,6 +162,211 @@ app.put("/api/users/:id", async (req, res) => {
     res.json({ success: true, user: data });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/* =========================
+   Quiz API
+========================= */
+
+app.post("/api/quizzes/create", async (req, res) => {
+  try {
+    const { host_id, title, questions } = req.body;
+
+    if (!host_id) {
+      return res.status(400).json({
+        success: false,
+        error: "host_id 為必填",
+      });
+    }
+
+    if (!title?.trim()) {
+      return res.status(400).json({
+        success: false,
+        error: "title 為必填",
+      });
+    }
+
+    if (!Array.isArray(questions) || questions.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: "questions 至少需要一題",
+      });
+    }
+
+    const { data: quiz, error: quizError } = await supabase
+      .from("quizzes")
+      .insert([
+        {
+          host_id,
+          title: title.trim(),
+        },
+      ])
+      .select(QUIZ_SELECT)
+      .single();
+
+    if (quizError) {
+      return res.status(500).json({
+        success: false,
+        error: quizError.message,
+      });
+    }
+
+    const questionRows = questions.map((q) => ({
+      quiz_id: quiz.quiz_id,
+      question_text: q.question_text?.trim() || "",
+      options: {
+        A: q.option_a?.trim() || "",
+        B: q.option_b?.trim() || "",
+        C: q.option_c?.trim() || "",
+        D: q.option_d?.trim() || "",
+      },
+      correct_answer: q.correct_answer || "A",
+      time_limit: Number(q.time_limit) || 20,
+    }));
+
+    const invalidQuestion = questionRows.find(
+      (q) =>
+        !q.question_text ||
+        !q.options.A ||
+        !q.options.B ||
+        !q.options.C ||
+        !q.options.D
+    );
+
+    if (invalidQuestion) {
+      await supabase.from("quizzes").delete().eq("quiz_id", quiz.quiz_id);
+
+      return res.status(400).json({
+        success: false,
+        error: "題目與 A/B/C/D 選項不能空白",
+      });
+    }
+
+    const { data: createdQuestions, error: questionsError } = await supabase
+      .from("questions")
+      .insert(questionRows)
+      .select(QUESTION_SELECT);
+
+    if (questionsError) {
+      await supabase.from("quizzes").delete().eq("quiz_id", quiz.quiz_id);
+
+      return res.status(500).json({
+        success: false,
+        error: questionsError.message,
+      });
+    }
+
+    res.json({
+      success: true,
+      quiz,
+      questions: createdQuestions || [],
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message,
+    });
+  }
+});
+
+app.get("/api/quizzes/host/:hostId", async (req, res) => {
+  try {
+    const { hostId } = req.params;
+
+    const { data, error } = await supabase
+      .from("quizzes")
+      .select(QUIZ_SELECT)
+      .eq("host_id", hostId)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      return res.status(500).json({
+        success: false,
+        error: error.message,
+      });
+    }
+
+    res.json({
+      success: true,
+      quizzes: data || [],
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message,
+    });
+  }
+});
+
+app.get("/api/quizzes/:quizId", async (req, res) => {
+  try {
+    const { quizId } = req.params;
+
+    const { data: quiz, error: quizError } = await supabase
+      .from("quizzes")
+      .select(QUIZ_SELECT)
+      .eq("quiz_id", quizId)
+      .single();
+
+    if (quizError) {
+      return res.status(404).json({
+        success: false,
+        error: quizError.message,
+      });
+    }
+
+    const { data: questions, error: questionsError } = await supabase
+      .from("questions")
+      .select(QUESTION_SELECT)
+      .eq("quiz_id", quizId)
+      .order("question_id", { ascending: true });
+
+    if (questionsError) {
+      return res.status(500).json({
+        success: false,
+        error: questionsError.message,
+      });
+    }
+
+    res.json({
+      success: true,
+      quiz,
+      questions: questions || [],
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message,
+    });
+  }
+});
+
+app.delete("/api/quizzes/:quizId", async (req, res) => {
+  try {
+    const { quizId } = req.params;
+
+    const { error } = await supabase
+      .from("quizzes")
+      .delete()
+      .eq("quiz_id", quizId);
+
+    if (error) {
+      return res.status(500).json({
+        success: false,
+        error: error.message,
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "Quiz deleted",
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message,
+    });
   }
 });
 

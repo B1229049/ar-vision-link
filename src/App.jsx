@@ -8,6 +8,9 @@ import Profile from "./pages/Profile";
 import EditProfile from "./pages/EditProfile";
 import ReRegisterFace from "./pages/ReRegisterFace";
 
+import QuizHome from "./pages/QuizHome";
+import CreateQuiz from "./pages/CreateQuiz";
+
 import Navbar from "./components/Navbar";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -54,6 +57,24 @@ function App() {
           element={
             <ProtectedRoute>
               <ReRegisterFace />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/quiz"
+          element={
+            <ProtectedRoute>
+              <QuizHome />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/quiz/create"
+          element={
+            <ProtectedRoute>
+              <CreateQuiz />
             </ProtectedRoute>
           }
         />

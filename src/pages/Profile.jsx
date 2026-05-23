@@ -53,7 +53,15 @@ function Profile() {
     <div className="profile-page">
       <div className="profile-card">
         <div className="avatar-circle">
-          {currentUser.name?.charAt(0) || "U"}
+          {currentUser.avatar_url ? (
+            <img
+              src={currentUser.avatar_url}
+              alt="avatar"
+              className="profile-avatar-img"
+            />
+          ) : (
+            currentUser.name?.charAt(0) || "U"
+          )}
         </div>
 
         <h2>{currentUser.name || "未命名使用者"}</h2>

@@ -203,6 +203,7 @@ function FaceLogin() {
         is_active: bestUser.is_active,
         created_at: bestUser.created_at,
         updated_at: bestUser.updated_at,
+        avatar_url: bestUser.avatar_url,
       };
 
       localStorage.setItem("currentUser", JSON.stringify(loginUser));
