@@ -14,9 +14,9 @@ function Home() {
 
         <Link to="/face-login">🔗 Login</Link>
 
-        <Link to="/create">📅 創建會議</Link>
+        <Link to="/quiz/create">📅 創建會議</Link>
 
-        <Link to="/join">🔗 加入會議</Link>
+        <Link to="/quiz/join">🔗 加入會議</Link>
 
       </div>
     </div>

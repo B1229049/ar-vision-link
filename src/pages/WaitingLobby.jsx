@@ -12,6 +12,7 @@ function WaitingLobby() {
   const [session, setSession] = useState(null);
   const [quiz, setQuiz] = useState(null);
   const [questions, setQuestions] = useState([]);
+  const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -23,12 +24,16 @@ function WaitingLobby() {
     }
 
     setCurrentUser(JSON.parse(savedUser));
+
     loadLobby();
 
-    const timer = setInterval(loadLobby, 2500);
+    const timer = setInterval(() => {
+      loadLobby();
+      loadPlayers();
+    }, 2500);
 
     return () => clearInterval(timer);
-  }, [sessionId]);
+  }, [sessionId, navigate]);
 
   async function loadLobby() {
     try {
@@ -47,12 +52,33 @@ function WaitingLobby() {
       setSession(result.session);
       setQuiz(result.quiz);
       setQuestions(result.questions || []);
+
+      await loadPlayers();
     } catch (err) {
       console.error(err);
       alert("載入等待室時發生錯誤");
     }
 
     setLoading(false);
+  }
+
+  async function loadPlayers() {
+    try {
+      const response = await fetch(
+        `${BACKEND_URL}/api/player-records/session/${sessionId}`
+      );
+
+      const result = await response.json();
+
+      if (!response.ok || result.error) {
+        console.error("載入玩家列表失敗：", result.error);
+        return;
+      }
+
+      setPlayers(result.players || []);
+    } catch (err) {
+      console.error("載入玩家列表時發生錯誤：", err);
+    }
   }
 
   function copyRoomCode() {
@@ -63,7 +89,6 @@ function WaitingLobby() {
   }
 
   function startGame() {
-    alert("下一步會進入 QuizGame.jsx");
     navigate(`/quiz/game/${session.session_id}`);
   }
 
@@ -84,9 +109,7 @@ function WaitingLobby() {
       <div className="waiting-lobby-card">
         <h2>{isHost ? "主持人等待室" : "玩家等待室"}</h2>
 
-        <p className="waiting-subtitle">
-          {quiz?.title || "未命名測驗"}
-        </p>
+        <p className="waiting-subtitle">{quiz?.title || "未命名測驗"}</p>
 
         <div className="room-panel">
           <p className="room-label">Room Code</p>
@@ -105,6 +128,11 @@ function WaitingLobby() {
           </div>
 
           <div className="info-row">
+            <span>玩家數量</span>
+            <strong>{players.length} 人</strong>
+          </div>
+
+          <div className="info-row">
             <span>Session ID</span>
             <strong>{session?.session_id}</strong>
           </div>
@@ -118,9 +146,34 @@ function WaitingLobby() {
         <div className="player-box">
           <h3>玩家列表</h3>
 
-          <p className="player-hint">
-            玩家紀錄 API 下一步建立後，這裡會顯示已加入玩家。
-          </p>
+          {players.length === 0 ? (
+            <p className="player-hint">目前還沒有玩家加入。</p>
+          ) : (
+            <div className="player-list">
+              {players.map((record) => {
+                const user = record.users;
+
+                return (
+                  <div className="player-item" key={record.record_id}>
+                    <div className="player-avatar">
+                      {user?.avatar_url ? (
+                        <img src={user.avatar_url} alt="avatar" />
+                      ) : (
+                        user?.name?.charAt(0) || "U"
+                      )}
+                    </div>
+
+                    <div className="player-info">
+                      <strong>{user?.name || "未知玩家"}</strong>
+                      <span>@{user?.nickname || "unknown"}</span>
+                    </div>
+
+                    <div className="player-score">{record.score || 0} 分</div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {isHost ? (
@@ -128,9 +181,7 @@ function WaitingLobby() {
             開始遊戲
           </button>
         ) : (
-          <div className="waiting-message">
-            等待主持人開始遊戲...
-          </div>
+          <div className="waiting-message">等待主持人開始遊戲...</div>
         )}
 
         <button className="waiting-btn ghost" onClick={() => navigate("/quiz")}>

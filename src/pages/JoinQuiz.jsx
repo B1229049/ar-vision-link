@@ -8,7 +8,6 @@ function JoinQuiz() {
   const BACKEND_URL = "https://ar-vision-link.onrender.com";
 
   const [currentUser, setCurrentUser] = useState(null);
-
   const [roomCode, setRoomCode] = useState("");
   const [joining, setJoining] = useState(false);
 
@@ -34,26 +33,48 @@ function JoinQuiz() {
     setJoining(true);
 
     try {
-      const response = await fetch(
+      const joinResponse = await fetch(
         `${BACKEND_URL}/api/game-sessions/join/${roomCode.trim()}`
       );
 
-      const result = await response.json();
+      const joinResult = await joinResponse.json();
 
-      if (!response.ok || result.error) {
-        alert("加入失敗：" + (result.error || "找不到房間"));
+      if (!joinResponse.ok || joinResult.error) {
+        alert("加入失敗：" + (joinResult.error || "找不到房間"));
         setJoining(false);
         return;
       }
 
-      localStorage.setItem(
-        "currentGameSession",
-        JSON.stringify(result.session)
+      const session = joinResult.session;
+
+      const recordResponse = await fetch(
+        `${BACKEND_URL}/api/player-records/join`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            session_id: session.session_id,
+            user_id: currentUser.id,
+          }),
+        }
       );
+
+      const recordResult = await recordResponse.json();
+
+      if (!recordResponse.ok || recordResult.error) {
+        alert("加入玩家紀錄失敗：" + (recordResult.error || "未知錯誤"));
+        setJoining(false);
+        return;
+      }
+
+      localStorage.setItem("currentGameSession", JSON.stringify(session));
+      localStorage.setItem("currentPlayerRecord", JSON.stringify(recordResult.record));
 
       alert("加入成功！");
 
-      navigate(`/quiz/lobby/${result.session.session_id}`);
+      navigate(`/quiz/lobby/${session.session_id}`);
     } catch (err) {
       console.error(err);
       alert("加入測驗時發生錯誤");
@@ -94,9 +115,7 @@ function JoinQuiz() {
 
           <input
             value={roomCode}
-            onChange={(e) =>
-              setRoomCode(e.target.value.toUpperCase())
-            }
+            onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
             placeholder="例如：ABCD12"
             maxLength={12}
           />
@@ -110,10 +129,7 @@ function JoinQuiz() {
           {joining ? "加入中..." : "加入測驗"}
         </button>
 
-        <button
-          className="join-btn secondary"
-          onClick={() => navigate("/quiz")}
-        >
+        <button className="join-btn secondary" onClick={() => navigate("/quiz")}>
           返回 Quiz Center
         </button>
       </div>
