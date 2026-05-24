@@ -41,9 +41,25 @@ function HostConsole() {
     return questions[currentIndex] || null;
   }, [questions, currentIndex]);
 
+  const answeredUserIds = new Set(answers.map((a) => a.user_id));
+
+  const answerStats = ["A", "B", "C", "D"].map((key) => {
+    const count = answers.filter((a) => a.answer === key).length;
+    const percent =
+      players.length > 0 ? Math.round((count / players.length) * 100) : 0;
+
+    return {
+      key,
+      count,
+      percent,
+    };
+  });
+
   async function loadConsole() {
     try {
-      const sessionRes = await fetch(`${BACKEND_URL}/api/game-sessions/${sessionId}`);
+      const sessionRes = await fetch(
+        `${BACKEND_URL}/api/game-sessions/${sessionId}`
+      );
       const sessionResult = await sessionRes.json();
 
       if (!sessionRes.ok || sessionResult.error) {
@@ -56,14 +72,19 @@ function HostConsole() {
       setQuiz(sessionResult.quiz);
       setQuestions(sessionResult.questions || []);
 
-      const playerRes = await fetch(`${BACKEND_URL}/api/player-records/session/${sessionId}`);
+      const playerRes = await fetch(
+        `${BACKEND_URL}/api/player-records/session/${sessionId}`
+      );
       const playerResult = await playerRes.json();
 
       if (playerRes.ok && !playerResult.error) {
         setPlayers(playerResult.players || []);
       }
 
-      const q = sessionResult.questions?.[sessionResult.session?.current_question || 0];
+      const q =
+        sessionResult.questions?.[
+          sessionResult.session?.current_question || 0
+        ];
 
       if (q) {
         const ansRes = await fetch(
@@ -174,15 +195,16 @@ function HostConsole() {
         <div className="host-console-card">
           <h2>沒有權限</h2>
           <p>只有主持人可以進入中控台。</p>
-          <button className="console-btn secondary" onClick={() => navigate("/quiz")}>
+          <button
+            className="console-btn secondary"
+            onClick={() => navigate("/quiz")}
+          >
             返回 Quiz Center
           </button>
         </div>
       </div>
     );
   }
-
-  const answeredUserIds = new Set(answers.map((a) => a.user_id));
 
   return (
     <div className="host-console-page">
@@ -199,7 +221,9 @@ function HostConsole() {
 
           <div>
             <span>題目</span>
-            <strong>{currentIndex + 1} / {questions.length}</strong>
+            <strong>
+              {currentIndex + 1} / {questions.length}
+            </strong>
           </div>
 
           <div>
@@ -234,6 +258,30 @@ function HostConsole() {
                 </div>
               ))}
             </div>
+
+            <div className="stats-panel">
+              <h3>本題選項統計</h3>
+
+              <div className="stats-list">
+                {answerStats.map((item) => (
+                  <div className="stat-row" key={item.key}>
+                    <div className="stat-label">
+                      <strong>{item.key}</strong>
+                      <span>{item.count} 人</span>
+                    </div>
+
+                    <div className="stat-bar-bg">
+                      <div
+                        className="stat-bar"
+                        style={{ width: `${item.percent}%` }}
+                      />
+                    </div>
+
+                    <div className="stat-percent">{item.percent}%</div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </>
         )}
 
@@ -266,7 +314,9 @@ function HostConsole() {
                     <div className="answer-status">
                       {answeredUserIds.has(record.user_id) ? (
                         ans?.is_correct ? (
-                          <span className="correct-text">答對 +{ans.score}</span>
+                          <span className="correct-text">
+                            答對 +{ans.score}
+                          </span>
                         ) : (
                           <span className="wrong-text">答錯 +0</span>
                         )
