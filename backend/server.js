@@ -435,9 +435,6 @@ app.post("/api/game-sessions/create", async (req, res) => {
 
     const { data: session, error } = await supabase
       .from("game_sessions")
-      .insert([{ quiz_id, room_code: roomCode }])
-      .select(GAME_SESSION_SELECT)
-      .single()
       .insert([
         {
           quiz_id,
@@ -447,7 +444,9 @@ app.post("/api/game-sessions/create", async (req, res) => {
           current_question: 0,
           game_finished: false,
         },
-      ]);
+      ])
+      .select(GAME_SESSION_SELECT)
+      .single();
 
     if (error) {
       return res.status(500).json({
