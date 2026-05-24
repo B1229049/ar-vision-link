@@ -47,7 +47,9 @@ const GAME_SESSION_SELECT = `
   quiz_id,
   room_code,
   started_at,
-  ended_at
+  ended_at,
+  current_question,
+  game_finished
 `;
 
 const PLAYER_RECORD_SELECT = `
@@ -437,13 +439,15 @@ app.post("/api/game-sessions/create", async (req, res) => {
       .select(GAME_SESSION_SELECT)
       .single()
       .insert([
-          {
-            quiz_id,
-            room_code: roomCode,
-            started_at: null,
-            ended_at: null,
-          },
-        ]);
+        {
+          quiz_id,
+          room_code: roomCode,
+          started_at: null,
+          ended_at: null,
+          current_question: 0,
+          game_finished: false,
+        },
+      ]);
 
     if (error) {
       return res.status(500).json({
@@ -728,39 +732,6 @@ app.put("/api/player-records/:recordId/score", async (req, res) => {
   }
 });
 
-app.put("/api/player-records/:recordId/score", async (req, res) => {
-  try {
-    const { recordId } = req.params;
-    const { score } = req.body;
-
-    const { data, error } = await supabase
-      .from("player_records")
-      .update({
-        score: Number(score) || 0,
-      })
-      .eq("record_id", recordId)
-      .select(PLAYER_RECORD_SELECT)
-      .single();
-
-    if (error) {
-      return res.status(500).json({
-        success: false,
-        error: error.message,
-      });
-    }
-
-    res.json({
-      success: true,
-      record: data,
-    });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      error: err.message,
-    });
-  }
-});
-
 app.get("/api/leaderboard/:sessionId", async (req, res) => {
   try {
     const { sessionId } = req.params;
@@ -809,7 +780,77 @@ app.put("/api/game-sessions/:sessionId/start", async (req, res) => {
     const { data: session, error } = await supabase
       .from("game_sessions")
       .update({
-        started_at: new Date().toISOString(),
+          started_at: new Date().toISOString(),
+          current_question: 0,
+          game_finished: false,
+        })
+      .eq("session_id", sessionId)
+      .select(GAME_SESSION_SELECT)
+      .single();
+
+    if (error) {
+      return res.status(500).json({
+        success: false,
+        error: error.message,
+      });
+    }
+
+    res.json({
+      success: true,
+      session,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message,
+    });
+  }
+});
+
+app.put("/api/game-sessions/:sessionId/next", async (req, res) => {
+  try {
+    const { sessionId } = req.params;
+    const { current_question } = req.body;
+
+    const nextQuestion = Number(current_question) + 1;
+
+    const { data: session, error } = await supabase
+      .from("game_sessions")
+      .update({
+        current_question: nextQuestion,
+      })
+      .eq("session_id", sessionId)
+      .select(GAME_SESSION_SELECT)
+      .single();
+
+    if (error) {
+      return res.status(500).json({
+        success: false,
+        error: error.message,
+      });
+    }
+
+    res.json({
+      success: true,
+      session,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message,
+    });
+  }
+});
+
+app.put("/api/game-sessions/:sessionId/finish", async (req, res) => {
+  try {
+    const { sessionId } = req.params;
+
+    const { data: session, error } = await supabase
+      .from("game_sessions")
+      .update({
+        game_finished: true,
+        ended_at: new Date().toISOString(),
       })
       .eq("session_id", sessionId)
       .select(GAME_SESSION_SELECT)
