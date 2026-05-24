@@ -54,7 +54,12 @@ function WaitingLobby() {
       setQuiz(result.quiz);
       setQuestions(result.questions || []);
 
-      if (result.session?.started_at) {
+      if (result.session?.game_finished) {
+        navigate(`/quiz/leaderboard/${result.session.session_id}`);
+        return;
+      }
+
+      if (result.session?.started_at && !result.session?.game_finished) {
         navigate(`/quiz/game/${result.session.session_id}`);
         return;
       }
@@ -122,7 +127,8 @@ function WaitingLobby() {
 
       localStorage.setItem("currentGameSession", JSON.stringify(result.session));
 
-      navigate(`/quiz/game/${result.session.session_id}`);
+      // navigate(`/quiz/game/${result.session.session_id}`);
+      navigate(`/quiz/host-console/${result.session.session_id}`);
     } catch (err) {
       console.error(err);
       alert("開始遊戲時發生錯誤");

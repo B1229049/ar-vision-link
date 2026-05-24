@@ -126,26 +126,52 @@ function QuizGame() {
     }
   }
 
-  function handleAnswer(answer) {
-    if (!currentQuestion || answered) return;
+    async function handleAnswer(answer) {
+    if (!currentQuestion || answered || !session || !currentUser) return;
 
     setSelectedAnswer(answer);
     setAnswered(true);
 
     const isCorrect = answer === currentQuestion.correct_answer;
 
-    if (isCorrect) {
-      const baseScore = 1000;
-      const bonus = Math.max(timeLeft, 0) * 10;
-      const addScore = baseScore + bonus;
+    let addScore = 0;
 
-      setScore((prev) => {
+    if (isCorrect) {
+        const baseScore = 1000;
+        const bonus = Math.max(timeLeft, 0) * 10;
+        addScore = baseScore + bonus;
+
+        setScore((prev) => {
         const next = prev + addScore;
         scoreRef.current = next;
         return next;
-      });
+        });
     }
-  }
+
+    try {
+        const response = await fetch(`${BACKEND_URL}/api/player-answers/submit`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            session_id: session.session_id,
+            question_id: currentQuestion.question_id,
+            user_id: currentUser.id,
+            answer,
+            score: addScore,
+        }),
+        });
+
+        const result = await response.json();
+
+        if (!response.ok || result.error) {
+        console.error("送出答案失敗：", result.error || result);
+        }
+    } catch (err) {
+        console.error("送出答案時發生錯誤：", err);
+    }
+    }
 
   async function hostNextQuestion() {
     if (!isHost || !session) return;

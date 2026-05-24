@@ -131,13 +131,6 @@ function Leaderboard() {
         )}
 
         <button
-          className="leaderboard-btn primary"
-          onClick={() => navigate(`/quiz/lobby/${sessionId}`)}
-        >
-          回等待室
-        </button>
-
-        <button
           className="leaderboard-btn secondary"
           onClick={() => navigate("/quiz")}
         >

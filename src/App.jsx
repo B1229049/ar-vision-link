@@ -15,6 +15,7 @@ import HostLobby from "./pages/HostLobby";
 import WaitingLobby from "./pages/WaitingLobby";
 import QuizGame from "./pages/QuizGame";
 import Leaderboard from "./pages/Leaderboard";
+import HostConsole from "./pages/HostConsole";
 
 import Navbar from "./components/Navbar";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -125,6 +126,15 @@ function App() {
           element={
             <ProtectedRoute>
               <Leaderboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/quiz/host-console/:sessionId"
+          element={
+            <ProtectedRoute>
+              <HostConsole />
             </ProtectedRoute>
           }
         />

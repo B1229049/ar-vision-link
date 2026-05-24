@@ -60,6 +60,17 @@ const PLAYER_RECORD_SELECT = `
   joined_at
 `;
 
+const PLAYER_ANSWER_SELECT = `
+  answer_id,
+  session_id,
+  question_id,
+  user_id,
+  answer,
+  is_correct,
+  score,
+  answered_at
+`;
+
 function generateRoomCode(length = 6) {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   let code = "";
@@ -661,6 +672,133 @@ app.get("/api/player-records/session/:sessionId", async (req, res) => {
     res.json({
       success: true,
       players: records || [],
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message,
+    });
+  }
+});
+
+app.post("/api/player-answers/submit", async (req, res) => {
+  try {
+    const { session_id, question_id, user_id, answer, score } = req.body;
+
+    if (!session_id || !question_id || !user_id) {
+      return res.status(400).json({
+        success: false,
+        error: "session_id、question_id、user_id 為必填",
+      });
+    }
+
+    const { data: question, error: qError } = await supabase
+      .from("questions")
+      .select("question_id, correct_answer")
+      .eq("question_id", question_id)
+      .single();
+
+    if (qError) {
+      return res.status(500).json({
+        success: false,
+        error: qError.message,
+      });
+    }
+
+    const isCorrect = answer === question.correct_answer;
+    const finalScore = isCorrect ? Number(score) || 0 : 0;
+
+    const { data: savedAnswer, error: answerError } = await supabase
+      .from("player_answers")
+      .upsert(
+        {
+          session_id,
+          question_id,
+          user_id,
+          answer,
+          is_correct: isCorrect,
+          score: finalScore,
+        },
+        {
+          onConflict: "session_id,question_id,user_id",
+        }
+      )
+      .select(PLAYER_ANSWER_SELECT)
+      .single();
+
+    if (answerError) {
+      return res.status(500).json({
+        success: false,
+        error: answerError.message,
+      });
+    }
+
+    const { data: allAnswers } = await supabase
+      .from("player_answers")
+      .select("score")
+      .eq("session_id", session_id)
+      .eq("user_id", user_id);
+
+    const totalScore = (allAnswers || []).reduce(
+      (sum, item) => sum + (Number(item.score) || 0),
+      0
+    );
+
+    await supabase
+      .from("player_records")
+      .update({ score: totalScore })
+      .eq("session_id", session_id)
+      .eq("user_id", user_id);
+
+    res.json({
+      success: true,
+      answer: savedAnswer,
+      total_score: totalScore,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message,
+    });
+  }
+});
+
+app.get("/api/player-answers/session/:sessionId/question/:questionId", async (req, res) => {
+  try {
+    const { sessionId, questionId } = req.params;
+
+    const { data, error } = await supabase
+      .from("player_answers")
+      .select(`
+        answer_id,
+        session_id,
+        question_id,
+        user_id,
+        answer,
+        is_correct,
+        score,
+        answered_at,
+        users (
+          id,
+          name,
+          nickname,
+          avatar_url
+        )
+      `)
+      .eq("session_id", sessionId)
+      .eq("question_id", questionId)
+      .order("score", { ascending: false });
+
+    if (error) {
+      return res.status(500).json({
+        success: false,
+        error: error.message,
+      });
+    }
+
+    res.json({
+      success: true,
+      answers: data || [],
     });
   } catch (err) {
     res.status(500).json({
