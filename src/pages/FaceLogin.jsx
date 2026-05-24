@@ -3,6 +3,66 @@ import { useNavigate } from "react-router-dom";
 import * as faceapi from "@vladmandic/face-api";
 import "../styles/FaceLogin.css";
 
+const MODEL_URL = "https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model";
+
+let backendReadyPromise = null;
+
+async function setupFaceApiBackend() {
+  if (backendReadyPromise) return backendReadyPromise;
+
+  backendReadyPromise = (async () => {
+    const tf = await import("@tensorflow/tfjs");
+    await import("@tensorflow/tfjs-backend-webgl");
+    const wasm = await import("@tensorflow/tfjs-backend-wasm");
+
+    const wasmBasePath = import.meta.env.BASE_URL || "/";
+    wasm.setWasmPaths(wasmBasePath);
+
+    try {
+      await tf.setBackend("webgl");
+      await tf.ready();
+
+      const test = tf.tensor1d([1]);
+      test.dispose();
+
+      console.log("[tf] backend:", tf.getBackend());
+      return;
+    } catch (webglErr) {
+      console.warn("[tf] WebGL 不可用，改用 WASM：", webglErr);
+    }
+
+    try {
+      await tf.setBackend("wasm");
+      await tf.ready();
+
+      const test = tf.tensor1d([1]);
+      test.dispose();
+
+      console.log("[tf] backend:", tf.getBackend());
+      return;
+    } catch (wasmErr) {
+      console.warn("[tf] WASM 不可用，改用 CPU：", wasmErr);
+    }
+
+    await tf.setBackend("cpu");
+    await tf.ready();
+    console.log("[tf] backend:", tf.getBackend());
+  })();
+
+  return backendReadyPromise;
+}
+
+async function loadCommonFaceApiModels() {
+  await setupFaceApiBackend();
+
+  await Promise.all([
+    faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+    faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+    faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
+  ]);
+}
+
+
 function FaceLogin() {
   const videoRef = useRef(null);
   const streamRef = useRef(null);
@@ -44,14 +104,7 @@ function FaceLogin() {
 
   async function loadModels() {
     try {
-      const MODEL_URL =
-        "https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model";
-
-      await Promise.all([
-        faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
-        faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
-        faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
-      ]);
+      await loadCommonFaceApiModels();
 
       setModelsReady(true);
       console.log("face-api 模型載入完成");
