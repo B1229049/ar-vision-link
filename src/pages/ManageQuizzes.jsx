@@ -28,6 +28,26 @@ function ManageQuizzes() {
     loadMyQuizzes(user.id);
   }, [navigate]);
 
+  function normalizeQuestion(q) {
+    let options = q.options || {};
+
+    if (typeof options === "string") {
+      try {
+        options = JSON.parse(options);
+      } catch {
+        options = {};
+      }
+    }
+
+    return {
+      ...q,
+      option_a: q.option_a ?? options.A ?? "",
+      option_b: q.option_b ?? options.B ?? "",
+      option_c: q.option_c ?? options.C ?? "",
+      option_d: q.option_d ?? options.D ?? "",
+    };
+  }
+
   async function loadMyQuizzes(userId) {
     setLoading(true);
 
@@ -71,7 +91,7 @@ function ManageQuizzes() {
       }
 
       setTitle(result.quiz.title || "");
-      setQuestions(result.questions || []);
+      setQuestions((result.questions || []).map(normalizeQuestion));
     } catch (err) {
       console.error(err);
       alert("載入題目時發生錯誤");
@@ -144,6 +164,19 @@ function ManageQuizzes() {
       }
     }
 
+    const formattedQuestions = questions.map((q) => ({
+      question_id: q.question_id,
+      question_text: q.question_text,
+      options: {
+        A: q.option_a,
+        B: q.option_b,
+        C: q.option_c,
+        D: q.option_d,
+      },
+      correct_answer: q.correct_answer || "A",
+      time_limit: Number(q.time_limit) || 20,
+    }));
+
     setSaving(true);
 
     try {
@@ -157,7 +190,7 @@ function ManageQuizzes() {
           body: JSON.stringify({
             host_id: currentUser.id,
             title: title.trim(),
-            questions,
+            questions: formattedQuestions,
           }),
         }
       );

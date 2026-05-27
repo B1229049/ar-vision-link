@@ -1067,10 +1067,12 @@ app.put("/api/quizzes/:quizId", async (req, res) => {
   const newQuestions = questions.map((q) => ({
     quiz_id: quizId,
     question_text: q.question_text,
-    option_a: q.option_a,
-    option_b: q.option_b,
-    option_c: q.option_c,
-    option_d: q.option_d,
+    options: {
+      A: q.option_a,
+      B: q.option_b,
+      C: q.option_c,
+      D: q.option_d,
+    },
     correct_answer: q.correct_answer,
     time_limit: q.time_limit,
   }));
