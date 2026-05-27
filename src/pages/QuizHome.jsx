@@ -124,6 +124,10 @@ function QuizHome() {
             建立測驗
           </button>
 
+          <button className="quiz-btn secondary" onClick={() => navigate("/quiz/manage")}>
+            編輯 Quiz
+          </button>
+
           <button className="quiz-btn secondary" onClick={() => navigate("/quiz/join")}>
             加入測驗
           </button>

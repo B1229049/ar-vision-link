@@ -16,6 +16,7 @@ import WaitingLobby from "./pages/WaitingLobby";
 import QuizGame from "./pages/QuizGame";
 import Leaderboard from "./pages/Leaderboard";
 import HostConsole from "./pages/HostConsole";
+import ManageQuizzes from "./pages/ManageQuizzes";
 
 import Navbar from "./components/Navbar";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -138,6 +139,10 @@ function App() {
             </ProtectedRoute>
           }
         />
+
+        <Route path="/quiz/manage" element={<ManageQuizzes />} />
+
+        
       </Routes>
 
       
