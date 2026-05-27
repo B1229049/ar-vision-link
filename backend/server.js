@@ -1012,6 +1012,48 @@ app.put("/api/game-sessions/:sessionId/finish", async (req, res) => {
   }
 });
 
+app.delete("/api/quizzes/:quizId", async (req, res) => {
+  try {
+    const quizId = Number(req.params.quizId);
+    const { host_id } = req.body;
+
+    if (!quizId || !host_id) {
+      return res.status(400).json({ error: "缺少 quiz_id 或 host_id" });
+    }
+
+    const { data: quiz, error: quizError } = await supabase
+      .from("quizzes")
+      .select("quiz_id, host_id")
+      .eq("quiz_id", quizId)
+      .single();
+
+    if (quizError || !quiz) {
+      return res.status(404).json({ error: "找不到測驗" });
+    }
+
+    if (Number(quiz.host_id) !== Number(host_id)) {
+      return res.status(403).json({ error: "你不能刪除別人的測驗" });
+    }
+
+    await supabase.from("questions").delete().eq("quiz_id", quizId);
+
+    const { error: deleteError } = await supabase
+      .from("quizzes")
+      .delete()
+      .eq("quiz_id", quizId)
+      .eq("host_id", host_id);
+
+    if (deleteError) {
+      return res.status(500).json({ error: deleteError.message });
+    }
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "刪除測驗失敗" });
+  }
+});
+
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
