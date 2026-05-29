@@ -1,16 +1,37 @@
 import express from "express";
 import cors from "cors";
+import http from "http";
+import { Server } from "socket.io";
 import { createClient } from "@supabase/supabase-js";
 
 const app = express();
+const server = http.createServer(app);
 
-app.use(cors());
+const CLIENT_URL = process.env.CLIENT_URL || "*";
+
+app.use(
+  cors({
+    origin: CLIENT_URL === "*" ? "*" : CLIENT_URL,
+  })
+);
+
 app.use(express.json({ limit: "10mb" }));
+
+if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+  throw new Error("Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY");
+}
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
+
+const io = new Server(server, {
+  cors: {
+    origin: CLIENT_URL === "*" ? "*" : CLIENT_URL,
+    methods: ["GET", "POST", "PUT", "DELETE"],
+  },
+});
 
 const USER_SELECT = `
   id,
@@ -98,6 +119,71 @@ async function createUniqueRoomCode() {
   }
 
   throw new Error("無法產生唯一房號，請重試");
+}
+
+async function getSessionFullData(sessionId) {
+  const { data: session, error: sessionError } = await supabase
+    .from("game_sessions")
+    .select(GAME_SESSION_SELECT)
+    .eq("session_id", sessionId)
+    .single();
+
+  if (sessionError) throw new Error(sessionError.message);
+
+  const { data: quiz, error: quizError } = await supabase
+    .from("quizzes")
+    .select(QUIZ_SELECT)
+    .eq("quiz_id", session.quiz_id)
+    .single();
+
+  if (quizError) throw new Error(quizError.message);
+
+  const { data: questions, error: questionsError } = await supabase
+    .from("questions")
+    .select(QUESTION_SELECT)
+    .eq("quiz_id", session.quiz_id)
+    .order("question_id", { ascending: true });
+
+  if (questionsError) throw new Error(questionsError.message);
+
+  return {
+    session,
+    quiz,
+    questions: questions || [],
+  };
+}
+
+async function getLeaderboard(sessionId) {
+  const { data, error } = await supabase
+    .from("player_records")
+    .select(`
+      record_id,
+      session_id,
+      user_id,
+      score,
+      joined_at,
+      users (
+        id,
+        name,
+        nickname,
+        avatar_url
+      )
+    `)
+    .eq("session_id", sessionId)
+    .order("score", { ascending: false });
+
+  if (error) throw new Error(error.message);
+
+  return data || [];
+}
+
+function calculateScore(isCorrect, timeLeft = 0) {
+  if (!isCorrect) return 0;
+
+  const baseScore = 1000;
+  const bonus = Math.max(Number(timeLeft) || 0, 0) * 10;
+
+  return baseScore + bonus;
 }
 
 app.get("/", (req, res) => {
@@ -227,6 +313,30 @@ app.put("/api/users/:id", async (req, res) => {
   }
 });
 
+app.delete("/api/users/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const { data, error } = await supabase
+      .from("users")
+      .update({
+        is_active: false,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", id)
+      .select(USER_SELECT)
+      .single();
+
+    if (error) {
+      return res.status(500).json({ success: false, error: error.message });
+    }
+
+    res.json({ success: true, user: data });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 /* =========================
    Quiz API
 ========================= */
@@ -329,101 +439,125 @@ app.post("/api/quizzes/create", async (req, res) => {
 
 app.get("/api/quizzes/host/:hostId", async (req, res) => {
   try {
-    const { hostId } = req.params;
+    const hostId = Number(req.params.hostId);
 
     const { data, error } = await supabase
       .from("quizzes")
-      .select(QUIZ_SELECT)
+      .select("*")
       .eq("host_id", hostId)
-      .order("created_at", { ascending: false });
+      .order("quiz_id", { ascending: false });
 
-    if (error) {
-      return res.status(500).json({
-        success: false,
-        error: error.message,
-      });
-    }
+    if (error) return res.status(500).json({ error: error.message });
 
-    res.json({
-      success: true,
-      quizzes: data || [],
-    });
+    res.json({ quizzes: data || [] });
   } catch (err) {
-    res.status(500).json({
-      success: false,
-      error: err.message,
-    });
+    res.status(500).json({ error: err.message });
   }
 });
 
 app.get("/api/quizzes/:quizId", async (req, res) => {
   try {
-    const { quizId } = req.params;
+    const quizId = Number(req.params.quizId);
 
     const { data: quiz, error: quizError } = await supabase
       .from("quizzes")
-      .select(QUIZ_SELECT)
+      .select("*")
       .eq("quiz_id", quizId)
       .single();
 
-    if (quizError) {
-      return res.status(404).json({
-        success: false,
-        error: quizError.message,
-      });
+    if (quizError || !quiz) {
+      return res.status(404).json({ error: "找不到測驗" });
     }
 
-    const { data: questions, error: questionsError } = await supabase
+    const { data: questions, error: questionError } = await supabase
       .from("questions")
-      .select(QUESTION_SELECT)
+      .select("*")
       .eq("quiz_id", quizId)
       .order("question_id", { ascending: true });
 
-    if (questionsError) {
-      return res.status(500).json({
-        success: false,
-        error: questionsError.message,
-      });
+    if (questionError) {
+      return res.status(500).json({ error: questionError.message });
     }
 
-    res.json({
-      success: true,
-      quiz,
-      questions: questions || [],
-    });
+    res.json({ quiz, questions: questions || [] });
   } catch (err) {
-    res.status(500).json({
-      success: false,
-      error: err.message,
-    });
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.put("/api/quizzes/:quizId", async (req, res) => {
+  try {
+    const quizId = Number(req.params.quizId);
+    const { host_id, title, questions } = req.body;
+
+    const { data: quiz } = await supabase
+      .from("quizzes")
+      .select("quiz_id, host_id")
+      .eq("quiz_id", quizId)
+      .single();
+
+    if (!quiz) return res.status(404).json({ error: "找不到測驗" });
+
+    if (Number(quiz.host_id) !== Number(host_id)) {
+      return res.status(403).json({ error: "你不能編輯別人的測驗" });
+    }
+
+    await supabase.from("quizzes").update({ title }).eq("quiz_id", quizId);
+
+    await supabase.from("questions").delete().eq("quiz_id", quizId);
+
+    const newQuestions = questions.map((q) => ({
+      quiz_id: quizId,
+      question_text: q.question_text,
+      options: {
+        A: q.option_a,
+        B: q.option_b,
+        C: q.option_c,
+        D: q.option_d,
+      },
+      correct_answer: q.correct_answer,
+      time_limit: q.time_limit,
+    }));
+
+    const { error } = await supabase.from("questions").insert(newQuestions);
+
+    if (error) return res.status(500).json({ error: error.message });
+
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 
 app.delete("/api/quizzes/:quizId", async (req, res) => {
   try {
-    const { quizId } = req.params;
+    const quizId = Number(req.params.quizId);
+    const { host_id } = req.body;
+
+    const { data: quiz } = await supabase
+      .from("quizzes")
+      .select("quiz_id, host_id")
+      .eq("quiz_id", quizId)
+      .single();
+
+    if (!quiz) return res.status(404).json({ error: "找不到測驗" });
+
+    if (Number(quiz.host_id) !== Number(host_id)) {
+      return res.status(403).json({ error: "你不能刪除別人的測驗" });
+    }
+
+    await supabase.from("questions").delete().eq("quiz_id", quizId);
 
     const { error } = await supabase
       .from("quizzes")
       .delete()
       .eq("quiz_id", quizId);
 
-    if (error) {
-      return res.status(500).json({
-        success: false,
-        error: error.message,
-      });
-    }
+    if (error) return res.status(500).json({ error: error.message });
 
-    res.json({
-      success: true,
-      message: "Quiz deleted",
-    });
+    res.json({ success: true });
   } catch (err) {
-    res.status(500).json({
-      success: false,
-      error: err.message,
-    });
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -466,15 +600,9 @@ app.post("/api/game-sessions/create", async (req, res) => {
       });
     }
 
-    res.json({
-      success: true,
-      session,
-    });
+    res.json({ success: true, session });
   } catch (err) {
-    res.status(500).json({
-      success: false,
-      error: err.message,
-    });
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 
@@ -490,10 +618,7 @@ app.get("/api/game-sessions/join/:roomCode", async (req, res) => {
       .maybeSingle();
 
     if (error) {
-      return res.status(500).json({
-        success: false,
-        error: error.message,
-      });
+      return res.status(500).json({ success: false, error: error.message });
     }
 
     if (!session) {
@@ -503,77 +628,109 @@ app.get("/api/game-sessions/join/:roomCode", async (req, res) => {
       });
     }
 
-    res.json({
-      success: true,
-      session,
-    });
+    res.json({ success: true, session });
   } catch (err) {
-    res.status(500).json({
-      success: false,
-      error: err.message,
-    });
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 
 app.get("/api/game-sessions/:sessionId", async (req, res) => {
   try {
-    const { sessionId } = req.params;
-
-    const { data: session, error: sessionError } = await supabase
-      .from("game_sessions")
-      .select(GAME_SESSION_SELECT)
-      .eq("session_id", sessionId)
-      .single();
-
-    if (sessionError) {
-      return res.status(404).json({
-        success: false,
-        error: sessionError.message,
-      });
-    }
-
-    const { data: quiz, error: quizError } = await supabase
-      .from("quizzes")
-      .select(QUIZ_SELECT)
-      .eq("quiz_id", session.quiz_id)
-      .single();
-
-    if (quizError) {
-      return res.status(500).json({
-        success: false,
-        error: quizError.message,
-      });
-    }
-
-    const { data: questions, error: questionsError } = await supabase
-      .from("questions")
-      .select(QUESTION_SELECT)
-      .eq("quiz_id", session.quiz_id)
-      .order("question_id", { ascending: true });
-
-    if (questionsError) {
-      return res.status(500).json({
-        success: false,
-        error: questionsError.message,
-      });
-    }
-
-    res.json({
-      success: true,
-      session,
-      quiz,
-      questions: questions || [],
-    });
+    const data = await getSessionFullData(Number(req.params.sessionId));
+    res.json({ success: true, ...data });
   } catch (err) {
-    res.status(500).json({
-      success: false,
-      error: err.message,
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.put("/api/game-sessions/:sessionId/start", async (req, res) => {
+  try {
+    const sessionId = Number(req.params.sessionId);
+
+    const { data: session, error } = await supabase
+      .from("game_sessions")
+      .update({
+        started_at: new Date().toISOString(),
+        current_question: 0,
+        game_finished: false,
+      })
+      .eq("session_id", sessionId)
+      .select(GAME_SESSION_SELECT)
+      .single();
+
+    if (error) {
+      return res.status(500).json({ success: false, error: error.message });
+    }
+
+    io.to(`session:${sessionId}`).emit("game-started", { session });
+
+    res.json({ success: true, session });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.put("/api/game-sessions/:sessionId/next", async (req, res) => {
+  try {
+    const sessionId = Number(req.params.sessionId);
+    const { current_question } = req.body;
+
+    const nextQuestion = Number(current_question) + 1;
+
+    const { data: session, error } = await supabase
+      .from("game_sessions")
+      .update({
+        current_question: nextQuestion,
+      })
+      .eq("session_id", sessionId)
+      .select(GAME_SESSION_SELECT)
+      .single();
+
+    if (error) {
+      return res.status(500).json({ success: false, error: error.message });
+    }
+
+    io.to(`session:${sessionId}`).emit("question-changed", { session });
+
+    res.json({ success: true, session });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.put("/api/game-sessions/:sessionId/finish", async (req, res) => {
+  try {
+    const sessionId = Number(req.params.sessionId);
+
+    const { data: session, error } = await supabase
+      .from("game_sessions")
+      .update({
+        game_finished: true,
+        ended_at: new Date().toISOString(),
+      })
+      .eq("session_id", sessionId)
+      .select(GAME_SESSION_SELECT)
+      .single();
+
+    if (error) {
+      return res.status(500).json({ success: false, error: error.message });
+    }
+
+    const leaderboard = await getLeaderboard(sessionId);
+
+    io.to(`session:${sessionId}`).emit("game-finished", {
+      session,
+      leaderboard,
     });
+
+    res.json({ success: true, session, leaderboard });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 
 /* =========================
-   Player Records API
+   Player API
 ========================= */
 
 app.post("/api/player-records/join", async (req, res) => {
@@ -622,21 +779,14 @@ app.post("/api/player-records/join", async (req, res) => {
       .single();
 
     if (error) {
-      return res.status(500).json({
-        success: false,
-        error: error.message,
-      });
+      return res.status(500).json({ success: false, error: error.message });
     }
 
-    res.json({
-      success: true,
-      record,
-    });
+    io.to(`session:${session_id}`).emit("player-joined", { record });
+
+    res.json({ success: true, record });
   } catch (err) {
-    res.status(500).json({
-      success: false,
-      error: err.message,
-    });
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 
@@ -663,32 +813,23 @@ app.get("/api/player-records/session/:sessionId", async (req, res) => {
       .order("joined_at", { ascending: true });
 
     if (error) {
-      return res.status(500).json({
-        success: false,
-        error: error.message,
-      });
+      return res.status(500).json({ success: false, error: error.message });
     }
 
-    res.json({
-      success: true,
-      players: records || [],
-    });
+    res.json({ success: true, players: records || [] });
   } catch (err) {
-    res.status(500).json({
-      success: false,
-      error: err.message,
-    });
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 
 app.post("/api/player-answers/submit", async (req, res) => {
   try {
-    const { session_id, question_id, user_id, answer, score } = req.body;
+    const { session_id, question_id, user_id, answer, time_left } = req.body;
 
-    if (!session_id || !question_id || !user_id) {
+    if (!session_id || !question_id || !user_id || !answer) {
       return res.status(400).json({
         success: false,
-        error: "session_id、question_id、user_id 為必填",
+        error: "session_id、question_id、user_id、answer 為必填",
       });
     }
 
@@ -698,15 +839,15 @@ app.post("/api/player-answers/submit", async (req, res) => {
       .eq("question_id", question_id)
       .single();
 
-    if (qError) {
+    if (qError || !question) {
       return res.status(500).json({
         success: false,
-        error: qError.message,
+        error: qError?.message || "找不到題目",
       });
     }
 
     const isCorrect = answer === question.correct_answer;
-    const finalScore = isCorrect ? Number(score) || 0 : 0;
+    const finalScore = calculateScore(isCorrect, time_left);
 
     const { data: savedAnswer, error: answerError } = await supabase
       .from("player_answers")
@@ -733,33 +874,71 @@ app.post("/api/player-answers/submit", async (req, res) => {
       });
     }
 
-    const { data: allAnswers } = await supabase
+    const { data: allAnswers, error: allAnswersError } = await supabase
       .from("player_answers")
       .select("score")
       .eq("session_id", session_id)
       .eq("user_id", user_id);
+
+    if (allAnswersError) {
+      return res.status(500).json({
+        success: false,
+        error: allAnswersError.message,
+      });
+    }
 
     const totalScore = (allAnswers || []).reduce(
       (sum, item) => sum + (Number(item.score) || 0),
       0
     );
 
-    await supabase
+    const { data: record, error: recordError } = await supabase
       .from("player_records")
       .update({ score: totalScore })
       .eq("session_id", session_id)
-      .eq("user_id", user_id);
+      .eq("user_id", user_id)
+      .select(PLAYER_RECORD_SELECT)
+      .single();
+
+    if (recordError) {
+      return res.status(500).json({
+        success: false,
+        error: recordError.message,
+      });
+    }
+
+    const leaderboard = await getLeaderboard(Number(session_id));
+
+    io.to(`session:${session_id}`).emit("answer-submitted", {
+      session_id,
+      question_id,
+      user_id,
+      answer: savedAnswer,
+      record,
+    });
+
+    io.to(`session:${session_id}`).emit("player-result-updated", {
+      user_id,
+      is_correct: isCorrect,
+      score_earned: finalScore,
+      total_score: totalScore,
+    });
+
+    io.to(`session:${session_id}`).emit("leaderboard-updated", {
+      leaderboard,
+    });
 
     res.json({
       success: true,
       answer: savedAnswer,
+      record,
+      is_correct: isCorrect,
+      score_earned: finalScore,
       total_score: totalScore,
+      leaderboard,
     });
   } catch (err) {
-    res.status(500).json({
-      success: false,
-      error: err.message,
-    });
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 
@@ -790,47 +969,10 @@ app.get("/api/player-answers/session/:sessionId/question/:questionId", async (re
       .order("score", { ascending: false });
 
     if (error) {
-      return res.status(500).json({
-        success: false,
-        error: error.message,
-      });
-    }
-
-    res.json({
-      success: true,
-      answers: data || [],
-    });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      error: err.message,
-    });
-  }
-});
-
-/* =========================
-   Delete User
-========================= */
-
-app.delete("/api/users/:id", async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const { data, error } = await supabase
-      .from("users")
-      .update({
-        is_active: false,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", id)
-      .select(USER_SELECT)
-      .single();
-
-    if (error) {
       return res.status(500).json({ success: false, error: error.message });
     }
 
-    res.json({ success: true, user: data });
+    res.json({ success: true, answers: data || [] });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
@@ -857,279 +999,140 @@ app.put("/api/player-records/:recordId/score", async (req, res) => {
       });
     }
 
-    res.json({
-      success: true,
-      record: data,
+    const leaderboard = await getLeaderboard(data.session_id);
+
+    io.to(`session:${data.session_id}`).emit("leaderboard-updated", {
+      leaderboard,
     });
+
+    res.json({ success: true, record: data, leaderboard });
   } catch (err) {
-    res.status(500).json({
-      success: false,
-      error: err.message,
-    });
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 
 app.get("/api/leaderboard/:sessionId", async (req, res) => {
   try {
-    const { sessionId } = req.params;
-
-    const { data, error } = await supabase
-      .from("player_records")
-      .select(`
-        record_id,
-        session_id,
-        user_id,
-        score,
-        joined_at,
-        users (
-          id,
-          name,
-          nickname,
-          avatar_url
-        )
-      `)
-      .eq("session_id", sessionId)
-      .order("score", { ascending: false });
-
-    if (error) {
-      return res.status(500).json({
-        success: false,
-        error: error.message,
-      });
-    }
+    const leaderboard = await getLeaderboard(Number(req.params.sessionId));
 
     res.json({
       success: true,
-      leaderboard: data || [],
+      leaderboard,
     });
   } catch (err) {
-    res.status(500).json({
-      success: false,
-      error: err.message,
-    });
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 
-app.put("/api/game-sessions/:sessionId/start", async (req, res) => {
-  try {
-    const { sessionId } = req.params;
+/* =========================
+   Socket.io Events
+========================= */
 
-    const { data: session, error } = await supabase
-      .from("game_sessions")
-      .update({
+io.on("connection", (socket) => {
+  console.log("Socket connected:", socket.id);
+
+  socket.on("join-session", async ({ sessionId, userId, role }) => {
+    try {
+      if (!sessionId) return;
+
+      const room = `session:${sessionId}`;
+      socket.join(room);
+
+      socket.data.sessionId = Number(sessionId);
+      socket.data.userId = userId ? Number(userId) : null;
+      socket.data.role = role || "player";
+
+      const fullData = await getSessionFullData(Number(sessionId));
+      const leaderboard = await getLeaderboard(Number(sessionId));
+
+      socket.emit("session-sync", {
+        ...fullData,
+        leaderboard,
+      });
+
+      socket.to(room).emit("user-connected", {
+        userId,
+        role,
+      });
+    } catch (err) {
+      socket.emit("socket-error", { error: err.message });
+    }
+  });
+
+  socket.on("start-game", async ({ sessionId }) => {
+    try {
+      const { data: session, error } = await supabase
+        .from("game_sessions")
+        .update({
           started_at: new Date().toISOString(),
           current_question: 0,
           game_finished: false,
         })
-      .eq("session_id", sessionId)
-      .select(GAME_SESSION_SELECT)
-      .single();
+        .eq("session_id", Number(sessionId))
+        .select(GAME_SESSION_SELECT)
+        .single();
 
-    if (error) {
-      return res.status(500).json({
-        success: false,
-        error: error.message,
-      });
+      if (error) throw new Error(error.message);
+
+      io.to(`session:${sessionId}`).emit("game-started", { session });
+    } catch (err) {
+      socket.emit("socket-error", { error: err.message });
     }
+  });
 
-    res.json({
-      success: true,
-      session,
-    });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      error: err.message,
-    });
-  }
-});
+  socket.on("next-question", async ({ sessionId, currentQuestion }) => {
+    try {
+      const nextQuestion = Number(currentQuestion) + 1;
 
-app.put("/api/game-sessions/:sessionId/next", async (req, res) => {
-  try {
-    const { sessionId } = req.params;
-    const { current_question } = req.body;
+      const { data: session, error } = await supabase
+        .from("game_sessions")
+        .update({
+          current_question: nextQuestion,
+        })
+        .eq("session_id", Number(sessionId))
+        .select(GAME_SESSION_SELECT)
+        .single();
 
-    const nextQuestion = Number(current_question) + 1;
+      if (error) throw new Error(error.message);
 
-    const { data: session, error } = await supabase
-      .from("game_sessions")
-      .update({
-        current_question: nextQuestion,
-      })
-      .eq("session_id", sessionId)
-      .select(GAME_SESSION_SELECT)
-      .single();
-
-    if (error) {
-      return res.status(500).json({
-        success: false,
-        error: error.message,
-      });
+      io.to(`session:${sessionId}`).emit("question-changed", { session });
+    } catch (err) {
+      socket.emit("socket-error", { error: err.message });
     }
+  });
 
-    res.json({
-      success: true,
-      session,
-    });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      error: err.message,
-    });
-  }
-});
+  socket.on("finish-game", async ({ sessionId }) => {
+    try {
+      const { data: session, error } = await supabase
+        .from("game_sessions")
+        .update({
+          game_finished: true,
+          ended_at: new Date().toISOString(),
+        })
+        .eq("session_id", Number(sessionId))
+        .select(GAME_SESSION_SELECT)
+        .single();
 
-app.put("/api/game-sessions/:sessionId/finish", async (req, res) => {
-  try {
-    const { sessionId } = req.params;
+      if (error) throw new Error(error.message);
 
-    const { data: session, error } = await supabase
-      .from("game_sessions")
-      .update({
-        game_finished: true,
-        ended_at: new Date().toISOString(),
-      })
-      .eq("session_id", sessionId)
-      .select(GAME_SESSION_SELECT)
-      .single();
+      const leaderboard = await getLeaderboard(Number(sessionId));
 
-    if (error) {
-      return res.status(500).json({
-        success: false,
-        error: error.message,
+      io.to(`session:${sessionId}`).emit("game-finished", {
+        session,
+        leaderboard,
       });
+    } catch (err) {
+      socket.emit("socket-error", { error: err.message });
     }
+  });
 
-    res.json({
-      success: true,
-      session,
-    });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      error: err.message,
-    });
-  }
+  socket.on("disconnect", () => {
+    console.log("Socket disconnected:", socket.id);
+  });
 });
-
-app.get("/api/quizzes/:quizId", async (req, res) => {
-  const quizId = Number(req.params.quizId);
-
-  const { data: quiz, error: quizError } = await supabase
-    .from("quizzes")
-    .select("*")
-    .eq("quiz_id", quizId)
-    .single();
-
-  if (quizError || !quiz) {
-    return res.status(404).json({ error: "找不到測驗" });
-  }
-
-  const { data: questions, error: questionError } = await supabase
-    .from("questions")
-    .select("*")
-    .eq("quiz_id", quizId)
-    .order("question_id", { ascending: true });
-
-  if (questionError) {
-    return res.status(500).json({ error: questionError.message });
-  }
-
-  res.json({ quiz, questions });
-});
-
-app.put("/api/quizzes/:quizId", async (req, res) => {
-  const quizId = Number(req.params.quizId);
-  const { host_id, title, questions } = req.body;
-
-  const { data: quiz } = await supabase
-    .from("quizzes")
-    .select("quiz_id, host_id")
-    .eq("quiz_id", quizId)
-    .single();
-
-  if (!quiz) return res.status(404).json({ error: "找不到測驗" });
-
-  if (Number(quiz.host_id) !== Number(host_id)) {
-    return res.status(403).json({ error: "你不能編輯別人的測驗" });
-  }
-
-  await supabase
-    .from("quizzes")
-    .update({ title })
-    .eq("quiz_id", quizId);
-
-  await supabase
-    .from("questions")
-    .delete()
-    .eq("quiz_id", quizId);
-
-  const newQuestions = questions.map((q) => ({
-    quiz_id: quizId,
-    question_text: q.question_text,
-    options: {
-      A: q.option_a,
-      B: q.option_b,
-      C: q.option_c,
-      D: q.option_d,
-    },
-    correct_answer: q.correct_answer,
-    time_limit: q.time_limit,
-  }));
-
-  const { error } = await supabase.from("questions").insert(newQuestions);
-
-  if (error) return res.status(500).json({ error: error.message });
-
-  res.json({ success: true });
-});
-
-app.delete("/api/quizzes/:quizId", async (req, res) => {
-  const quizId = Number(req.params.quizId);
-  const { host_id } = req.body;
-
-  const { data: quiz } = await supabase
-    .from("quizzes")
-    .select("quiz_id, host_id")
-    .eq("quiz_id", quizId)
-    .single();
-
-  if (!quiz) return res.status(404).json({ error: "找不到測驗" });
-
-  if (Number(quiz.host_id) !== Number(host_id)) {
-    return res.status(403).json({ error: "你不能刪除別人的測驗" });
-  }
-
-  await supabase.from("questions").delete().eq("quiz_id", quizId);
-
-  const { error } = await supabase
-    .from("quizzes")
-    .delete()
-    .eq("quiz_id", quizId);
-
-  if (error) return res.status(500).json({ error: error.message });
-
-  res.json({ success: true });
-});
-
-app.get("/api/quizzes/host/:hostId", async (req, res) => {
-  const hostId = Number(req.params.hostId);
-
-  const { data, error } = await supabase
-    .from("quizzes")
-    .select("*")
-    .eq("host_id", hostId)
-    .order("quiz_id", { ascending: false });
-
-  if (error) return res.status(500).json({ error: error.message });
-
-  res.json({ quizzes: data });
-});
-
-
 
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

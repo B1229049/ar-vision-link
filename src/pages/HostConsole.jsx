@@ -1,12 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { io } from "socket.io-client";
 import "../styles/HostConsole.css";
 
 function HostConsole() {
   const navigate = useNavigate();
   const { sessionId } = useParams();
 
-  const BACKEND_URL = "https://ar-vision-link.onrender.com";
+  const BACKEND_URL =
+    import.meta.env.VITE_API_URL || "https://ar-vision-link.onrender.com";
+
+  const socketRef = useRef(null);
 
   const [currentUser, setCurrentUser] = useState(null);
   const [session, setSession] = useState(null);
@@ -14,26 +18,9 @@ function HostConsole() {
   const [questions, setQuestions] = useState([]);
   const [players, setPlayers] = useState([]);
   const [answers, setAnswers] = useState([]);
+  const [playerResults, setPlayerResults] = useState({});
   const [loading, setLoading] = useState(true);
   const [changing, setChanging] = useState(false);
-
-  const timerRef = useRef(null);
-
-  useEffect(() => {
-    const savedUser = localStorage.getItem("currentUser");
-
-    if (!savedUser) {
-      navigate("/face-login");
-      return;
-    }
-
-    setCurrentUser(JSON.parse(savedUser));
-    loadConsole();
-
-    timerRef.current = setInterval(loadConsole, 2500);
-
-    return () => clearInterval(timerRef.current);
-  }, [sessionId, navigate]);
 
   const currentIndex = session?.current_question || 0;
 
@@ -41,7 +28,9 @@ function HostConsole() {
     return questions[currentIndex] || null;
   }, [questions, currentIndex]);
 
-  const answeredUserIds = new Set(answers.map((a) => a.user_id));
+  const answeredUserIds = useMemo(() => {
+    return new Set(answers.map((a) => Number(a.user_id)));
+  }, [answers]);
 
   const answerStats = ["A", "B", "C", "D"].map((key) => {
     const count = answers.filter((a) => a.answer === key).length;
@@ -55,61 +44,137 @@ function HostConsole() {
     };
   });
 
-  async function loadConsole() {
-    try {
-      const sessionRes = await fetch(
-        `${BACKEND_URL}/api/game-sessions/${sessionId}`
-      );
-      const sessionResult = await sessionRes.json();
+  useEffect(() => {
+    const savedUser = localStorage.getItem("currentUser");
 
-      if (!sessionRes.ok || sessionResult.error) {
-        alert("載入中控台失敗：" + (sessionResult.error || "未知錯誤"));
-        navigate("/quiz");
-        return;
-      }
+    if (!savedUser) {
+      navigate("/face-login");
+      return;
+    }
 
-      setSession(sessionResult.session);
-      setQuiz(sessionResult.quiz);
-      setQuestions(sessionResult.questions || []);
+    const user = JSON.parse(savedUser);
+    setCurrentUser(user);
 
-      const playerRes = await fetch(
-        `${BACKEND_URL}/api/player-records/session/${sessionId}`
-      );
-      const playerResult = await playerRes.json();
+    const socket = io(BACKEND_URL, {
+      transports: ["websocket"],
+    });
 
-      if (playerRes.ok && !playerResult.error) {
-        setPlayers(playerResult.players || []);
-      }
+    socketRef.current = socket;
 
-      const q =
-        sessionResult.questions?.[
-          sessionResult.session?.current_question || 0
-        ];
+    socket.emit("join-session", {
+      sessionId: Number(sessionId),
+      userId: user.id,
+      role: "host",
+    });
 
+    socket.on("session-sync", async (data) => {
+      setSession(data.session);
+      setQuiz(data.quiz);
+      setQuestions(data.questions || []);
+      setPlayers(data.leaderboard || []);
+      setLoading(false);
+
+      const q = data.questions?.[data.session?.current_question || 0];
       if (q) {
-        const ansRes = await fetch(
-          `${BACKEND_URL}/api/player-answers/session/${sessionId}/question/${q.question_id}`
+        await loadQuestionAnswers(q.question_id);
+      }
+    });
+
+    socket.on("player-joined", async () => {
+      await loadPlayers();
+    });
+
+    socket.on("game-started", ({ session }) => {
+      setSession(session);
+      setAnswers([]);
+      setPlayerResults({});
+      setChanging(false);
+    });
+
+    socket.on("question-changed", async ({ session }) => {
+      setSession(session);
+      setAnswers([]);
+      setPlayerResults({});
+      setChanging(false);
+
+      const nextQuestion = questions[session.current_question];
+      if (nextQuestion) {
+        await loadQuestionAnswers(nextQuestion.question_id);
+      }
+    });
+
+    socket.on("answer-submitted", (data) => {
+      setAnswers((prev) => {
+        const filtered = prev.filter(
+          (item) =>
+            !(
+              Number(item.user_id) === Number(data.user_id) &&
+              Number(item.question_id) === Number(data.question_id)
+            )
         );
 
-        const ansResult = await ansRes.json();
+        return [...filtered, data.answer];
+      });
+    });
 
-        if (ansRes.ok && !ansResult.error) {
-          setAnswers(ansResult.answers || []);
-        }
-      }
+    socket.on("player-result-updated", (data) => {
+      setPlayerResults((prev) => ({
+        ...prev,
+        [Number(data.user_id)]: data,
+      }));
+    });
 
-      if (sessionResult.session?.game_finished) {
-        navigate(`/quiz/leaderboard/${sessionId}`);
-        return;
+    socket.on("leaderboard-updated", ({ leaderboard }) => {
+      setPlayers(leaderboard || []);
+    });
+
+    socket.on("game-finished", ({ session, leaderboard }) => {
+      setSession(session);
+      setPlayers(leaderboard || []);
+      setChanging(false);
+      navigate(`/quiz/leaderboard/${sessionId}`);
+    });
+
+    socket.on("socket-error", (data) => {
+      alert(data.error || "Socket 發生錯誤");
+      setChanging(false);
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [sessionId, navigate, BACKEND_URL]);
+
+  async function loadPlayers() {
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/leaderboard/${sessionId}`);
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        setPlayers(result.leaderboard || []);
       }
     } catch (err) {
       console.error(err);
     }
-
-    setLoading(false);
   }
 
-  async function nextQuestion() {
+  async function loadQuestionAnswers(questionId) {
+    try {
+      const response = await fetch(
+        `${BACKEND_URL}/api/player-answers/session/${sessionId}/question/${questionId}`
+      );
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        setAnswers(result.answers || []);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  function nextQuestion() {
     if (!session || changing) return;
 
     setChanging(true);
@@ -117,66 +182,32 @@ function HostConsole() {
     const nextIndex = currentIndex + 1;
 
     if (nextIndex >= questions.length) {
-      await finishGame();
+      finishGame();
       return;
     }
 
-    try {
-      const response = await fetch(
-        `${BACKEND_URL}/api/game-sessions/${session.session_id}/next`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            current_question: currentIndex,
-          }),
-        }
-      );
-
-      const result = await response.json();
-
-      if (!response.ok || result.error) {
-        alert("切換下一題失敗：" + (result.error || "未知錯誤"));
-        setChanging(false);
-        return;
-      }
-
-      setAnswers([]);
-      await loadConsole();
-    } catch (err) {
-      console.error(err);
-      alert("切換下一題時發生錯誤");
-    }
-
-    setChanging(false);
+    socketRef.current?.emit("next-question", {
+      sessionId: Number(session.session_id),
+      currentQuestion: currentIndex,
+    });
   }
 
-  async function finishGame() {
-    try {
-      const response = await fetch(
-        `${BACKEND_URL}/api/game-sessions/${session.session_id}/finish`,
-        {
-          method: "PUT",
-        }
-      );
+  function finishGame() {
+    if (!session || changing) return;
 
-      const result = await response.json();
+    setChanging(true);
 
-      if (!response.ok || result.error) {
-        alert("結束遊戲失敗：" + (result.error || "未知錯誤"));
-        setChanging(false);
-        return;
-      }
+    socketRef.current?.emit("finish-game", {
+      sessionId: Number(session.session_id),
+    });
+  }
 
-      navigate(`/quiz/leaderboard/${session.session_id}`);
-    } catch (err) {
-      console.error(err);
-      alert("結束遊戲時發生錯誤");
-    }
+  function getPlayerAnswer(userId) {
+    return answers.find((a) => Number(a.user_id) === Number(userId));
+  }
 
-    setChanging(false);
+  function getPlayerResult(userId) {
+    return playerResults[Number(userId)];
   }
 
   if (loading) {
@@ -195,6 +226,7 @@ function HostConsole() {
         <div className="host-console-card">
           <h2>沒有權限</h2>
           <p>只有主持人可以進入中控台。</p>
+
           <button
             className="console-btn secondary"
             onClick={() => navigate("/quiz")}
@@ -294,7 +326,8 @@ function HostConsole() {
             <div className="answer-list">
               {players.map((record) => {
                 const user = record.users;
-                const ans = answers.find((a) => a.user_id === record.user_id);
+                const ans = getPlayerAnswer(record.user_id);
+                const result = getPlayerResult(record.user_id);
 
                 return (
                   <div className="answer-item" key={record.record_id}>
@@ -312,7 +345,7 @@ function HostConsole() {
                     </div>
 
                     <div className="answer-status">
-                      {answeredUserIds.has(record.user_id) ? (
+                      {answeredUserIds.has(Number(record.user_id)) ? (
                         ans?.is_correct ? (
                           <span className="correct-text">
                             答對 +{ans.score}
@@ -320,8 +353,67 @@ function HostConsole() {
                         ) : (
                           <span className="wrong-text">答錯 +0</span>
                         )
+                      ) : result ? (
+                        result.is_correct ? (
+                          <span className="correct-text">
+                            答對 +{result.score_earned}
+                          </span>
+                        ) : (
+                          <span className="wrong-text">答錯 +0</span>
+                        )
                       ) : (
                         <span className="wait-text">未作答</span>
+                      )}
+                    </div>
+
+                    <div className="answer-status">
+                      <strong>{record.score || 0} 分</strong>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        <div className="ar-host-section">
+          <h3>AR 玩家狀態預覽</h3>
+
+          {players.length === 0 ? (
+            <p className="console-hint">尚無玩家可顯示。</p>
+          ) : (
+            <div className="ar-player-grid">
+              {players.map((record) => {
+                const user = record.users;
+                const result = getPlayerResult(record.user_id);
+                const ans = getPlayerAnswer(record.user_id);
+
+                return (
+                  <div className="ar-player-card" key={record.record_id}>
+                    <div className="ar-floating-tag">
+                      <strong>{user?.nickname || user?.name || "Player"}</strong>
+                      <span>Score: {record.score || 0}</span>
+
+                      {result ? (
+                        <em
+                          className={
+                            result.is_correct
+                              ? "correct-text"
+                              : "wrong-text"
+                          }
+                        >
+                          {result.is_correct ? "答對 ✅" : "答錯 ❌"}
+                        </em>
+                      ) : ans ? (
+                        <em
+                          className={
+                            ans.is_correct ? "correct-text" : "wrong-text"
+                          }
+                        >
+                          {ans.is_correct ? "答對 ✅" : "答錯 ❌"}
+                        </em>
+                      ) : (
+                        <em className="wait-text">等待作答</em>
                       )}
                     </div>
                   </div>

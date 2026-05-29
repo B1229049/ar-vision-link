@@ -1,43 +1,25 @@
 .quiz-game-page {
   min-height: 100vh;
   width: 100%;
-
-  background: linear-gradient(
-    135deg,
-    #0f172a 0%,
-    #111827 40%,
-    #1e293b 100%
-  );
-
+  background: linear-gradient(135deg, #0f172a 0%, #111827 40%, #1e293b 100%);
   display: flex;
   justify-content: center;
   align-items: center;
-
   padding: 88px 24px 24px;
-
   box-sizing: border-box;
 }
 
 .quiz-game-card {
   width: 100%;
   max-width: 820px;
-
   background: rgba(255, 255, 255, 0.08);
-
   border: 1px solid rgba(255, 255, 255, 0.12);
-
   backdrop-filter: blur(18px);
-
   border-radius: 28px;
-
   padding: 36px;
-
   box-sizing: border-box;
-
   color: white;
-
   text-align: center;
-
   box-shadow:
     0 12px 32px rgba(0, 0, 0, 0.35),
     0 0 40px rgba(59, 130, 246, 0.12);
@@ -45,33 +27,21 @@
 
 .quiz-game-card h2 {
   margin: 28px 0 20px;
-
   font-size: 32px;
   font-weight: 700;
-}
-
-.game-subtitle {
-  color: rgba(255, 255, 255, 0.72);
-
-  margin-bottom: 24px;
 }
 
 .game-topbar {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-
   gap: 14px;
 }
 
 .game-topbar div {
   padding: 14px;
-
   border-radius: 16px;
-
   background: rgba(255, 255, 255, 0.06);
-
   border: 1px solid rgba(255, 255, 255, 0.08);
-
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -79,168 +49,191 @@
 
 .game-topbar span {
   color: rgba(255, 255, 255, 0.62);
-
   font-size: 13px;
 }
 
 .game-topbar strong {
   color: white;
-
   font-size: 20px;
+}
+
+.local-ar-preview {
+  margin-top: 22px;
+  height: 220px;
+  border-radius: 22px;
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.95));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.local-ar-preview::before {
+  content: "Local AR Camera Preview";
+  color: rgba(255, 255, 255, 0.2);
+  font-size: 14px;
+  letter-spacing: 1px;
+}
+
+.ar-status-box {
+  position: absolute;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 160px;
+  padding: 12px 16px;
+  border-radius: 16px;
+  background: rgba(17, 24, 39, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(12px);
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.35),
+    0 0 20px rgba(59, 130, 246, 0.12);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  z-index: 2;
+}
+
+.ar-status-box strong {
+  font-size: 16px;
+  font-weight: 800;
+  color: white;
+}
+
+.ar-status-box span {
+  color: #facc15;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.ar-status-box em {
+  font-style: normal;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.ar-answer-correct {
+  color: #86efac;
+}
+
+.ar-answer-wrong {
+  color: #fca5a5;
 }
 
 .question-box {
   margin: 20px 0 26px;
-
   padding: 28px;
-
   border-radius: 22px;
-
   background: rgba(37, 99, 235, 0.16);
-
   border: 1px solid rgba(59, 130, 246, 0.32);
-
   font-size: 24px;
   font-weight: 700;
-
   line-height: 1.5;
 }
 
 .options-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-
   gap: 16px;
 }
 
 .option-btn {
   min-height: 90px;
-
   border: 1px solid rgba(255, 255, 255, 0.12);
-
   border-radius: 20px;
-
   padding: 18px;
-
   background: rgba(255, 255, 255, 0.08);
-
   color: white;
-
   font-size: 17px;
   font-weight: 600;
-
   cursor: pointer;
-
   display: flex;
   align-items: center;
   gap: 14px;
-
   text-align: left;
-
   transition: all 0.2s ease;
 }
 
 .option-btn:hover {
   transform: translateY(-2px);
-
   background: rgba(59, 130, 246, 0.28);
 }
 
 .option-btn.correct {
   background: rgba(34, 197, 94, 0.28);
-
   border-color: rgba(34, 197, 94, 0.6);
 }
 
 .option-btn.wrong {
   background: rgba(239, 68, 68, 0.28);
-
   border-color: rgba(239, 68, 68, 0.6);
 }
 
 .option-btn.disabled {
   opacity: 0.45;
-
   cursor: not-allowed;
 }
 
 .option-key {
   width: 38px;
   height: 38px;
-
   border-radius: 12px;
-
   background: rgba(255, 255, 255, 0.12);
-
   display: flex;
   justify-content: center;
   align-items: center;
-
   flex-shrink: 0;
-
   font-weight: 800;
 }
 
 .answer-result {
   margin-top: 22px;
-
   padding: 16px;
-
   border-radius: 16px;
-
   background: rgba(255, 255, 255, 0.06);
-
   border: 1px solid rgba(255, 255, 255, 0.08);
-
   color: #bfdbfe;
+  font-weight: 700;
+}
 
+.waiting-message {
+  margin-top: 18px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.72);
   font-weight: 700;
 }
 
 .game-btn {
   width: 100%;
-
   border: none;
-
   border-radius: 16px;
-
   padding: 15px 18px;
-
   margin-top: 16px;
-
   font-size: 16px;
   font-weight: 600;
-
   cursor: pointer;
-
   transition: all 0.2s ease;
 }
 
 .game-btn.primary {
-  background: linear-gradient(
-    135deg,
-    #2563eb,
-    #3b82f6
-  );
-
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
   color: white;
-
-  box-shadow:
-    0 8px 20px rgba(37, 99, 235, 0.35);
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.35);
 }
 
 .game-btn.primary:hover {
   transform: translateY(-2px);
-
-  box-shadow:
-    0 12px 24px rgba(37, 99, 235, 0.45);
+  box-shadow: 0 12px 24px rgba(37, 99, 235, 0.45);
 }
 
 .game-btn.secondary {
   background: rgba(255, 255, 255, 0.08);
-
   color: white;
-
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
@@ -250,29 +243,21 @@
 
 .game-btn.ghost {
   background: transparent;
-
   color: rgba(255, 255, 255, 0.72);
-
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .game-btn.ghost:hover {
   background: rgba(255, 255, 255, 0.08);
-
   color: white;
 }
 
 .final-score-box {
   margin: 28px auto;
-
   padding: 28px;
-
   border-radius: 24px;
-
   background: rgba(37, 99, 235, 0.18);
-
   border: 1px solid rgba(59, 130, 246, 0.35);
-
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -280,18 +265,21 @@
 
 .final-score-box span {
   color: rgba(255, 255, 255, 0.72);
-
   font-size: 16px;
 }
 
 .final-score-box strong {
   color: white;
-
   font-size: 56px;
   font-weight: 800;
 }
 
 @media (max-width: 720px) {
+  .quiz-game-page {
+    align-items: flex-start;
+    padding: 76px 16px 24px;
+  }
+
   .quiz-game-card {
     padding: 24px;
   }
@@ -302,6 +290,10 @@
 
   .game-topbar {
     grid-template-columns: 1fr;
+  }
+
+  .local-ar-preview {
+    height: 180px;
   }
 
   .question-box {
