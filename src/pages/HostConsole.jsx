@@ -3,6 +3,51 @@ import { useNavigate, useParams } from "react-router-dom";
 import { io } from "socket.io-client";
 import "../styles/HostConsole.css";
 
+const ICE_CONFIG = {
+  iceServers: [
+    { urls: "stun:stun.l.google.com:19302" },
+    {
+      urls: "turn:free.expressturn.com:3478",
+      username: "000000002095434030",
+      credential: "z745b0PqGo97PlA32T48lqiXqI0=",
+    },
+    {
+      urls: "turns:free.expressturn.com:5349",
+      username: "000000002095434030",
+      credential: "z745b0PqGo97PlA32T48lqiXqI0=",
+    },
+  ],
+};
+
+function RemoteVideo({ stream }) {
+  const videoRef = useRef(null);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || !stream) return;
+
+    video.srcObject = stream;
+    video.play().catch((err) => {
+      console.error("Host remote video play failed:", err);
+    });
+
+    return () => {
+      video.srcObject = null;
+    };
+  }, [stream]);
+
+  return (
+    <video
+      ref={videoRef}
+      className="host-remote-video"
+      autoPlay
+      playsInline
+      muted
+      controls={false}
+    />
+  );
+}
+
 function HostConsole() {
   const navigate = useNavigate();
   const { sessionId } = useParams();
@@ -11,6 +56,8 @@ function HostConsole() {
     import.meta.env.VITE_API_URL || "https://ar-vision-link.onrender.com";
 
   const socketRef = useRef(null);
+  const peerConnectionsRef = useRef({});
+  const questionsRef = useRef([]);
 
   const [currentUser, setCurrentUser] = useState(null);
   const [session, setSession] = useState(null);
@@ -19,6 +66,7 @@ function HostConsole() {
   const [players, setPlayers] = useState([]);
   const [answers, setAnswers] = useState([]);
   const [playerResults, setPlayerResults] = useState({});
+  const [remoteStreams, setRemoteStreams] = useState({});
   const [loading, setLoading] = useState(true);
   const [changing, setChanging] = useState(false);
 
@@ -27,6 +75,10 @@ function HostConsole() {
   const currentQuestion = useMemo(() => {
     return questions[currentIndex] || null;
   }, [questions, currentIndex]);
+
+  useEffect(() => {
+    questionsRef.current = questions;
+  }, [questions]);
 
   const answeredUserIds = useMemo(() => {
     return new Set(answers.map((a) => Number(a.user_id)));
@@ -37,12 +89,20 @@ function HostConsole() {
     const percent =
       players.length > 0 ? Math.round((count / players.length) * 100) : 0;
 
-    return {
-      key,
-      count,
-      percent,
-    };
+    return { key, count, percent };
   });
+
+  function cleanupWebRTC() {
+    Object.keys(peerConnectionsRef.current).forEach((socketId) => {
+      peerConnectionsRef.current[socketId]?.close();
+      delete peerConnectionsRef.current[socketId];
+    });
+
+    setRemoteStreams({});
+
+    socketRef.current?.disconnect();
+    socketRef.current = null;
+  }
 
   useEffect(() => {
     const savedUser = localStorage.getItem("currentUser");
@@ -67,6 +127,11 @@ function HostConsole() {
       role: "host",
     });
 
+    socket.emit("webrtc-host-ready", {
+      sessionId: Number(sessionId),
+      userId: user.id,
+    });
+
     socket.on("session-sync", async (data) => {
       setSession(data.session);
       setQuiz(data.quiz);
@@ -75,13 +140,42 @@ function HostConsole() {
       setLoading(false);
 
       const q = data.questions?.[data.session?.current_question || 0];
-      if (q) {
-        await loadQuestionAnswers(q.question_id);
-      }
+      if (q) await loadQuestionAnswers(q.question_id);
     });
 
     socket.on("player-joined", async () => {
       await loadPlayers();
+
+      socket.emit("webrtc-host-ready", {
+        sessionId: Number(sessionId),
+        userId: user.id,
+      });
+    });
+
+    socket.on("webrtc-player-ready", () => {
+      socket.emit("webrtc-host-ready", {
+        sessionId: Number(sessionId),
+        userId: user.id,
+      });
+    });
+
+    socket.on("webrtc-offer", async ({ from, fromUserId, offer }) => {
+      await handleWebRTCOffer(from, fromUserId, offer);
+    });
+
+    socket.on("webrtc-ice-candidate", async ({ from, candidate }) => {
+      const pc = peerConnectionsRef.current[from];
+      if (!pc || !candidate) return;
+
+      try {
+        await pc.addIceCandidate(new RTCIceCandidate(candidate));
+      } catch (err) {
+        console.error("Host 加入 ICE candidate 失敗：", err);
+      }
+    });
+
+    socket.on("webrtc-user-disconnected", ({ socketId }) => {
+      closePeerConnection(socketId);
     });
 
     socket.on("game-started", ({ session }) => {
@@ -97,7 +191,7 @@ function HostConsole() {
       setPlayerResults({});
       setChanging(false);
 
-      const nextQuestion = questions[session.current_question];
+      const nextQuestion = questionsRef.current[session.current_question];
       if (nextQuestion) {
         await loadQuestionAnswers(nextQuestion.question_id);
       }
@@ -132,6 +226,7 @@ function HostConsole() {
       setSession(session);
       setPlayers(leaderboard || []);
       setChanging(false);
+      cleanupWebRTC();
       navigate(`/quiz/leaderboard/${sessionId}`);
     });
 
@@ -141,9 +236,76 @@ function HostConsole() {
     });
 
     return () => {
-      socket.disconnect();
+      cleanupWebRTC();
     };
   }, [sessionId, navigate, BACKEND_URL]);
+
+  async function handleWebRTCOffer(playerSocketId, fromUserId, offer) {
+    if (!playerSocketId || !offer || !socketRef.current) return;
+
+    try {
+      closePeerConnection(playerSocketId);
+
+      const pc = new RTCPeerConnection(ICE_CONFIG);
+      peerConnectionsRef.current[playerSocketId] = pc;
+
+      pc.ontrack = (event) => {
+        const stream = event.streams?.[0];
+        if (!stream) return;
+
+        setRemoteStreams((prev) => ({
+          ...prev,
+          [playerSocketId]: {
+            stream,
+            userId: Number(fromUserId),
+          },
+        }));
+      };
+
+      pc.onicecandidate = (event) => {
+        if (event.candidate) {
+          socketRef.current?.emit("webrtc-ice-candidate", {
+            to: playerSocketId,
+            candidate: event.candidate,
+          });
+        }
+      };
+
+      pc.onconnectionstatechange = () => {
+        if (pc.connectionState === "failed" || pc.connectionState === "closed") {
+          closePeerConnection(playerSocketId);
+        }
+      };
+
+      await pc.setRemoteDescription(new RTCSessionDescription(offer));
+
+      const answer = await pc.createAnswer();
+      await pc.setLocalDescription(answer);
+
+      socketRef.current.emit("webrtc-answer", {
+        to: playerSocketId,
+        answer: pc.localDescription,
+      });
+    } catch (err) {
+      console.error("Host 處理 WebRTC offer 失敗:", err);
+      closePeerConnection(playerSocketId);
+    }
+  }
+
+  function closePeerConnection(socketId) {
+    const pc = peerConnectionsRef.current[socketId];
+
+    if (pc) {
+      pc.close();
+      delete peerConnectionsRef.current[socketId];
+    }
+
+    setRemoteStreams((prev) => {
+      const next = { ...prev };
+      delete next[socketId];
+      return next;
+    });
+  }
 
   async function loadPlayers() {
     try {
@@ -202,6 +364,11 @@ function HostConsole() {
     });
   }
 
+  function leaveConsole() {
+    cleanupWebRTC();
+    navigate("/quiz");
+  }
+
   function getPlayerAnswer(userId) {
     return answers.find((a) => Number(a.user_id) === Number(userId));
   }
@@ -220,18 +387,15 @@ function HostConsole() {
     );
   }
 
-  if (currentUser?.id !== quiz?.host_id) {
+  if (Number(currentUser?.id) !== Number(quiz?.host_id)) {
     return (
       <div className="host-console-page">
         <div className="host-console-card">
           <h2>沒有權限</h2>
           <p>只有主持人可以進入中控台。</p>
 
-          <button
-            className="console-btn secondary"
-            onClick={() => navigate("/quiz")}
-          >
-            返回 Quiz Center
+          <button className="console-btn secondary" onClick={leaveConsole}>
+            返回 AR Vision Link
           </button>
         </div>
       </div>
@@ -347,9 +511,7 @@ function HostConsole() {
                     <div className="answer-status">
                       {answeredUserIds.has(Number(record.user_id)) ? (
                         ans?.is_correct ? (
-                          <span className="correct-text">
-                            答對 +{ans.score}
-                          </span>
+                          <span className="correct-text">答對 +{ans.score}</span>
                         ) : (
                           <span className="wrong-text">答錯 +0</span>
                         )
@@ -377,7 +539,7 @@ function HostConsole() {
         </div>
 
         <div className="ar-host-section">
-          <h3>AR 玩家狀態預覽</h3>
+          <h3>AR 玩家即時視訊</h3>
 
           {players.length === 0 ? (
             <p className="console-hint">尚無玩家可顯示。</p>
@@ -388,8 +550,20 @@ function HostConsole() {
                 const result = getPlayerResult(record.user_id);
                 const ans = getPlayerAnswer(record.user_id);
 
+                const remoteEntry = Object.values(remoteStreams).find(
+                  (item) => Number(item.userId) === Number(record.user_id)
+                );
+
                 return (
                   <div className="ar-player-card" key={record.record_id}>
+                    {remoteEntry?.stream ? (
+                      <RemoteVideo stream={remoteEntry.stream} />
+                    ) : (
+                      <div className="host-video-placeholder">
+                        等待玩家視訊...
+                      </div>
+                    )}
+
                     <div className="ar-floating-tag">
                       <strong>{user?.nickname || user?.name || "Player"}</strong>
                       <span>Score: {record.score || 0}</span>
@@ -397,9 +571,7 @@ function HostConsole() {
                       {result ? (
                         <em
                           className={
-                            result.is_correct
-                              ? "correct-text"
-                              : "wrong-text"
+                            result.is_correct ? "correct-text" : "wrong-text"
                           }
                         >
                           {result.is_correct ? "答對 ✅" : "答錯 ❌"}
@@ -435,11 +607,8 @@ function HostConsole() {
             : "下一題"}
         </button>
 
-        <button
-          className="console-btn secondary"
-          onClick={() => navigate(`/quiz/leaderboard/${sessionId}`)}
-        >
-          查看排行榜
+        <button className="console-btn secondary" onClick={leaveConsole}>
+          返回 AR Vision Link
         </button>
       </div>
     </div>
