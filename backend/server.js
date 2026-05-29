@@ -1025,7 +1025,7 @@ app.get("/api/leaderboard/:sessionId", async (req, res) => {
 });
 
 /* =========================
-   Socket.io Events
+   Socket.io Events + WebRTC Signaling
 ========================= */
 
 io.on("connection", (socket) => {
@@ -1051,6 +1051,7 @@ io.on("connection", (socket) => {
       });
 
       socket.to(room).emit("user-connected", {
+        socketId: socket.id,
         userId,
         role,
       });
@@ -1126,7 +1127,86 @@ io.on("connection", (socket) => {
     }
   });
 
+  /* =========================
+     WebRTC Signaling
+  ========================= */
+
+  socket.on("webrtc-host-ready", ({ sessionId, userId }) => {
+    const room = `session:${sessionId}`;
+
+    socket.data.sessionId = Number(sessionId);
+    socket.data.userId = userId ? Number(userId) : null;
+    socket.data.role = "host";
+
+    socket.join(room);
+
+    socket.to(room).emit("webrtc-host-ready", {
+      hostSocketId: socket.id,
+      userId,
+    });
+
+    console.log("WebRTC host ready:", socket.id);
+  });
+
+  socket.on("webrtc-player-ready", ({ sessionId, userId, user }) => {
+    const room = `session:${sessionId}`;
+
+    socket.data.sessionId = Number(sessionId);
+    socket.data.userId = userId ? Number(userId) : null;
+    socket.data.role = "player";
+
+    socket.join(room);
+
+    socket.to(room).emit("webrtc-player-ready", {
+      playerSocketId: socket.id,
+      userId,
+      user,
+    });
+
+    console.log("WebRTC player ready:", socket.id);
+  });
+
+  socket.on("webrtc-offer", ({ to, fromUserId, offer }) => {
+    if (!to || !offer) return;
+
+    io.to(to).emit("webrtc-offer", {
+      from: socket.id,
+      fromUserId,
+      offer,
+    });
+  });
+
+  socket.on("webrtc-answer", ({ to, answer }) => {
+    if (!to || !answer) return;
+
+    io.to(to).emit("webrtc-answer", {
+      from: socket.id,
+      answer,
+    });
+  });
+
+  socket.on("webrtc-ice-candidate", ({ to, candidate }) => {
+    if (!to || !candidate) return;
+
+    io.to(to).emit("webrtc-ice-candidate", {
+      from: socket.id,
+      candidate,
+    });
+  });
+
   socket.on("disconnect", () => {
+    const sessionId = socket.data.sessionId;
+    const userId = socket.data.userId;
+    const role = socket.data.role;
+
+    if (sessionId) {
+      socket.to(`session:${sessionId}`).emit("webrtc-user-disconnected", {
+        socketId: socket.id,
+        userId,
+        role,
+      });
+    }
+
     console.log("Socket disconnected:", socket.id);
   });
 });

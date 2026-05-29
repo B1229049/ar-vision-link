@@ -12,7 +12,7 @@ import QuizHome from "./pages/QuizHome";
 import CreateQuiz from "./pages/CreateQuiz";
 import JoinQuiz from "./pages/JoinQuiz";
 import HostLobby from "./pages/HostLobby";
-import WaitingLobby from "./pages/WaitingLobby";
+// import WaitingLobby from "./pages/WaitingLobby";
 import QuizGame from "./pages/QuizGame";
 import Leaderboard from "./pages/Leaderboard";
 import HostConsole from "./pages/HostConsole";
@@ -104,14 +104,14 @@ function App() {
           }
         />
 
-        <Route
+        {/* <Route
           path="/quiz/lobby/:sessionId"
           element={
             <ProtectedRoute>
               <WaitingLobby />
             </ProtectedRoute>
           }
-        />
+        /> */}
 
         <Route
           path="/quiz/game/:sessionId"

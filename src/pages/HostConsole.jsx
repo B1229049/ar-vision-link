@@ -56,7 +56,7 @@ function HostConsole() {
     setCurrentUser(user);
 
     const socket = io(BACKEND_URL, {
-      transports: ["websocket"],
+      transports: ["polling", "websocket"],
     });
 
     socketRef.current = socket;

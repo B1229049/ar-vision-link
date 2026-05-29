@@ -11,7 +11,7 @@ function QuizGame() {
     import.meta.env.VITE_API_URL || "https://ar-vision-link.onrender.com";
 
   const socketRef = useRef(null);
-  const lastQuestionIndexRef = useRef(0);
+  const videoRef = useRef(null);
 
   const [currentUser, setCurrentUser] = useState(null);
   const [session, setSession] = useState(null);
@@ -25,6 +25,7 @@ function QuizGame() {
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(20);
   const [answerResult, setAnswerResult] = useState(null);
+  const [cameraError, setCameraError] = useState("");
 
   const currentIndex = session?.current_question || 0;
 
@@ -46,7 +47,7 @@ function QuizGame() {
     setCurrentUser(user);
 
     const socket = io(BACKEND_URL, {
-      transports: ["websocket"],
+      transports: ["polling", "websocket"],
     });
 
     socketRef.current = socket;
@@ -58,6 +59,10 @@ function QuizGame() {
     });
 
     socket.on("session-sync", (data) => {
+      if (Number(user.id) === Number(data.quiz?.host_id)) {
+        navigate(`/quiz/host-console/${sessionId}`);
+        return;
+      }
       setSession(data.session);
       setQuiz(data.quiz);
       setQuestions(data.questions || []);
@@ -67,12 +72,9 @@ function QuizGame() {
         (p) => Number(p.user_id) === Number(user.id)
       );
 
-      if (me) {
-        setScore(me.score || 0);
-      }
+      if (me) setScore(me.score || 0);
 
       const index = data.session?.current_question || 0;
-      lastQuestionIndexRef.current = index;
       setTimeLeft(data.questions?.[index]?.time_limit || 20);
       setLoading(false);
     });
@@ -101,9 +103,7 @@ function QuizGame() {
         (p) => Number(p.user_id) === Number(user.id)
       );
 
-      if (me) {
-        setScore(me.score || 0);
-      }
+      if (me) setScore(me.score || 0);
     });
 
     socket.on("game-finished", () => {
@@ -120,10 +120,63 @@ function QuizGame() {
   }, [sessionId, navigate, BACKEND_URL]);
 
   useEffect(() => {
+    if (loading) return;
+
+    let stream = null;
+
+    async function startCamera() {
+      try {
+        if (!navigator.mediaDevices?.getUserMedia) {
+          setCameraError("此瀏覽器不支援相機功能");
+          return;
+        }
+
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: "user",
+            width: { ideal: 640 },
+            height: { ideal: 480 },
+          },
+          audio: false,
+        });
+
+        if (!videoRef.current) {
+          setCameraError("video 元素尚未載入");
+          return;
+        }
+
+        videoRef.current.srcObject = stream;
+
+        await videoRef.current.play();
+
+        setCameraError("");
+      } catch (err) {
+        console.error("無法開啟鏡頭：", err);
+        setCameraError("無法開啟鏡頭，請允許瀏覽器相機權限");
+      }
+    }
+
+    startCamera();
+
+    return () => {
+      if (stream) {
+        stream.getTracks().forEach((track) => track.stop());
+      }
+    };
+  }, [loading]);
+
+  useEffect(() => {
     if (loading || !session || session.game_finished || answered) return;
 
     if (timeLeft <= 0) {
-      handleAnswer("");
+      setAnswered(true);
+      setSelectedAnswer("");
+      setAnswerResult({
+        user_id: currentUser?.id,
+        is_correct: false,
+        score_earned: 0,
+        total_score: score,
+      });
       return;
     }
 
@@ -132,10 +185,9 @@ function QuizGame() {
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [timeLeft, loading, session, answered]);
+  }, [timeLeft, loading, session, answered, currentUser, score]);
 
   function resetQuestionState(index) {
-    lastQuestionIndexRef.current = index;
     setSelectedAnswer("");
     setAnswered(false);
     setAnswerResult(null);
@@ -166,8 +218,7 @@ function QuizGame() {
       const result = await response.json();
 
       if (!response.ok || result.error) {
-        console.error("送出答案失敗：", result.error || result);
-        alert("送出答案失敗");
+        alert(result.error || "送出答案失敗");
         return;
       }
 
@@ -238,8 +289,11 @@ function QuizGame() {
       <div className="quiz-game-page">
         <div className="quiz-game-card">
           <h2>沒有題目</h2>
-          <button className="game-btn secondary" onClick={() => navigate("/quiz")}>
-            返回 Quiz Center
+          <button
+            className="game-btn secondary"
+            onClick={() => navigate("/quiz")}
+          >
+            返回 AR Vision Link
           </button>
         </div>
       </div>
@@ -271,6 +325,17 @@ function QuizGame() {
         </div>
 
         <div className="local-ar-preview">
+          <video
+            ref={videoRef}
+            className="local-ar-video"
+            autoPlay
+            playsInline
+            muted
+            controls={false}
+          />
+
+          {cameraError && <div className="camera-error">{cameraError}</div>}
+
           <div className="ar-status-box">
             <strong>{currentUser?.nickname || currentUser?.name}</strong>
             <span>Score: {score}</span>
@@ -322,13 +387,7 @@ function QuizGame() {
           </div>
         )}
 
-        {isHost ? (
-          <button className="game-btn primary" onClick={hostNextQuestion}>
-            {currentIndex + 1 >= questions.length ? "結束遊戲" : "下一題"}
-          </button>
-        ) : (
-          <div className="waiting-message">等待主持人切換下一題...</div>
-        )}
+        <div className="waiting-message">等待主持人切換下一題...</div>
 
         <button
           className="game-btn ghost"

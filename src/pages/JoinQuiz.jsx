@@ -1,15 +1,25 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { io } from "socket.io-client";
 import "../styles/JoinQuiz.css";
 
 function JoinQuiz() {
   const navigate = useNavigate();
 
-  const BACKEND_URL = "https://ar-vision-link.onrender.com";
+  const BACKEND_URL =
+    import.meta.env.VITE_API_URL || "https://ar-vision-link.onrender.com";
+
+  const socketRef = useRef(null);
 
   const [currentUser, setCurrentUser] = useState(null);
   const [roomCode, setRoomCode] = useState("");
   const [joining, setJoining] = useState(false);
+
+  const [joined, setJoined] = useState(false);
+  const [session, setSession] = useState(null);
+  const [quiz, setQuiz] = useState(null);
+  const [questions, setQuestions] = useState([]);
+  const [players, setPlayers] = useState([]);
 
   useEffect(() => {
     const savedUser = localStorage.getItem("currentUser");
@@ -20,6 +30,10 @@ function JoinQuiz() {
     }
 
     setCurrentUser(JSON.parse(savedUser));
+
+    return () => {
+      socketRef.current?.disconnect();
+    };
   }, [navigate]);
 
   async function handleJoinQuiz() {
@@ -45,7 +59,7 @@ function JoinQuiz() {
         return;
       }
 
-      const session = joinResult.session;
+      const joinedSession = joinResult.session;
 
       const recordResponse = await fetch(
         `${BACKEND_URL}/api/player-records/join`,
@@ -55,7 +69,7 @@ function JoinQuiz() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            session_id: session.session_id,
+            session_id: joinedSession.session_id,
             user_id: currentUser.id,
           }),
         }
@@ -69,12 +83,16 @@ function JoinQuiz() {
         return;
       }
 
-      localStorage.setItem("currentGameSession", JSON.stringify(session));
-      localStorage.setItem("currentPlayerRecord", JSON.stringify(recordResult.record));
+      localStorage.setItem("currentGameSession", JSON.stringify(joinedSession));
+      localStorage.setItem(
+        "currentPlayerRecord",
+        JSON.stringify(recordResult.record)
+      );
 
-      alert("加入成功！");
+      setSession(joinedSession);
+      setJoined(true);
 
-      navigate(`/quiz/lobby/${session.session_id}`);
+      connectSocket(joinedSession.session_id, currentUser.id);
     } catch (err) {
       console.error(err);
       alert("加入測驗時發生錯誤");
@@ -83,11 +101,180 @@ function JoinQuiz() {
     setJoining(false);
   }
 
+  function connectSocket(sessionId, userId) {
+    if (socketRef.current) {
+      socketRef.current.disconnect();
+    }
+
+    const socket = io(BACKEND_URL, {
+      transports: ["polling", "websocket"],
+    });
+
+    socketRef.current = socket;
+
+    socket.emit("join-session", {
+      sessionId: Number(sessionId),
+      userId: Number(userId),
+      role: "player",
+    });
+
+    socket.on("session-sync", (data) => {
+      setSession(data.session);
+      setQuiz(data.quiz);
+      setQuestions(data.questions || []);
+      setPlayers(data.leaderboard || []);
+
+      if (data.session?.game_finished) {
+        navigate(`/quiz/leaderboard/${data.session.session_id}`);
+        return;
+      }
+
+      if (data.session?.started_at && !data.session?.game_finished) {
+        navigate(`/quiz/game/${data.session.session_id}`);
+      }
+    });
+
+    socket.on("player-joined", async () => {
+      await loadPlayers(sessionId);
+    });
+
+    socket.on("leaderboard-updated", ({ leaderboard }) => {
+      setPlayers(leaderboard || []);
+    });
+
+    socket.on("game-started", ({ session }) => {
+      navigate(`/quiz/game/${session.session_id}`);
+    });
+
+    socket.on("game-finished", ({ session }) => {
+      navigate(`/quiz/leaderboard/${session.session_id}`);
+    });
+
+    socket.on("socket-error", (data) => {
+      alert(data.error || "Socket 發生錯誤");
+    });
+  }
+
+  async function loadPlayers(sessionIdValue = session?.session_id) {
+    if (!sessionIdValue) return;
+
+    try {
+      const response = await fetch(
+        `${BACKEND_URL}/api/leaderboard/${sessionIdValue}`
+      );
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        setPlayers(result.leaderboard || []);
+      }
+    } catch (err) {
+      console.error("載入玩家列表失敗：", err);
+    }
+  }
+
+  function leaveRoom() {
+    socketRef.current?.disconnect();
+    socketRef.current = null;
+
+    setJoined(false);
+    setSession(null);
+    setQuiz(null);
+    setQuestions([]);
+    setPlayers([]);
+    setRoomCode("");
+
+    localStorage.removeItem("currentGameSession");
+    localStorage.removeItem("currentPlayerRecord");
+  }
+
   if (!currentUser) {
     return (
       <div className="join-quiz-page">
         <div className="join-quiz-card">
           <p>載入中...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (joined) {
+    return (
+      <div className="join-quiz-page">
+        <div className="join-quiz-card joined">
+          <h2>已加入房間</h2>
+
+          <p className="join-quiz-subtitle">
+            等待主持人開始遊戲，開始後會自動進入答題畫面。
+          </p>
+
+          <div className="joined-room-panel">
+            <p className="joined-room-label">Room Code</p>
+            <div className="joined-room-code">{session?.room_code}</div>
+          </div>
+
+          <div className="joined-info-box">
+            <div className="joined-info-row">
+              <span>測驗名稱</span>
+              <strong>{quiz?.title || "載入中..."}</strong>
+            </div>
+
+            <div className="joined-info-row">
+              <span>題目數量</span>
+              <strong>{questions.length} 題</strong>
+            </div>
+
+            <div className="joined-info-row">
+              <span>玩家數量</span>
+              <strong>{players.length} 人</strong>
+            </div>
+
+            <div className="joined-info-row">
+              <span>狀態</span>
+              <strong>{session?.started_at ? "已開始" : "等待中"}</strong>
+            </div>
+          </div>
+
+          <div className="joined-player-box">
+            <h3>玩家列表</h3>
+
+            {players.length === 0 ? (
+              <p className="joined-player-hint">目前還沒有玩家。</p>
+            ) : (
+              <div className="joined-player-list">
+                {players.map((record) => {
+                  const user = record.users;
+
+                  return (
+                    <div className="joined-player-item" key={record.record_id}>
+                      <div className="joined-player-avatar">
+                        {user?.avatar_url ? (
+                          <img src={user.avatar_url} alt="avatar" />
+                        ) : (
+                          user?.name?.charAt(0) || "U"
+                        )}
+                      </div>
+
+                      <div className="joined-player-info">
+                        <strong>{user?.name || "未知玩家"}</strong>
+                        <span>@{user?.nickname || "unknown"}</span>
+                      </div>
+
+                      <div className="joined-player-score">
+                        {record.score || 0} 分
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          <div className="waiting-message">等待主持人開始遊戲...</div>
+
+          <button className="join-btn secondary" onClick={leaveRoom}>
+            離開房間
+          </button>
         </div>
       </div>
     );
@@ -130,7 +317,7 @@ function JoinQuiz() {
         </button>
 
         <button className="join-btn secondary" onClick={() => navigate("/quiz")}>
-          返回 Quiz Center
+          返回 AR Vision Link
         </button>
       </div>
     </div>
