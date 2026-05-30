@@ -7,6 +7,7 @@
   height: 64px;
 
   display: flex;
+  flex-direction: row;
   justify-content: space-between;
   align-items: center;
 
@@ -15,7 +16,6 @@
 
   background: rgba(15, 23, 42, 0.82);
   backdrop-filter: blur(16px);
-
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 
   z-index: 9999;
@@ -26,6 +26,18 @@
   font-size: 20px;
   font-weight: 700;
   cursor: pointer;
+  white-space: nowrap;
+}
+
+.hamburger {
+  display: none;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 30px;
+  cursor: pointer;
+  padding: 4px 8px;
+  line-height: 1;
 }
 
 .nav-links {
@@ -36,17 +48,12 @@
 .nav-links button {
   border: none;
   border-radius: 12px;
-
   padding: 9px 14px;
-
   background: rgba(255, 255, 255, 0.08);
   color: white;
-
   font-size: 14px;
   font-weight: 600;
-
   cursor: pointer;
-
   transition: 0.2s;
 }
 
@@ -63,49 +70,44 @@
   background: rgba(239, 68, 68, 0.36);
 }
 
-@media (max-width: 640px) {
-  .navbar {
-    height: auto;
-    min-height: 64px;
-    padding: 12px 16px;
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .nav-links {
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-}
-
-.hamburger {
-  display: none;
-  background: none;
-  border: none;
-  color: white;
-  font-size: 30px;
-  cursor: pointer;
-}
-
 /* 手機版 */
 @media (max-width: 768px) {
+  .navbar {
+    height: 64px;
+    min-height: 64px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    padding: 0 16px;
+  }
+
+  .nav-logo {
+    font-size: 18px;
+    text-align: left;
+  }
+
   .hamburger {
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    justify-self: end;
   }
 
   .nav-links {
     display: none;
-
-    position: absolute;
-    top: 60px;
+    position: fixed;
+    top: 64px;
     left: 0;
 
     width: 100%;
-    background: #111827;
+    background: rgba(15, 23, 42, 0.96);
+    backdrop-filter: blur(16px);
 
     flex-direction: column;
-    padding: 10px 0;
-    z-index: 1000;
+    gap: 0;
+    padding: 8px 0;
+
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   }
 
   .nav-links.active {
@@ -117,5 +119,10 @@
     text-align: left;
     padding: 14px 20px;
     border-radius: 0;
+    background: transparent;
+  }
+
+  .nav-links button:hover {
+    background: rgba(59, 130, 246, 0.25);
   }
 }

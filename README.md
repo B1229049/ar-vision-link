@@ -19,11 +19,11 @@
 
 # 📖 專案簡介
 
-AR Vision Link 是一套結合 **即時多人測驗（Real-Time Quiz）** 與 **AR 即時資訊顯示（Augmented Reality Visualization）** 的智慧互動學習平台。
+AR Vision Link 是一套結合 擴增實境（AR）、WebRTC 即時視訊串流、多人線上測驗系統 與 人臉辨識技術 的互動式學習平台。
 
-本系統以提升課堂互動性與學習參與度為目標，教師可透過主持人控制台建立測驗並管理遊戲流程，而學生則可透過手機或電腦即時加入房間進行答題。
+玩家可透過手機或電腦參與測驗，系統會於玩家畫面中顯示 AR 分數與作答狀態，而主持人則可透過中控台即時監控所有玩家的測驗進度、作答情況與視訊畫面。
 
-除了傳統線上測驗功能外，AR Vision Link 更導入 AR 即時資訊顯示技術，將玩家分數、答題結果、排名與成就資訊直接呈現在玩家頭頂，大幅提升互動感與競爭體驗，打造新一代智慧教室環境。
+本系統以提升線上學習互動性為目標，融合 Kahoot 類型競賽機制與 AR 技術，打造更具沉浸感的學習體驗。
 
 ---
 
@@ -83,26 +83,20 @@ Players      AR Overlay
 ## Frontend
 - React
 - React Router
-- JavaScript ES6+
-- HTML5
+- Socket.IO Client
+- WebRTC
+- Face API.js
+- TensorFlow.js
 - CSS3
-
 ## Backend
 - Node.js
-- Express.js
-
+- Express
+- Socket.IO
 ## Database
 - Supabase
-- PostgreSQL
-
-## Realtime
-- Supabase Realtime
-
-## AR Module
-- MediaPipe
-- Face Tracking
-- Landmark Detection
-- Real-Time Overlay
+## Video Streaming
+- WebRTC
+- ExpressTURN
 
 ---
 
@@ -235,7 +229,8 @@ answered_at TIMESTAMPTZ
 ar-vision-link/
 ├── backend/
 │   ├── .gitignore
-│   ├── package
+│   ├── package.json
+│   ├── package-lock.json
 │   └── server.js
 │
 ├── public/
@@ -262,12 +257,12 @@ ar-vision-link/
 │   │   ├── QuizGame.jsx
 │   │   ├── QuizHome.jsx
 │   │   ├── Register.jsx
-│   │   ├── ReRwgisterFace.jsx
-│   │   └── WaitingLobby.jsx
+│   │   └── ReRwgisterFace.jsx
 │   │
 │   ├── components/
 │   │   ├── Navbar.jsx
-│   │   └── ProtectRoute.jsx
+│   │   ├── ProtectRoute.jsx
+│   │   └── TrackedPlayerVideo.jsx
 │   │
 │   ├── styles/
 │   │   ├── Camera.css
@@ -285,7 +280,7 @@ ar-vision-link/
 │   │   ├── QuizHome.css
 │   │   ├── Register.css
 │   │   ├── ReRwgisterFace.css
-│   │   └── WaitingLobby.css
+│   │   └── TrackedPlayerVideo.css
 │   │
 │   ├── App.css
 │   ├── App.jsx
@@ -298,7 +293,6 @@ ar-vision-link/
 ├── package.json
 ├── package-lock.json
 ├── README.md
-├── readme.txt
 └── vite.config.js
 ```
 
@@ -308,9 +302,8 @@ ar-vision-link/
 
 ## 可以直接在 Github Pages 用瀏覽器運行
 
-```
 https://b1229049.github.io/ar-vision-link/
-```
+
 
 # 在本地開啟網頁
 
@@ -381,9 +374,13 @@ npm run build
 
 # 👨‍💻 開發團隊
 ```
-長庚大學 資訊工程學系 三年級
+長庚大學 資訊工程學系 三年級 Ar Vision Link Team
    B1229049 陳泓均
    B1229006 陳語嫻
    B1229021 黃星昊
    B1229031 黃柏叡
 ```
+
+# 📜 授權聲明
+
+本專案僅供教育、研究與學術展示用途。

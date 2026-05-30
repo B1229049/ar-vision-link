@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { io } from "socket.io-client";
+import TrackedPlayerVideo from "../components/TrackedPlayerVideo";
 import "../styles/HostConsole.css";
 
 const ICE_CONFIG = {
@@ -557,37 +558,17 @@ function HostConsole() {
                 return (
                   <div className="ar-player-card" key={record.record_id}>
                     {remoteEntry?.stream ? (
-                      <RemoteVideo stream={remoteEntry.stream} />
+                      <TrackedPlayerVideo
+                        stream={remoteEntry.stream}
+                        playerName={user?.nickname || user?.name || "Player"}
+                        score={record.score || 0}
+                        result={result || ans}
+                      />
                     ) : (
                       <div className="host-video-placeholder">
                         等待玩家視訊...
                       </div>
                     )}
-
-                    <div className="ar-floating-tag">
-                      <strong>{user?.nickname || user?.name || "Player"}</strong>
-                      <span>Score: {record.score || 0}</span>
-
-                      {result ? (
-                        <em
-                          className={
-                            result.is_correct ? "correct-text" : "wrong-text"
-                          }
-                        >
-                          {result.is_correct ? "答對 ✅" : "答錯 ❌"}
-                        </em>
-                      ) : ans ? (
-                        <em
-                          className={
-                            ans.is_correct ? "correct-text" : "wrong-text"
-                          }
-                        >
-                          {ans.is_correct ? "答對 ✅" : "答錯 ❌"}
-                        </em>
-                      ) : (
-                        <em className="wait-text">等待作答</em>
-                      )}
-                    </div>
                   </div>
                 );
               })}
