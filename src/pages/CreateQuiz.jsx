@@ -11,6 +11,10 @@ function CreateQuiz() {
   const [title, setTitle] = useState("");
   const [saving, setSaving] = useState(false);
 
+  const [sourceText, setSourceText] = useState("");
+  const [questionCount, setQuestionCount] = useState(5);
+  const [aiGenerating, setAiGenerating] = useState(false);
+
   const [questions, setQuestions] = useState([
     {
       question_text: "",
@@ -62,6 +66,49 @@ function CreateQuiz() {
     }
 
     setQuestions(questions.filter((_, i) => i !== index));
+  }
+
+  async function handleGenerateByAI() {
+    if (!sourceText.trim()) {
+      alert("請先貼上教材內容");
+      return;
+    }
+
+    setAiGenerating(true);
+
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/ai/generate-quiz`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          text: sourceText,
+          question_count: questionCount,
+          difficulty: "normal",
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        alert("AI 產生題目失敗：" + (result.error || "未知錯誤"));
+        return;
+      }
+
+      setQuestions(result.questions);
+
+      if (!title.trim()) {
+        setTitle("AI 產生測驗");
+      }
+
+      alert("AI 題目產生完成，可以再手動修改");
+    } catch (err) {
+      console.error(err);
+      alert("呼叫 AI 時發生錯誤");
+    } finally {
+      setAiGenerating(false);
+    }
   }
 
   async function handleCreateQuiz() {
@@ -134,6 +181,38 @@ function CreateQuiz() {
             onChange={(e) => setTitle(e.target.value)}
             placeholder="例如：植物構造小測驗"
           />
+        </div>
+
+        <div className="ai-generate-box">
+          <h3>AI 自動出題</h3>
+
+          <div className="quiz-field">
+            <label>貼上教材內容</label>
+            <textarea
+              value={sourceText}
+              onChange={(e) => setSourceText(e.target.value)}
+              placeholder="把課文、講義、重點整理貼在這裡，AI 會自動產生選擇題"
+            />
+          </div>
+
+          <div className="quiz-field">
+            <label>題數</label>
+            <input
+              type="number"
+              min="1"
+              max="20"
+              value={questionCount}
+              onChange={(e) => setQuestionCount(Number(e.target.value))}
+            />
+          </div>
+
+          <button
+            className="create-btn secondary"
+            onClick={handleGenerateByAI}
+            disabled={aiGenerating}
+          >
+            {aiGenerating ? "AI 產生中..." : "用 AI 產生題目"}
+          </button>
         </div>
 
         <div className="question-list">
