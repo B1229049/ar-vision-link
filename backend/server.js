@@ -807,11 +807,18 @@ app.post("/api/ai/generate-quiz", async (req, res) => {
       });
     }
 
+    const difficultyText =
+      difficulty === "easy"
+        ? "簡單：題目應偏向基本理解、定義、直接從教材找得到答案"
+        : difficulty === "hard"
+        ? "困難：題目應偏向推論、比較、應用與觀念整合"
+        : "普通：題目應包含基本理解與少量應用題";
+
     const prompt = `
 你是一位測驗題目設計老師。
 請根據以下教材內容，產生 ${question_count} 題四選一選擇題。
 
-難度：${difficulty}
+難度：${difficultyText}
 
 規則：
 1. 只能根據教材內容出題

@@ -14,6 +14,9 @@ function CreateQuiz() {
   const [sourceText, setSourceText] = useState("");
   const [questionCount, setQuestionCount] = useState(5);
   const [aiGenerating, setAiGenerating] = useState(false);
+  const [difficulty, setDifficulty] = useState("normal");
+  const [lastAiType, setLastAiType] = useState(null);
+  const [lastAiFile, setLastAiFile] = useState(null);
 
   const [questions, setQuestions] = useState([
     {
@@ -85,7 +88,7 @@ function CreateQuiz() {
         body: JSON.stringify({
           text: sourceText,
           question_count: questionCount,
-          difficulty: "normal",
+          difficulty,
         }),
       });
 
@@ -97,6 +100,8 @@ function CreateQuiz() {
       }
 
       setQuestions(result.questions);
+      setLastAiType("text");
+      setLastAiFile(null);
 
       if (!title.trim()) {
         setTitle("AI 產生測驗");
@@ -182,10 +187,13 @@ function CreateQuiz() {
     const file = e.target.files[0];
     if (!file) return;
 
+    setLastAiType("pdf");
+    setLastAiFile(file);
+
     const formData = new FormData();
     formData.append("file", file);
     formData.append("question_count", questionCount);
-    formData.append("difficulty", "normal");
+    formData.append("difficulty", difficulty);
 
     setAiGenerating(true);
 
@@ -211,6 +219,54 @@ function CreateQuiz() {
       setAiGenerating(false);
     }
   }
+
+  async function handleRegenerateAI() {
+  if (!lastAiType) {
+    alert("請先用 AI 產生一次題目");
+    return;
+  }
+
+  if (lastAiType === "text") {
+    await handleGenerateByAI();
+    return;
+  }
+
+  if (lastAiType === "pdf") {
+    if (!lastAiFile) {
+      alert("找不到上一次的 PDF，請重新選擇檔案");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", lastAiFile);
+    formData.append("question_count", questionCount);
+    formData.append("difficulty", difficulty);
+
+    setAiGenerating(true);
+
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/ai/generate-quiz-pdf`, {
+        method: "POST",
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        alert("重新產生失敗：" + (result.error || "未知錯誤"));
+        return;
+      }
+
+      setQuestions(result.questions);
+      alert("AI 題目已重新產生");
+    } catch (err) {
+      console.error(err);
+      alert("重新產生題目時發生錯誤");
+    } finally {
+      setAiGenerating(false);
+    }
+  }
+}
 
   return (
     <div className="create-quiz-page">
@@ -264,6 +320,18 @@ function CreateQuiz() {
             />
           </div>
 
+          <div className="quiz-field">
+            <label>難度</label>
+            <select
+              value={difficulty}
+              onChange={(e) => setDifficulty(e.target.value)}
+            >
+              <option value="easy">簡單</option>
+              <option value="normal">普通</option>
+              <option value="hard">困難</option>
+            </select>
+          </div>
+
           <button
             className="create-btn secondary"
             onClick={handleGenerateByAI}
@@ -272,6 +340,14 @@ function CreateQuiz() {
             {aiGenerating ? "AI 產生中..." : "用 AI 產生題目"}
           </button>
         </div>
+
+        <button
+          className="create-btn secondary"
+          onClick={handleRegenerateAI}
+          disabled={aiGenerating || !lastAiType}
+        >
+          {aiGenerating ? "AI 產生中..." : "重新產生題目"}
+        </button>
 
         <div className="question-list">
           {questions.map((q, index) => (
