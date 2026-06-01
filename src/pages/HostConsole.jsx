@@ -4,6 +4,9 @@ import { io } from "socket.io-client";
 import TrackedPlayerVideo from "../components/TrackedPlayerVideo";
 import "../styles/HostConsole.css";
 
+const BACKEND_URL =
+    import.meta.env.VITE_API_URL || "https://ar-vision-link.onrender.com";
+
 const res = await fetch(`${BACKEND_URL}/api/ice-config`);
 const ICE_CONFIG = await res.json();
 
@@ -39,9 +42,6 @@ function RemoteVideo({ stream }) {
 function HostConsole() {
   const navigate = useNavigate();
   const { sessionId } = useParams();
-
-  const BACKEND_URL =
-    import.meta.env.VITE_API_URL || "https://ar-vision-link.onrender.com";
 
   const socketRef = useRef(null);
   const peerConnectionsRef = useRef({});

@@ -165,6 +165,53 @@ function CreateQuiz() {
     setSaving(false);
   }
 
+  function handleUploadTextFile(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      setSourceText(reader.result);
+    };
+
+    reader.readAsText(file, "utf-8");
+  }
+
+  async function handleGenerateByPdf(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("question_count", questionCount);
+    formData.append("difficulty", "normal");
+
+    setAiGenerating(true);
+
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/ai/generate-quiz-pdf`, {
+        method: "POST",
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        alert("PDF AI 出題失敗：" + (result.error || "未知錯誤"));
+        return;
+      }
+
+      setQuestions(result.questions);
+      alert("PDF 題目產生完成，可以再手動修改");
+    } catch (err) {
+      console.error(err);
+      alert("PDF 出題時發生錯誤");
+    } finally {
+      setAiGenerating(false);
+    }
+  }
+
   return (
     <div className="create-quiz-page">
       <div className="create-quiz-card">
@@ -194,6 +241,17 @@ function CreateQuiz() {
               placeholder="把課文、講義、重點整理貼在這裡，AI 會自動產生選擇題"
             />
           </div>
+
+          <input
+            type="file"
+            accept=".txt"
+            onChange={handleUploadTextFile}
+          />
+          <input
+            type="file"
+            accept="application/pdf,.pdf"
+            onChange={handleGenerateByPdf}
+          />
 
           <div className="quiz-field">
             <label>題數</label>

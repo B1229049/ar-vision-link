@@ -3,21 +3,19 @@ import { useNavigate, useParams } from "react-router-dom";
 import { io } from "socket.io-client";
 import "../styles/QuizGame.css";
 
-const res = await fetch(`${BACKEND_URL}/api/ice-config`);
-const ICE_CONFIG = await res.json();
+const BACKEND_URL =
+    import.meta.env.VITE_API_URL || "https://ar-vision-link.onrender.com";
 
 function QuizGame() {
   const navigate = useNavigate();
   const { sessionId } = useParams();
-
-  const BACKEND_URL =
-    import.meta.env.VITE_API_URL || "https://ar-vision-link.onrender.com";
 
   const socketRef = useRef(null);
   const videoRef = useRef(null);
   const localStreamRef = useRef(null);
   const peerConnectionsRef = useRef({});
   const questionsRef = useRef([]);
+  const iceConfigRef = useRef(null);
 
   const [currentUser, setCurrentUser] = useState(null);
   const [session, setSession] = useState(null);
@@ -57,6 +55,36 @@ function QuizGame() {
     socketRef.current?.disconnect();
     socketRef.current = null;
   }
+
+  useEffect(() => {
+    async function loadIceConfig() {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/ice-config`);
+
+        if (!res.ok) {
+          throw new Error(
+            `ICE Config API Error: ${res.status}`
+          );
+        }
+
+        const config = await res.json();
+
+        if (!config?.iceServers) {
+          throw new Error("ICE_CONFIG 格式錯誤");
+        }
+
+        iceConfigRef.current = config;
+      } catch (err) {
+        console.error("ICE_CONFIG 載入失敗:", err);
+
+        alert(
+          "無法取得 ICE Server 設定，請確認後端 /api/ice-config 是否正常"
+        );
+      }
+    }
+
+    loadIceConfig();
+  }, []);
 
   useEffect(() => {
     questionsRef.current = questions;
@@ -266,7 +294,13 @@ function QuizGame() {
 
     closePeerConnection(hostSocketId);
 
-    const pc = new RTCPeerConnection(ICE_CONFIG);
+    if (!iceConfigRef.current) {
+      throw new Error("ICE_CONFIG 尚未載入完成");
+    }
+
+    const pc = new RTCPeerConnection(
+      iceConfigRef.current
+    );
 
     peerConnectionsRef.current[hostSocketId] = pc;
 
