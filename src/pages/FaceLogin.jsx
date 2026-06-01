@@ -116,7 +116,7 @@ function FaceLogin() {
 
   async function loadUsers() {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/users`);
+      const response = await fetch(`${BACKEND_URL}/api/face-login`);
       const result = await response.json();
 
       if (!response.ok || result.error) {

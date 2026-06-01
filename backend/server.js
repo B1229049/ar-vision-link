@@ -33,7 +33,19 @@ const io = new Server(server, {
   },
 });
 
-const USER_SELECT = `
+const USER_PUBLIC_SELECT = `
+  id,
+  name,
+  nickname,
+  description,
+  extra_info,
+  avatar_url,
+  is_active,
+  created_at,
+  updated_at
+`;
+
+const USER_PRIVATE_SELECT = `
   id,
   name,
   nickname,
@@ -198,7 +210,7 @@ app.get("/api/users", async (req, res) => {
   try {
     const { data, error } = await supabase
       .from("users")
-      .select(USER_SELECT)
+      .select(USER_PUBLIC_SELECT)
       .eq("is_active", true)
       .order("id", { ascending: true });
 
@@ -252,7 +264,7 @@ app.post("/api/users/register", async (req, res) => {
           face_embedding: cleanEmbedding,
         },
       ])
-      .select(USER_SELECT)
+      .select(USER_PUBLIC_SELECT)
       .single();
 
     if (error) {
@@ -300,7 +312,7 @@ app.put("/api/users/:id", async (req, res) => {
       .from("users")
       .update(updateData)
       .eq("id", id)
-      .select(USER_SELECT)
+      .select(USER_PUBLIC_SELECT)
       .single();
 
     if (error) {
@@ -324,7 +336,7 @@ app.delete("/api/users/:id", async (req, res) => {
         updated_at: new Date().toISOString(),
       })
       .eq("id", id)
-      .select(USER_SELECT)
+      .select(USER_PUBLIC_SELECT)
       .single();
 
     if (error) {
@@ -334,6 +346,80 @@ app.delete("/api/users/:id", async (req, res) => {
     res.json({ success: true, user: data });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.post("/api/face-login", async (req, res) => {
+  try {
+    const { descriptor } = req.body;
+
+    if (!Array.isArray(descriptor)) {
+      return res.status(400).json({
+        success: false,
+        error: "descriptor 必須是陣列",
+      });
+    }
+
+    const { data: users, error } = await supabase
+      .from("users")
+      .select(USER_PRIVATE_SELECT)
+      .eq("is_active", true);
+
+    if (error) {
+      return res.status(500).json({
+        success: false,
+        error: error.message,
+      });
+    }
+
+    let bestUser = null;
+    let bestDistance = Infinity;
+
+    for (const user of users || []) {
+      if (
+        !Array.isArray(user.face_embedding) ||
+        user.face_embedding.length !== descriptor.length
+      ) {
+        continue;
+      }
+
+      let sum = 0;
+
+      for (let i = 0; i < descriptor.length; i++) {
+        const diff =
+          Number(descriptor[i]) -
+          Number(user.face_embedding[i]);
+
+        sum += diff * diff;
+      }
+
+      const distance = Math.sqrt(sum);
+
+      if (distance < bestDistance) {
+        bestDistance = distance;
+        bestUser = user;
+      }
+    }
+
+    if (!bestUser || bestDistance > 0.5) {
+      return res.json({
+        success: false,
+        error: "找不到符合的人臉",
+      });
+    }
+
+    delete bestUser.face_embedding;
+
+    res.json({
+      success: true,
+      distance: bestDistance,
+      user: bestUser,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message,
+    });
   }
 });
 
