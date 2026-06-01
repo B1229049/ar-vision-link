@@ -3,21 +3,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import { io } from "socket.io-client";
 import "../styles/QuizGame.css";
 
-const ICE_CONFIG = {
-  iceServers: [
-    { urls: "stun:stun.l.google.com:19302" },
-    {
-      urls: "turn:free.expressturn.com:3478",
-      username: "000000002095434030",
-      credential: "z745b0PqGo97PlA32T48lqiXqI0=",
-    },
-    {
-      urls: "turns:free.expressturn.com:5349",
-      username: "000000002095434030",
-      credential: "z745b0PqGo97PlA32T48lqiXqI0=",
-    },
-  ],
-};
+const res = await fetch(`${BACKEND_URL}/api/ice-config`);
+const ICE_CONFIG = await res.json();
 
 function QuizGame() {
   const navigate = useNavigate();
