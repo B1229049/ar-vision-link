@@ -288,7 +288,6 @@ app.put("/api/users/:id", async (req, res) => {
       extra_info,
       avatar_url,
       is_active,
-      face_embedding,
     } = req.body;
 
     const updateData = {
@@ -301,12 +300,6 @@ app.put("/api/users/:id", async (req, res) => {
     if (extra_info !== undefined) updateData.extra_info = extra_info;
     if (avatar_url !== undefined) updateData.avatar_url = avatar_url;
     if (is_active !== undefined) updateData.is_active = is_active;
-
-    if (face_embedding !== undefined) {
-      updateData.face_embedding = Array.isArray(face_embedding)
-        ? face_embedding.map(Number)
-        : face_embedding;
-    }
 
     const { data, error } = await supabase
       .from("users")
@@ -414,6 +407,128 @@ app.post("/api/face-login", async (req, res) => {
       success: true,
       distance: bestDistance,
       user: bestUser,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message,
+    });
+  }
+});
+
+app.put("/api/users/:id/face", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { face_embedding, avatar_url } = req.body;
+
+    if (!Array.isArray(face_embedding)) {
+      return res.status(400).json({
+        success: false,
+        error: "face_embedding 必須是陣列",
+      });
+    }
+
+    const { data, error } = await supabase
+      .from("users")
+      .update({
+        face_embedding: face_embedding.map(Number),
+        avatar_url,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", id)
+      .select(USER_PUBLIC_SELECT)
+      .single();
+
+    if (error) {
+      return res.status(500).json({
+        success: false,
+        error: error.message,
+      });
+    }
+
+    res.json({
+      success: true,
+      user: data,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message,
+    });
+  }
+});
+
+app.post("/api/face-recognize-batch", async (req, res) => {
+  try {
+    const { descriptors } = req.body;
+
+    if (!Array.isArray(descriptors)) {
+      return res.status(400).json({
+        success: false,
+        error: "descriptors 必須是陣列",
+      });
+    }
+
+    const { data: users, error } = await supabase
+      .from("users")
+      .select(USER_PRIVATE_SELECT)
+      .eq("is_active", true);
+
+    if (error) {
+      return res.status(500).json({
+        success: false,
+        error: error.message,
+      });
+    }
+
+    const results = [];
+
+    for (const descriptor of descriptors) {
+      let bestUser = null;
+      let bestDistance = Infinity;
+
+      for (const user of users || []) {
+        if (
+          !Array.isArray(user.face_embedding) ||
+          user.face_embedding.length !== descriptor.length
+        ) {
+          continue;
+        }
+
+        let sum = 0;
+
+        for (let i = 0; i < descriptor.length; i++) {
+          const diff =
+            Number(descriptor[i]) -
+            Number(user.face_embedding[i]);
+
+          sum += diff * diff;
+        }
+
+        const distance = Math.sqrt(sum);
+
+        if (distance < bestDistance) {
+          bestDistance = distance;
+          bestUser = user;
+        }
+      }
+
+      if (bestUser && bestDistance < 0.45) {
+        const safeUser = { ...bestUser };
+        delete safeUser.face_embedding;
+
+        results.push({
+          user: safeUser,
+          distance: bestDistance,
+        });
+      } else {
+        results.push(null);
+      }
+    }
+
+    res.json({
+      success: true,
+      results,
     });
   } catch (err) {
     res.status(500).json({

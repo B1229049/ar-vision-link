@@ -3,6 +3,7 @@ import * as faceapi from "@vladmandic/face-api";
 import "../styles/Camera.css";
 
 const MODEL_URL = "https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model";
+const BACKEND_URL = "https://ar-vision-link.onrender.com";
 
 let backendReadyPromise = null;
 
@@ -20,10 +21,8 @@ async function setupFaceApiBackend() {
     try {
       await tf.setBackend("webgl");
       await tf.ready();
-
       const test = tf.tensor1d([1]);
       test.dispose();
-
       console.log("[tf] backend:", tf.getBackend());
       return;
     } catch (webglErr) {
@@ -33,10 +32,8 @@ async function setupFaceApiBackend() {
     try {
       await tf.setBackend("wasm");
       await tf.ready();
-
       const test = tf.tensor1d([1]);
       test.dispose();
-
       console.log("[tf] backend:", tf.getBackend());
       return;
     } catch (wasmErr) {
@@ -61,28 +58,22 @@ async function loadCommonFaceApiModels() {
   ]);
 }
 
-
 function Camera() {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
 
   const mediaPipeCameraRef = useRef(null);
-  const userCacheRef = useRef([]);
   const modelsReadyRef = useRef(false);
   const recognizingRef = useRef(false);
   const lastRecognizeTimeRef = useRef(0);
   const latestLandmarksRef = useRef([]);
 
   const [modelsReady, setModelsReady] = useState(false);
-  const [userCount, setUserCount] = useState(0);
   const [trackedFaces, setTrackedFaces] = useState([]);
   const [openedIds, setOpenedIds] = useState({});
-  const [isReloadingUsers, setIsReloadingUsers] = useState(false);
+  const [recognizeStatus, setRecognizeStatus] = useState("等待辨識");
 
-  const BACKEND_URL = "https://ar-vision-link.onrender.com";
-
-  const MATCH_THRESHOLD = 0.85;
-  const RECOGNIZE_INTERVAL_MS = 900;
+  const RECOGNIZE_INTERVAL_MS = 1200;
 
   useEffect(() => {
     init();
@@ -94,7 +85,6 @@ function Camera() {
 
   async function init() {
     await loadFaceApiModels();
-    await loadUserCache();
     await startFaceMesh();
   }
 
@@ -104,73 +94,12 @@ function Camera() {
 
       modelsReadyRef.current = true;
       setModelsReady(true);
+
       console.log("[face-api] 模型載入完成");
     } catch (err) {
       console.error("[face-api] 模型載入失敗：", err);
       alert("face-api 模型載入失敗");
     }
-  }
-
-  async function loadUserCache() {
-    setIsReloadingUsers(true);
-
-    try {
-      const response = await fetch(`${BACKEND_URL}/api/face-login`);
-      const result = await response.json();
-
-      if (!response.ok || result.error) {
-        console.error(result);
-        alert("載入使用者失敗：" + (result.error || "未知錯誤"));
-        setIsReloadingUsers(false);
-        return;
-      }
-
-      const data = result.users || [];
-
-      const users = data
-        .filter((u) => u.is_active !== false)
-        .map((u) => {
-          let embedding = u.face_embedding;
-
-          if (typeof embedding === "string") {
-            try {
-              embedding = JSON.parse(embedding);
-            } catch {
-              console.warn(`[backend] ${u.name} embedding JSON 解析失敗`);
-              return null;
-            }
-          }
-
-          if (!Array.isArray(embedding) || embedding.length === 0) {
-            console.warn(`[backend] ${u.name} 沒有有效 embedding`);
-            return null;
-          }
-
-          return {
-            id: u.id,
-            name: u.name || "",
-            nickname: u.nickname || "",
-            description: u.description || "",
-            extra_info: u.extra_info || "",
-            is_active: u.is_active,
-            created_at: u.created_at || "",
-            updated_at: u.updated_at || "",
-            face_embedding: embedding,
-            embedding: new Float32Array(embedding.map(Number)),
-          };
-        })
-        .filter(Boolean);
-
-      userCacheRef.current = users;
-      setUserCount(users.length);
-
-      console.log("[backend] user cache:", users.length);
-    } catch (err) {
-      console.error("[backend] 載入使用者失敗：", err);
-      alert("載入使用者失敗，請確認 Render 後端是否啟動");
-    }
-
-    setIsReloadingUsers(false);
   }
 
   async function startFaceMesh() {
@@ -200,7 +129,7 @@ function Camera() {
     });
 
     faceMesh.setOptions({
-      maxNumFaces: 5,
+      maxNumFaces: 8,
       refineLandmarks: true,
       minDetectionConfidence: 0.6,
       minTrackingConfidence: 0.6,
@@ -215,6 +144,7 @@ function Camera() {
       if (landmarksList.length === 0) {
         setTrackedFaces([]);
         setOpenedIds({});
+        setRecognizeStatus("畫面中沒有偵測到人臉");
         return;
       }
 
@@ -243,18 +173,44 @@ function Camera() {
     camera.start();
   }
 
+  async function recognizeBatch(descriptors) {
+    const response = await fetch(`${BACKEND_URL}/api/face-recognize-batch`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        descriptors: descriptors.map((d) => Array.from(d)),
+      }),
+    });
+
+    let result;
+
+    try {
+      result = await response.json();
+    } catch {
+      throw new Error("後端回傳不是 JSON");
+    }
+
+    if (!response.ok || !result.success) {
+      throw new Error(result.error || "Batch 辨識失敗");
+    }
+
+    return result.results || [];
+  }
+
   async function recognizeMultiFaces() {
     if (recognizingRef.current) return;
 
     const video = videoRef.current;
     const canvas = canvasRef.current;
-    const users = userCacheRef.current;
     const landmarksList = latestLandmarksRef.current;
 
     if (!video || !canvas || video.readyState < 2) return;
-    if (!users.length || !landmarksList.length) return;
+    if (!landmarksList.length) return;
 
     recognizingRef.current = true;
+    setRecognizeStatus("辨識中...");
 
     try {
       const detections = await faceapi
@@ -270,50 +226,37 @@ function Camera() {
 
       if (!detections.length) {
         setTrackedFaces([]);
+        setRecognizeStatus("face-api 沒有偵測到人臉");
+        return;
+      }
+
+      const descriptors = detections.map((det) => det.descriptor);
+
+      let recognizeResults = [];
+
+      try {
+        recognizeResults = await recognizeBatch(descriptors);
+      } catch (err) {
+        console.error("[recognizeBatch] 失敗：", err);
+        setRecognizeStatus("後端 Batch 辨識失敗，請確認 server.js API");
         return;
       }
 
       const videoW = video.videoWidth || 1280;
       const videoH = video.videoHeight || 720;
 
-      const results = [];
-      const usedUsers = new Set();
       const usedMeshes = new Set();
+      const backendResults = [];
 
-      detections.forEach((det, detIndex) => {
-        let bestUser = null;
-        let bestDistance = Infinity;
+      for (let detIndex = 0; detIndex < detections.length; detIndex++) {
+        const det = detections[detIndex];
+        const result = recognizeResults[detIndex];
 
-        users.forEach((user) => {
-          if (usedUsers.has(user.id)) return;
-
-          if (
-            !user.embedding ||
-            user.embedding.length !== det.descriptor.length
-          ) {
-            return;
-          }
-
-          const distance = faceapi.euclideanDistance(
-            det.descriptor,
-            user.embedding
-          );
-
-          console.log(
-            `[debug] detection ${detIndex} vs ${user.name}: ${distance.toFixed(
-              3
-            )}`
-          );
-
-          if (distance < bestDistance) {
-            bestDistance = distance;
-            bestUser = user;
-          }
-        });
-
-        if (!bestUser || bestDistance >= MATCH_THRESHOLD) return;
+        if (!result?.user) continue;
+        if (Number(result.distance) > 0.45) continue;
 
         const box = det.detection.box;
+
         const faceCx = (box.x + box.width / 2) / videoW;
         const faceCy = (box.y + box.height / 2) / videoH;
 
@@ -335,37 +278,59 @@ function Camera() {
           }
         });
 
-        if (bestMeshIndex === -1) return;
+        if (bestMeshIndex === -1) continue;
+
+        usedMeshes.add(bestMeshIndex);
 
         const landmarks = landmarksList[bestMeshIndex];
+
         const forehead = landmarks[10];
         const chin = landmarks[152];
 
         const headHeight = (chin.y - forehead.y) * canvas.height;
 
-        results.push({
-          id: bestUser.id,
-          user: bestUser,
-          distance: bestDistance,
+        backendResults.push({
+          id: `${result.user.id}-${detIndex}`,
+          userId: result.user.id,
+          user: result.user,
+          distance: result.distance,
           x: forehead.x * canvas.width,
           y: forehead.y * canvas.height - headHeight * 0.7,
         });
+      }
 
-        usedUsers.add(bestUser.id);
-        usedMeshes.add(bestMeshIndex);
-      });
+      const uniqueResults = [];
+      const usedUserIds = new Set();
 
-      setTrackedFaces(results);
+      for (const item of backendResults) {
+        if (usedUserIds.has(item.userId)) continue;
+
+        usedUserIds.add(item.userId);
+        uniqueResults.push(item);
+      }
+
+      setTrackedFaces(uniqueResults);
 
       setOpenedIds((prev) => {
         const next = {};
-        results.forEach((face) => {
-          if (prev[face.id]) next[face.id] = true;
+
+        uniqueResults.forEach((face) => {
+          if (prev[face.id]) {
+            next[face.id] = true;
+          }
         });
+
         return next;
       });
+
+      setRecognizeStatus(
+        uniqueResults.length > 0
+          ? `已辨識 ${uniqueResults.length} 人`
+          : "沒有符合的使用者"
+      );
     } catch (err) {
       console.error("[recognizeMultiFaces] 失敗：", err);
+      setRecognizeStatus("辨識失敗，請確認後端是否啟動");
     } finally {
       recognizingRef.current = false;
     }
@@ -440,7 +405,6 @@ function Camera() {
       );
     }
 
-    userCacheRef.current = [];
     latestLandmarksRef.current = [];
     recognizingRef.current = false;
 
@@ -502,6 +466,10 @@ function Camera() {
               <div className="time-info">
                 更新：{formatDate(face.user.updated_at)}
               </div>
+
+              <div className="distance-info">
+                距離：{Number(face.distance).toFixed(3)}
+              </div>
             </div>
           )}
         </div>
@@ -510,16 +478,18 @@ function Camera() {
       <div className="status-panel">
         {modelsReady ? "模型已載入" : "模型載入中..."}
         <br />
-        使用者快取：{userCount} 筆
+        後端辨識：Batch 已啟用
+        <br />
+        狀態：{recognizeStatus}
         <br />
         辨識人數：{trackedFaces.length}
 
         <button
           className="reload-users-btn"
-          onClick={loadUserCache}
-          disabled={isReloadingUsers}
+          onClick={recognizeMultiFaces}
+          disabled={!modelsReady}
         >
-          {isReloadingUsers ? "重新載入中..." : "重新載入使用者"}
+          重新辨識
         </button>
       </div>
     </div>

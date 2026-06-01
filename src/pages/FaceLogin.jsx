@@ -4,6 +4,7 @@ import * as faceapi from "@vladmandic/face-api";
 import "../styles/FaceLogin.css";
 
 const MODEL_URL = "https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model";
+const BACKEND_URL = "https://ar-vision-link.onrender.com";
 
 let backendReadyPromise = null;
 
@@ -21,10 +22,8 @@ async function setupFaceApiBackend() {
     try {
       await tf.setBackend("webgl");
       await tf.ready();
-
       const test = tf.tensor1d([1]);
       test.dispose();
-
       console.log("[tf] backend:", tf.getBackend());
       return;
     } catch (webglErr) {
@@ -34,10 +33,8 @@ async function setupFaceApiBackend() {
     try {
       await tf.setBackend("wasm");
       await tf.ready();
-
       const test = tf.tensor1d([1]);
       test.dispose();
-
       console.log("[tf] backend:", tf.getBackend());
       return;
     } catch (wasmErr) {
@@ -62,23 +59,17 @@ async function loadCommonFaceApiModels() {
   ]);
 }
 
-
 function FaceLogin() {
   const videoRef = useRef(null);
   const streamRef = useRef(null);
-  const userCacheRef = useRef([]);
 
   const navigate = useNavigate();
 
   const [modelsReady, setModelsReady] = useState(false);
   const [cameraReady, setCameraReady] = useState(false);
-  const [usersLoaded, setUsersLoaded] = useState(false);
   const [loginStatus, setLoginStatus] = useState("尚未登入");
   const [loggingIn, setLoggingIn] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
-
-  const BACKEND_URL = "https://ar-vision-link.onrender.com";
-  const MATCH_THRESHOLD = 0.85;
 
   useEffect(() => {
     const savedUser = localStorage.getItem("currentUser");
@@ -87,9 +78,9 @@ function FaceLogin() {
       const user = JSON.parse(savedUser);
       setCurrentUser(user);
       setLoginStatus(`已自動登入：${user.name}`);
+    } else {
+      init();
     }
-
-    init();
 
     return () => {
       stopCamera();
@@ -98,59 +89,17 @@ function FaceLogin() {
 
   async function init() {
     await loadModels();
-    await loadUsers();
     await startCamera();
   }
 
   async function loadModels() {
     try {
       await loadCommonFaceApiModels();
-
       setModelsReady(true);
       console.log("face-api 模型載入完成");
     } catch (err) {
       console.error(err);
       alert("臉部模型載入失敗");
-    }
-  }
-
-  async function loadUsers() {
-    try {
-      const response = await fetch(`${BACKEND_URL}/api/face-login`);
-      const result = await response.json();
-
-      if (!response.ok || result.error) {
-        alert("載入使用者失敗：" + (result.error || "未知錯誤"));
-        return;
-      }
-
-      const users = (result.users || [])
-        .filter((u) => u.is_active !== false)
-        .map((u) => {
-          let embedding = u.face_embedding;
-
-          if (typeof embedding === "string") {
-            embedding = JSON.parse(embedding);
-          }
-
-          if (!Array.isArray(embedding) || embedding.length === 0) {
-            return null;
-          }
-
-          return {
-            ...u,
-            embedding: new Float32Array(embedding.map(Number)),
-          };
-        })
-        .filter(Boolean);
-
-      userCacheRef.current = users;
-      setUsersLoaded(true);
-
-      console.log("已載入使用者：", users.length);
-    } catch (err) {
-      console.error(err);
-      alert("載入使用者失敗，請確認後端是否啟動");
     }
   }
 
@@ -183,6 +132,8 @@ function FaceLogin() {
     if (videoRef.current) {
       videoRef.current.srcObject = null;
     }
+
+    setCameraReady(false);
   }
 
   async function handleFaceLogin() {
@@ -193,11 +144,6 @@ function FaceLogin() {
 
     if (!cameraReady) {
       alert("相機尚未開啟");
-      return;
-    }
-
-    if (!usersLoaded || userCacheRef.current.length === 0) {
-      alert("尚未載入使用者資料");
       return;
     }
 
@@ -224,40 +170,25 @@ function FaceLogin() {
         return;
       }
 
-      let bestUser = null;
-      let bestDistance = Infinity;
-
-      userCacheRef.current.forEach((user) => {
-        if (!user.embedding) return;
-
-        const distance = faceapi.euclideanDistance(
-          detection.descriptor,
-          user.embedding
-        );
-
-        if (distance < bestDistance) {
-          bestDistance = distance;
-          bestUser = user;
-        }
+      const response = await fetch(`${BACKEND_URL}/api/face-login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          descriptor: Array.from(detection.descriptor),
+        }),
       });
 
-      if (!bestUser || bestDistance >= MATCH_THRESHOLD) {
-        setLoginStatus("登入失敗：找不到符合的使用者");
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        setLoginStatus(result.error || "登入失敗：找不到符合的使用者");
         setLoggingIn(false);
         return;
       }
 
-      const loginUser = {
-        id: bestUser.id,
-        name: bestUser.name,
-        nickname: bestUser.nickname,
-        description: bestUser.description,
-        extra_info: bestUser.extra_info,
-        is_active: bestUser.is_active,
-        created_at: bestUser.created_at,
-        updated_at: bestUser.updated_at,
-        avatar_url: bestUser.avatar_url,
-      };
+      const loginUser = result.user;
 
       localStorage.setItem("currentUser", JSON.stringify(loginUser));
 
@@ -281,7 +212,12 @@ function FaceLogin() {
     localStorage.removeItem("currentUser");
     setCurrentUser(null);
     setLoginStatus("已登出");
-    startCamera();
+
+    if (!modelsReady) {
+      loadModels().then(() => startCamera());
+    } else {
+      startCamera();
+    }
   }
 
   return (
@@ -319,10 +255,7 @@ function FaceLogin() {
             <p>@{currentUser.nickname || "unknown"}</p>
             <p>{currentUser.description || "尚無介紹"}</p>
 
-            <button
-              className="login-btn"
-              onClick={() => navigate("/profile")}
-            >
+            <button className="login-btn" onClick={() => navigate("/profile")}>
               前往個人頁面
             </button>
 

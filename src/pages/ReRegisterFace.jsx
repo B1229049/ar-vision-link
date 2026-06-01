@@ -227,7 +227,7 @@ function ReRegisterFace() {
 
       const embedding = Array.from(detection.descriptor).map(Number);
 
-      const response = await fetch(`${BACKEND_URL}/api/users/${currentUser.id}`, {
+      const response = await fetch(`${BACKEND_URL}/api/users/${currentUser.id}/face`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
