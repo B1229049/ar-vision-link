@@ -198,6 +198,41 @@ function calculateScore(isCorrect, timeLeft = 0) {
   return baseScore + bonus;
 }
 
+let userEmbeddingCache = null;
+let userEmbeddingCacheTime = 0;
+
+const USER_EMBEDDING_CACHE_TTL = 30 * 1000;
+
+async function getActiveUsersWithEmbeddings() {
+  const now = Date.now();
+
+  if (
+    userEmbeddingCache &&
+    now - userEmbeddingCacheTime < USER_EMBEDDING_CACHE_TTL
+  ) {
+    return userEmbeddingCache;
+  }
+
+  const { data, error } = await supabase
+    .from("users")
+    .select(USER_PRIVATE_SELECT)
+    .eq("is_active", true);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  userEmbeddingCache = data || [];
+  userEmbeddingCacheTime = now;
+
+  return userEmbeddingCache;
+}
+
+function clearUserEmbeddingCache() {
+  userEmbeddingCache = null;
+  userEmbeddingCacheTime = 0;
+}
+
 app.get("/", (req, res) => {
   res.send("AR Vision Link backend is running");
 });
@@ -270,6 +305,8 @@ app.post("/api/users/register", async (req, res) => {
     if (error) {
       return res.status(500).json({ success: false, error: error.message });
     }
+    
+    clearUserEmbeddingCache();
 
     res.json({ success: true, user: data });
   } catch (err) {
@@ -336,6 +373,8 @@ app.delete("/api/users/:id", async (req, res) => {
       return res.status(500).json({ success: false, error: error.message });
     }
 
+    clearUserEmbeddingCache();
+
     res.json({ success: true, user: data });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
@@ -353,17 +392,7 @@ app.post("/api/face-login", async (req, res) => {
       });
     }
 
-    const { data: users, error } = await supabase
-      .from("users")
-      .select(USER_PRIVATE_SELECT)
-      .eq("is_active", true);
-
-    if (error) {
-      return res.status(500).json({
-        success: false,
-        error: error.message,
-      });
-    }
+    const users = await getActiveUsersWithEmbeddings();
 
     let bestUser = null;
     let bestDistance = Infinity;
@@ -446,6 +475,8 @@ app.put("/api/users/:id/face", async (req, res) => {
       });
     }
 
+    clearUserEmbeddingCache();
+
     res.json({
       success: true,
       user: data,
@@ -469,17 +500,7 @@ app.post("/api/face-recognize-batch", async (req, res) => {
       });
     }
 
-    const { data: users, error } = await supabase
-      .from("users")
-      .select(USER_PRIVATE_SELECT)
-      .eq("is_active", true);
-
-    if (error) {
-      return res.status(500).json({
-        success: false,
-        error: error.message,
-      });
-    }
+    const users = await getActiveUsersWithEmbeddings();
 
     const results = [];
 
