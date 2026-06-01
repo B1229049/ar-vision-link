@@ -7,8 +7,8 @@ import "../styles/HostConsole.css";
 const BACKEND_URL =
     import.meta.env.VITE_API_URL || "https://ar-vision-link.onrender.com";
 
-const res = await fetch(`${BACKEND_URL}/api/ice-config`);
-const ICE_CONFIG = await res.json();
+// const res = await fetch(`${BACKEND_URL}/api/ice-config`);
+// const ICE_CONFIG = await res.json();
 
 function RemoteVideo({ stream }) {
   const videoRef = useRef(null);
@@ -46,6 +46,8 @@ function HostConsole() {
   const socketRef = useRef(null);
   const peerConnectionsRef = useRef({});
   const questionsRef = useRef([]);
+  const iceConfigRef = useRef(null);
+  const [iceReady, setIceReady] = useState(false);
 
   const [currentUser, setCurrentUser] = useState(null);
   const [session, setSession] = useState(null);
@@ -67,6 +69,32 @@ function HostConsole() {
   useEffect(() => {
     questionsRef.current = questions;
   }, [questions]);
+
+  useEffect(() => {
+    async function loadIceConfig() {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/ice-config`);
+
+        if (!res.ok) {
+          throw new Error(`ICE Config API error: ${res.status}`);
+        }
+
+        const config = await res.json();
+
+        if (!config?.iceServers) {
+          throw new Error("ICE_CONFIG 格式錯誤");
+        }
+
+        iceConfigRef.current = config;
+        setIceReady(true);
+      } catch (err) {
+        console.error("載入 ICE_CONFIG 失敗：", err);
+        alert("無法取得 ICE 設定，請確認 /api/ice-config");
+      }
+    }
+
+    loadIceConfig();
+  }, []);
 
   const answeredUserIds = useMemo(() => {
     return new Set(answers.map((a) => Number(a.user_id)));
@@ -281,7 +309,11 @@ function HostConsole() {
   }
 
   function closePeerConnection(socketId) {
-    const pc = peerConnectionsRef.current[socketId];
+    if (!iceConfigRef.current) {
+      throw new Error("ICE_CONFIG 尚未載入完成");
+    }
+
+    const pc = new RTCPeerConnection(iceConfigRef.current);
 
     if (pc) {
       pc.close();
