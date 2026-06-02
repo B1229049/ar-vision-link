@@ -5,39 +5,7 @@ import TrackedPlayerVideo from "../components/TrackedPlayerVideo";
 import "../styles/HostConsole.css";
 
 const BACKEND_URL =
-    import.meta.env.VITE_API_URL || "https://ar-vision-link.onrender.com";
-
-// const res = await fetch(`${BACKEND_URL}/api/ice-config`);
-// const ICE_CONFIG = await res.json();
-
-function RemoteVideo({ stream }) {
-  const videoRef = useRef(null);
-
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video || !stream) return;
-
-    video.srcObject = stream;
-    video.play().catch((err) => {
-      console.error("Host remote video play failed:", err);
-    });
-
-    return () => {
-      video.srcObject = null;
-    };
-  }, [stream]);
-
-  return (
-    <video
-      ref={videoRef}
-      className="host-remote-video"
-      autoPlay
-      playsInline
-      muted
-      controls={false}
-    />
-  );
-}
+  import.meta.env.VITE_API_URL || "https://ar-vision-link.onrender.com";
 
 function HostConsole() {
   const navigate = useNavigate();
@@ -47,7 +15,6 @@ function HostConsole() {
   const peerConnectionsRef = useRef({});
   const questionsRef = useRef([]);
   const iceConfigRef = useRef(null);
-  const [iceReady, setIceReady] = useState(false);
 
   const [currentUser, setCurrentUser] = useState(null);
   const [session, setSession] = useState(null);
@@ -70,6 +37,18 @@ function HostConsole() {
     questionsRef.current = questions;
   }, [questions]);
 
+  const answeredUserIds = useMemo(() => {
+    return new Set(answers.map((a) => Number(a.user_id)));
+  }, [answers]);
+
+  const answerStats = ["A", "B", "C", "D"].map((key) => {
+    const count = answers.filter((a) => a.answer === key).length;
+    const percent =
+      players.length > 0 ? Math.round((count / players.length) * 100) : 0;
+
+    return { key, count, percent };
+  });
+
   useEffect(() => {
     async function loadIceConfig() {
       try {
@@ -86,7 +65,6 @@ function HostConsole() {
         }
 
         iceConfigRef.current = config;
-        setIceReady(true);
       } catch (err) {
         console.error("載入 ICE_CONFIG 失敗：", err);
         alert("無法取得 ICE 設定，請確認 /api/ice-config");
@@ -95,30 +73,6 @@ function HostConsole() {
 
     loadIceConfig();
   }, []);
-
-  const answeredUserIds = useMemo(() => {
-    return new Set(answers.map((a) => Number(a.user_id)));
-  }, [answers]);
-
-  const answerStats = ["A", "B", "C", "D"].map((key) => {
-    const count = answers.filter((a) => a.answer === key).length;
-    const percent =
-      players.length > 0 ? Math.round((count / players.length) * 100) : 0;
-
-    return { key, count, percent };
-  });
-
-  function cleanupWebRTC() {
-    Object.keys(peerConnectionsRef.current).forEach((socketId) => {
-      peerConnectionsRef.current[socketId]?.close();
-      delete peerConnectionsRef.current[socketId];
-    });
-
-    setRemoteStreams({});
-
-    socketRef.current?.disconnect();
-    socketRef.current = null;
-  }
 
   useEffect(() => {
     const savedUser = localStorage.getItem("currentUser");
@@ -137,15 +91,17 @@ function HostConsole() {
 
     socketRef.current = socket;
 
-    socket.emit("join-session", {
-      sessionId: Number(sessionId),
-      userId: user.id,
-      role: "host",
-    });
+    socket.on("connect", () => {
+      socket.emit("join-session", {
+        sessionId: Number(sessionId),
+        userId: user.id,
+        role: "host",
+      });
 
-    socket.emit("webrtc-host-ready", {
-      sessionId: Number(sessionId),
-      userId: user.id,
+      socket.emit("webrtc-host-ready", {
+        sessionId: Number(sessionId),
+        userId: user.id,
+      });
     });
 
     socket.on("session-sync", async (data) => {
@@ -181,6 +137,7 @@ function HostConsole() {
 
     socket.on("webrtc-ice-candidate", async ({ from, candidate }) => {
       const pc = peerConnectionsRef.current[from];
+
       if (!pc || !candidate) return;
 
       try {
@@ -243,7 +200,7 @@ function HostConsole() {
       setPlayers(leaderboard || []);
       setChanging(false);
       cleanupWebRTC();
-      navigate(`/quiz/leaderboard/${sessionId}`);
+      navigate(`/quiz/leaderboard/${session.session_id}`);
     });
 
     socket.on("socket-error", (data) => {
@@ -254,15 +211,36 @@ function HostConsole() {
     return () => {
       cleanupWebRTC();
     };
-  }, [sessionId, navigate, BACKEND_URL]);
+  }, [sessionId, navigate]);
+
+  function cleanupWebRTC() {
+    Object.keys(peerConnectionsRef.current).forEach((socketId) => {
+      const pc = peerConnectionsRef.current[socketId];
+
+      if (pc) {
+        pc.close();
+        delete peerConnectionsRef.current[socketId];
+      }
+    });
+
+    setRemoteStreams({});
+
+    socketRef.current?.disconnect();
+    socketRef.current = null;
+  }
 
   async function handleWebRTCOffer(playerSocketId, fromUserId, offer) {
     if (!playerSocketId || !offer || !socketRef.current) return;
 
+    if (!iceConfigRef.current) {
+      console.warn("ICE config 尚未載入，略過這次 offer");
+      return;
+    }
+
     try {
       closePeerConnection(playerSocketId);
 
-      const pc = new RTCPeerConnection(ICE_CONFIG);
+      const pc = new RTCPeerConnection(iceConfigRef.current);
       peerConnectionsRef.current[playerSocketId] = pc;
 
       pc.ontrack = (event) => {
@@ -288,7 +266,11 @@ function HostConsole() {
       };
 
       pc.onconnectionstatechange = () => {
-        if (pc.connectionState === "failed" || pc.connectionState === "closed") {
+        if (
+          pc.connectionState === "failed" ||
+          pc.connectionState === "closed" ||
+          pc.connectionState === "disconnected"
+        ) {
           closePeerConnection(playerSocketId);
         }
       };
@@ -309,11 +291,7 @@ function HostConsole() {
   }
 
   function closePeerConnection(socketId) {
-    if (!iceConfigRef.current) {
-      throw new Error("ICE_CONFIG 尚未載入完成");
-    }
-
-    const pc = new RTCPeerConnection(iceConfigRef.current);
+    const pc = peerConnectionsRef.current[socketId];
 
     if (pc) {
       pc.close();
@@ -382,6 +360,38 @@ function HostConsole() {
     socketRef.current?.emit("finish-game", {
       sessionId: Number(session.session_id),
     });
+  }
+
+  async function handleBackToHome() {
+    const confirmLeave = window.confirm(
+      "確定要結束測驗並返回 AR Vision Link 嗎？所有玩家都會結束遊戲。"
+    );
+
+    if (!confirmLeave) return;
+
+    try {
+      setChanging(true);
+
+      const res = await fetch(
+        `${BACKEND_URL}/api/game-sessions/${sessionId}/finish`,
+        {
+          method: "PUT",
+        }
+      );
+
+      const data = await res.json();
+
+      if (!data.success) {
+        throw new Error(data.error || "結束測驗失敗");
+      }
+
+      cleanupWebRTC();
+
+      navigate("/quiz");
+    } catch (err) {
+      alert(err.message);
+      setChanging(false);
+    }
   }
 
   function leaveConsole() {
@@ -607,7 +617,11 @@ function HostConsole() {
             : "下一題"}
         </button>
 
-        <button className="console-btn secondary" onClick={leaveConsole}>
+        <button
+          className="console-btn secondary"
+          onClick={handleBackToHome}
+          disabled={changing}
+        >
           返回 AR Vision Link
         </button>
       </div>

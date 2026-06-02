@@ -130,7 +130,8 @@ function JoinQuiz() {
       }
 
       if (data.session?.started_at && !data.session?.game_finished) {
-        navigate(`/quiz/game/${data.session.session_id}`);
+        setSession(data.session);
+        return;
       }
     });
 
@@ -143,7 +144,7 @@ function JoinQuiz() {
     });
 
     socket.on("game-started", ({ session }) => {
-      navigate(`/quiz/game/${session.session_id}`);
+      setSession(session);
     });
 
     socket.on("game-finished", ({ session }) => {
@@ -171,6 +172,24 @@ function JoinQuiz() {
     } catch (err) {
       console.error("載入玩家列表失敗：", err);
     }
+  }
+
+  function goNormalMode() {
+    if (!session?.session_id) {
+      alert("找不到遊戲場次");
+      return;
+    }
+
+    navigate(`/quiz/game/${session.session_id}`);
+  }
+
+  function goARMode() {
+    if (!session?.session_id) {
+      alert("找不到遊戲場次");
+      return;
+    }
+
+    navigate(`/ar-quiz/${session.session_id}`);
   }
 
   function leaveRoom() {
@@ -205,7 +224,7 @@ function JoinQuiz() {
           <h2>已加入房間</h2>
 
           <p className="join-quiz-subtitle">
-            等待主持人開始遊戲，開始後會自動進入答題畫面。
+            等待主持人開始遊戲。開始後可選擇普通模式或 AR 模式答題。
           </p>
 
           <div className="joined-room-panel">
@@ -270,7 +289,23 @@ function JoinQuiz() {
             )}
           </div>
 
-          <div className="waiting-message">等待主持人開始遊戲...</div>
+          <div className="waiting-message">
+            {session?.started_at
+              ? "遊戲已開始，請選擇答題模式。"
+              : "等待主持人開始遊戲..."}
+          </div>
+
+          {session?.started_at && !session?.game_finished && (
+            <>
+              <button className="join-btn primary" onClick={goNormalMode}>
+                普通模式答題
+              </button>
+
+              <button className="join-btn primary" onClick={goARMode}>
+                AR 模式答題
+              </button>
+            </>
+          )}
 
           <button className="join-btn secondary" onClick={leaveRoom}>
             離開房間

@@ -17,6 +17,7 @@ import Leaderboard from "./pages/Leaderboard";
 import HostConsole from "./pages/HostConsole";
 import ManageQuizzes from "./pages/ManageQuizzes";
 import QuizHistory from "./pages/QuizHistory";
+import ARQuizGame from "./pages/ARQuizGame";
 
 
 import Navbar from "./components/Navbar";
@@ -132,8 +133,9 @@ function App() {
           }
         />
 
-        <Route path="/quiz/manage" element={<ManageQuizzes />} />
-        <Route path="/quiz/history" element={<QuizHistory />} />
+        <Route path="/quiz/manage" element={<ProtectedRoute><ManageQuizzes /></ProtectedRoute>} />
+        <Route path="/quiz/history" element={<ProtectedRoute><QuizHistory /></ProtectedRoute>} />
+        <Route path="/ar-quiz/:sessionId" element={<ProtectedRoute><ARQuizGame /></ProtectedRoute>} />
 
         
       </Routes>
