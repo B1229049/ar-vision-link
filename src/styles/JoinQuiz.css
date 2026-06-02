@@ -325,44 +325,70 @@
 }
 
 .mode-select-box {
-  margin: 20px 0;
-  padding: 18px;
-  border-radius: 20px;
-  background: rgba(15, 23, 42, 0.65);
+  margin: 22px 0;
+  padding: 20px;
+  border-radius: 24px;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(148, 163, 184, 0.22);
   display: grid;
-  gap: 12px;
+  gap: 14px;
 }
 
 .mode-select-box h3 {
-  margin: 0 0 8px;
+  margin: 0 0 4px;
   color: white;
+  font-size: 1.1rem;
 }
 
 .mode-select-btn {
   width: 100%;
-  padding: 16px;
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  background: rgba(30, 41, 59, 0.85);
+  padding: 17px 18px;
+  border-radius: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.32);
+  background: rgba(30, 41, 59, 0.82);
   color: white;
   text-align: left;
   cursor: pointer;
+  font-weight: 900;
+  transition: 0.22s ease;
 }
 
 .mode-select-btn span {
   display: block;
-  margin-top: 4px;
-  opacity: 0.75;
+  margin-top: 6px;
+  color: #cbd5e1;
   font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.mode-select-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  border-color: rgba(56, 189, 248, 0.7);
 }
 
 .mode-select-btn.active {
   border-color: #38bdf8;
-  background: rgba(14, 165, 233, 0.25);
-  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
+  background: linear-gradient(
+    135deg,
+    rgba(14, 165, 233, 0.28),
+    rgba(59, 130, 246, 0.18)
+  );
+  box-shadow:
+    0 0 0 3px rgba(56, 189, 248, 0.18),
+    0 18px 45px rgba(14, 165, 233, 0.16);
 }
 
 .mode-select-btn:disabled {
   opacity: 0.45;
   cursor: not-allowed;
+}
+
+.mode-warning {
+  padding: 12px 14px;
+  border-radius: 14px;
+  color: #fde68a;
+  background: rgba(120, 53, 15, 0.35);
+  border: 1px solid rgba(251, 191, 36, 0.35);
+  font-size: 0.9rem;
+  line-height: 1.5;
 }

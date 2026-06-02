@@ -61,7 +61,17 @@ function JoinQuiz() {
     }
   }
 
-  function updatePlayMode(mode) {
+  async function updatePlayMode(mode) {
+    if (mode === "ar") {
+      const ok = await checkCameraPermission();
+
+      if (!ok) {
+        setPlayMode("normal");
+        localStorage.setItem("quizPlayMode", "normal");
+        return;
+      }
+    }
+
     setPlayMode(mode);
     localStorage.setItem("quizPlayMode", mode);
   }
@@ -246,6 +256,25 @@ function JoinQuiz() {
     return "玩家自行選擇";
   }
 
+  async function checkCameraPermission() {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: false,
+      });
+
+      stream.getTracks().forEach((track) => track.stop());
+
+      return true;
+    } catch (err) {
+      alert(
+        "無法開啟相機。若要使用 AR 模式，請允許瀏覽器相機權限，或改用普通模式。"
+      );
+
+      return false;
+    }
+  }
+
   if (!currentUser) {
     return (
       <div className="join-quiz-page">
@@ -309,6 +338,11 @@ function JoinQuiz() {
           {!session?.started_at && (
             <div className="mode-select-box">
               <h3>選擇答題模式</h3>
+              {playMode === "ar" && (
+                <p className="mode-warning">
+                  AR 模式需要相機權限。請確認瀏覽器已允許使用相機。
+                </p>
+              )}
 
               <button
                 type="button"
