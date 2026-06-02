@@ -301,3 +301,59 @@
     font-size: 15px;
   }
 }
+
+.host-mode-box {
+  display: grid;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.host-mode-btn {
+  width: 100%;
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(15, 23, 42, 0.75);
+  color: white;
+  text-align: left;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.host-mode-btn span {
+  display: block;
+  margin-top: 6px;
+  opacity: 0.75;
+  font-size: 0.9rem;
+}
+
+.host-mode-btn.active {
+  border-color: #38bdf8;
+  background: rgba(14, 165, 233, 0.25);
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
+}
+
+.host-session-info {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 14px;
+  margin: 18px 0;
+}
+
+.host-session-info div {
+  padding: 14px;
+  border-radius: 16px;
+  background: rgba(15, 23, 42, 0.65);
+}
+
+.host-session-info span {
+  display: block;
+  color: #94a3b8;
+  font-size: 0.85rem;
+}
+
+.host-session-info strong {
+  display: block;
+  margin-top: 4px;
+  color: white;
+}

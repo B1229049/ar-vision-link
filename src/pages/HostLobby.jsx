@@ -14,6 +14,9 @@ function HostLobby() {
   const [currentUser, setCurrentUser] = useState(null);
   const [quizzes, setQuizzes] = useState([]);
   const [selectedQuizId, setSelectedQuizId] = useState("");
+
+  const [gameMode, setGameMode] = useState("choice");
+
   const [session, setSession] = useState(null);
   const [quiz, setQuiz] = useState(null);
   const [questions, setQuestions] = useState([]);
@@ -35,6 +38,12 @@ function HostLobby() {
     setCurrentUser(user);
     loadMyQuizzes(user.id);
   }, [navigate]);
+
+  useEffect(() => {
+    return () => {
+      socketRef.current?.disconnect();
+    };
+  }, []);
 
   async function loadMyQuizzes(userId) {
     try {
@@ -81,6 +90,7 @@ function HostLobby() {
         },
         body: JSON.stringify({
           quiz_id: Number(selectedQuizId),
+          game_mode: gameMode,
         }),
       });
 
@@ -92,10 +102,21 @@ function HostLobby() {
         return;
       }
 
-      setSession(result.session);
-      localStorage.setItem("hostGameSession", JSON.stringify(result.session));
+      const createdSession = {
+        ...result.session,
+        game_mode:
+          result.session?.game_mode ||
+          gameMode,
+      };
 
-      connectSocket(result.session.session_id, currentUser.id);
+      setSession(createdSession);
+
+      localStorage.setItem(
+        "hostGameSession",
+        JSON.stringify(createdSession)
+      );
+
+      connectSocket(createdSession.session_id, currentUser.id);
     } catch (err) {
       console.error(err);
       alert("建立房間時發生錯誤");
@@ -115,25 +136,39 @@ function HostLobby() {
 
     socketRef.current = socket;
 
-    socket.emit("join-session", {
-      sessionId: Number(sessionId),
-      userId: Number(userId),
-      role: "host",
+    socket.on("connect", () => {
+      socket.emit("join-session", {
+        sessionId: Number(sessionId),
+        userId: Number(userId),
+        role: "host",
+      });
     });
 
     socket.on("session-sync", (data) => {
-      setSession(data.session);
+      const syncedSession = {
+        ...data.session,
+        game_mode:
+          data.session?.game_mode ||
+          gameMode,
+      };
+
+      setSession(syncedSession);
       setQuiz(data.quiz);
       setQuestions(data.questions || []);
       setPlayers(data.leaderboard || []);
 
-      if (data.session?.game_finished) {
-        navigate(`/quiz/leaderboard/${data.session.session_id}`);
+      localStorage.setItem(
+        "hostGameSession",
+        JSON.stringify(syncedSession)
+      );
+
+      if (syncedSession?.game_finished) {
+        navigate(`/quiz/leaderboard/${syncedSession.session_id}`);
         return;
       }
 
-      if (data.session?.started_at && !data.session?.game_finished) {
-        navigate(`/quiz/host-console/${data.session.session_id}`);
+      if (syncedSession?.started_at && !syncedSession?.game_finished) {
+        navigate(`/quiz/host-console/${syncedSession.session_id}`);
       }
     });
 
@@ -147,7 +182,20 @@ function HostLobby() {
 
     socket.on("game-started", ({ session }) => {
       setStarting(false);
-      navigate(`/quiz/host-console/${session.session_id}`);
+
+      const startedSession = {
+        ...session,
+        game_mode:
+          session?.game_mode ||
+          gameMode,
+      };
+
+      localStorage.setItem(
+        "hostGameSession",
+        JSON.stringify(startedSession)
+      );
+
+      navigate(`/quiz/host-console/${startedSession.session_id}`);
     });
 
     socket.on("game-finished", ({ session }) => {
@@ -157,6 +205,12 @@ function HostLobby() {
     socket.on("socket-error", (data) => {
       alert(data.error || "Socket 發生錯誤");
       setStarting(false);
+    });
+
+    socket.emit("join-session", {
+      sessionId: Number(sessionId),
+      userId: Number(userId),
+      role: "host",
     });
   }
 
@@ -200,11 +254,11 @@ function HostLobby() {
     });
   }
 
-  useEffect(() => {
-    return () => {
-      socketRef.current?.disconnect();
-    };
-  }, []);
+  function getModeLabel(mode) {
+    if (mode === "normal") return "普通模式";
+    if (mode === "ar") return "AR 模式";
+    return "玩家自行選擇";
+  }
 
   if (loading) {
     return (
@@ -222,7 +276,7 @@ function HostLobby() {
         <h2>主持遊戲</h2>
 
         <p className="host-subtitle">
-          選擇你建立的測驗，產生房號讓玩家加入。
+          選擇你建立的測驗，設定答題模式，產生房號讓玩家加入。
         </p>
 
         {!session && (
@@ -253,6 +307,51 @@ function HostLobby() {
                       </option>
                     ))}
                   </select>
+                </div>
+
+                <div className="host-field">
+                  <label>答題模式</label>
+
+                  <div className="host-mode-box">
+                    <button
+                      type="button"
+                      className={
+                        gameMode === "normal"
+                          ? "host-mode-btn active"
+                          : "host-mode-btn"
+                      }
+                      onClick={() => setGameMode("normal")}
+                    >
+                      普通模式
+                      <span>玩家只能使用一般答題畫面</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      className={
+                        gameMode === "ar"
+                          ? "host-mode-btn active"
+                          : "host-mode-btn"
+                      }
+                      onClick={() => setGameMode("ar")}
+                    >
+                      AR 模式
+                      <span>玩家只能使用 AR Camera 答題</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      className={
+                        gameMode === "choice"
+                          ? "host-mode-btn active"
+                          : "host-mode-btn"
+                      }
+                      onClick={() => setGameMode("choice")}
+                    >
+                      玩家自行選擇
+                      <span>玩家開始前自行選普通或 AR</span>
+                    </button>
+                  </div>
                 </div>
 
                 <button
@@ -291,6 +390,11 @@ function HostLobby() {
               <div>
                 <span>玩家</span>
                 <strong>{players.length} 人</strong>
+              </div>
+
+              <div>
+                <span>模式</span>
+                <strong>{getModeLabel(session.game_mode || gameMode)}</strong>
               </div>
 
               <div>

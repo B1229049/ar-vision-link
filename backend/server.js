@@ -95,7 +95,8 @@ const GAME_SESSION_SELECT = `
   started_at,
   ended_at,
   current_question,
-  game_finished
+  game_finished,
+  game_mode
 `;
 
 const PLAYER_RECORD_SELECT = `
@@ -1049,7 +1050,10 @@ app.post("/api/ai/generate-quiz-pdf",
 
 app.post("/api/game-sessions/create", async (req, res) => {
   try {
-    const { quiz_id } = req.body;
+    const {
+      quiz_id,
+      game_mode = "choice",
+    } = req.body;
 
     if (!quiz_id) {
       return res.status(400).json({
@@ -1057,6 +1061,11 @@ app.post("/api/game-sessions/create", async (req, res) => {
         error: "quiz_id 為必填",
       });
     }
+
+    const safeGameMode =
+      ["normal", "ar", "choice"].includes(game_mode)
+        ? game_mode
+        : "choice";
 
     const roomCode = await createUniqueRoomCode();
 
@@ -1066,6 +1075,7 @@ app.post("/api/game-sessions/create", async (req, res) => {
         {
           quiz_id,
           room_code: roomCode,
+          game_mode: safeGameMode,
           started_at: null,
           ended_at: null,
           current_question: 0,

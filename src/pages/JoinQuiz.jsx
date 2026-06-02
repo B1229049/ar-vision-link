@@ -21,6 +21,10 @@ function JoinQuiz() {
   const [questions, setQuestions] = useState([]);
   const [players, setPlayers] = useState([]);
 
+  const [playMode, setPlayMode] = useState(
+    localStorage.getItem("quizPlayMode") || "normal"
+  );
+
   useEffect(() => {
     const savedUser = localStorage.getItem("currentUser");
 
@@ -35,6 +39,32 @@ function JoinQuiz() {
       socketRef.current?.disconnect();
     };
   }, [navigate]);
+
+  function getFinalPlayMode(targetSession = session) {
+    const gameMode = targetSession?.game_mode || "choice";
+
+    if (gameMode === "normal") return "normal";
+    if (gameMode === "ar") return "ar";
+
+    return localStorage.getItem("quizPlayMode") || playMode || "normal";
+  }
+
+  function goToGame(targetSession = session) {
+    if (!targetSession?.session_id) return;
+
+    const finalMode = getFinalPlayMode(targetSession);
+
+    if (finalMode === "ar") {
+      navigate(`/ar-quiz/${targetSession.session_id}`);
+    } else {
+      navigate(`/quiz/game/${targetSession.session_id}`);
+    }
+  }
+
+  function updatePlayMode(mode) {
+    setPlayMode(mode);
+    localStorage.setItem("quizPlayMode", mode);
+  }
 
   async function handleJoinQuiz() {
     if (!currentUser) return;
@@ -83,6 +113,14 @@ function JoinQuiz() {
         return;
       }
 
+      if (joinedSession.game_mode === "ar") {
+        updatePlayMode("ar");
+      }
+
+      if (joinedSession.game_mode === "normal") {
+        updatePlayMode("normal");
+      }
+
       localStorage.setItem("currentGameSession", JSON.stringify(joinedSession));
       localStorage.setItem(
         "currentPlayerRecord",
@@ -112,10 +150,12 @@ function JoinQuiz() {
 
     socketRef.current = socket;
 
-    socket.emit("join-session", {
-      sessionId: Number(sessionId),
-      userId: Number(userId),
-      role: "player",
+    socket.on("connect", () => {
+      socket.emit("join-session", {
+        sessionId: Number(sessionId),
+        userId: Number(userId),
+        role: "player",
+      });
     });
 
     socket.on("session-sync", (data) => {
@@ -124,14 +164,23 @@ function JoinQuiz() {
       setQuestions(data.questions || []);
       setPlayers(data.leaderboard || []);
 
+      localStorage.setItem("currentGameSession", JSON.stringify(data.session));
+
+      if (data.session?.game_mode === "ar") {
+        updatePlayMode("ar");
+      }
+
+      if (data.session?.game_mode === "normal") {
+        updatePlayMode("normal");
+      }
+
       if (data.session?.game_finished) {
         navigate(`/quiz/leaderboard/${data.session.session_id}`);
         return;
       }
 
       if (data.session?.started_at && !data.session?.game_finished) {
-        setSession(data.session);
-        return;
+        goToGame(data.session);
       }
     });
 
@@ -145,6 +194,8 @@ function JoinQuiz() {
 
     socket.on("game-started", ({ session }) => {
       setSession(session);
+      localStorage.setItem("currentGameSession", JSON.stringify(session));
+      goToGame(session);
     });
 
     socket.on("game-finished", ({ session }) => {
@@ -174,24 +225,6 @@ function JoinQuiz() {
     }
   }
 
-  function goNormalMode() {
-    if (!session?.session_id) {
-      alert("找不到遊戲場次");
-      return;
-    }
-
-    navigate(`/quiz/game/${session.session_id}`);
-  }
-
-  function goARMode() {
-    if (!session?.session_id) {
-      alert("找不到遊戲場次");
-      return;
-    }
-
-    navigate(`/ar-quiz/${session.session_id}`);
-  }
-
   function leaveRoom() {
     socketRef.current?.disconnect();
     socketRef.current = null;
@@ -207,6 +240,12 @@ function JoinQuiz() {
     localStorage.removeItem("currentPlayerRecord");
   }
 
+  function getModeLabel(mode) {
+    if (mode === "normal") return "普通模式";
+    if (mode === "ar") return "AR 模式";
+    return "玩家自行選擇";
+  }
+
   if (!currentUser) {
     return (
       <div className="join-quiz-page">
@@ -218,13 +257,16 @@ function JoinQuiz() {
   }
 
   if (joined) {
+    const gameMode = session?.game_mode || "choice";
+    const canChooseMode = gameMode === "choice";
+
     return (
       <div className="join-quiz-page">
         <div className="join-quiz-card joined">
           <h2>已加入房間</h2>
 
           <p className="join-quiz-subtitle">
-            等待主持人開始遊戲。開始後可選擇普通模式或 AR 模式答題。
+            請在遊戲開始前選擇答題模式，主持人開始後會自動進入。
           </p>
 
           <div className="joined-room-panel">
@@ -249,10 +291,60 @@ function JoinQuiz() {
             </div>
 
             <div className="joined-info-row">
+              <span>主持人設定</span>
+              <strong>{getModeLabel(gameMode)}</strong>
+            </div>
+
+            <div className="joined-info-row">
+              <span>目前選擇</span>
+              <strong>{playMode === "ar" ? "AR 模式" : "普通模式"}</strong>
+            </div>
+
+            <div className="joined-info-row">
               <span>狀態</span>
               <strong>{session?.started_at ? "已開始" : "等待中"}</strong>
             </div>
           </div>
+
+          {!session?.started_at && (
+            <div className="mode-select-box">
+              <h3>選擇答題模式</h3>
+
+              <button
+                type="button"
+                className={
+                  playMode === "normal"
+                    ? "mode-select-btn active"
+                    : "mode-select-btn"
+                }
+                onClick={() => updatePlayMode("normal")}
+                disabled={!canChooseMode && gameMode !== "normal"}
+              >
+                普通模式
+                <span>使用一般 Quiz 畫面答題</span>
+              </button>
+
+              <button
+                type="button"
+                className={
+                  playMode === "ar"
+                    ? "mode-select-btn active"
+                    : "mode-select-btn"
+                }
+                onClick={() => updatePlayMode("ar")}
+                disabled={!canChooseMode && gameMode !== "ar"}
+              >
+                AR 模式
+                <span>使用相機與手指指向答案</span>
+              </button>
+
+              {!canChooseMode && (
+                <p className="joined-player-hint">
+                  本場測驗由主持人指定為「{getModeLabel(gameMode)}」。
+                </p>
+              )}
+            </div>
+          )}
 
           <div className="joined-player-box">
             <h3>玩家列表</h3>
@@ -291,21 +383,9 @@ function JoinQuiz() {
 
           <div className="waiting-message">
             {session?.started_at
-              ? "遊戲已開始，請選擇答題模式。"
+              ? "遊戲已開始，正在進入答題畫面..."
               : "等待主持人開始遊戲..."}
           </div>
-
-          {session?.started_at && !session?.game_finished && (
-            <>
-              <button className="join-btn primary" onClick={goNormalMode}>
-                普通模式答題
-              </button>
-
-              <button className="join-btn primary" onClick={goARMode}>
-                AR 模式答題
-              </button>
-            </>
-          )}
 
           <button className="join-btn secondary" onClick={leaveRoom}>
             離開房間

@@ -29,14 +29,29 @@ function TrackedPlayerVideo({ stream, playerName, score, result }) {
 
     if (!video || !stream) return;
 
-    video.srcObject = stream;
+    if (video.srcObject !== stream) {
+      video.srcObject = stream;
+    }
 
-    video.play().catch((err) => {
-      console.error("remote video play failed:", err);
-    });
+    let cancelled = false;
+
+    async function startVideo() {
+      try {
+        await video.play();
+      } catch (err) {
+        if (!cancelled && err.name !== "AbortError") {
+          console.warn(
+            "remote video play failed:",
+            err
+          );
+        }
+      }
+    }
+
+    startVideo();
 
     return () => {
-      video.srcObject = null;
+      cancelled = true;
     };
   }, [stream]);
 
@@ -90,12 +105,6 @@ function TrackedPlayerVideo({ stream, playerName, score, result }) {
 
           setTagPos({
             x: Math.min(Math.max(centerX, 80), viewW - 80),
-            y: Math.max(headY, 20),
-            detected: true,
-          });
-
-          setTagPos({
-            x: centerX,
             y: Math.max(headY, 12),
             detected: true,
           });
