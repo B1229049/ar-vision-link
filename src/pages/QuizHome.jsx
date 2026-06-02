@@ -71,6 +71,13 @@ function QuizHome() {
           </button>
 
           <button
+            className="quiz-btn secondary"
+            onClick={() => navigate("/quiz/history")}
+          >
+            歷史紀錄
+          </button>
+
+          <button
             className="quiz-btn ghost"
             onClick={() => navigate("/profile")}
           >

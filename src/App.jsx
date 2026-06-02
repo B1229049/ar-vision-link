@@ -16,6 +16,8 @@ import QuizGame from "./pages/QuizGame";
 import Leaderboard from "./pages/Leaderboard";
 import HostConsole from "./pages/HostConsole";
 import ManageQuizzes from "./pages/ManageQuizzes";
+import QuizHistory from "./pages/QuizHistory";
+
 
 import Navbar from "./components/Navbar";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -131,6 +133,7 @@ function App() {
         />
 
         <Route path="/quiz/manage" element={<ManageQuizzes />} />
+        <Route path="/quiz/history" element={<QuizHistory />} />
 
         
       </Routes>

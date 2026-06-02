@@ -19,7 +19,6 @@ function Profile() {
 
   function logout() {
     localStorage.removeItem("currentUser");
-    setCurrentUser(null);
     navigate("/");
   }
 
@@ -43,7 +42,7 @@ function Profile() {
     return (
       <div className="profile-page">
         <div className="profile-card">
-          <p>載入個人資料中...</p>
+          <p>載入中...</p>
         </div>
       </div>
     );
@@ -60,7 +59,7 @@ function Profile() {
               className="profile-avatar-img"
             />
           ) : (
-            currentUser.name?.charAt(0) || "U"
+            currentUser.name?.charAt(0)?.toUpperCase() || "U"
           )}
         </div>
 
@@ -70,25 +69,37 @@ function Profile() {
           @{currentUser.nickname || "unknown"}
         </p>
 
+        <div className="profile-stats">
+          <div className="stat-card">
+            <strong>Quiz</strong>
+            <span>測驗中心</span>
+          </div>
+
+          <div className="stat-card">
+            <strong>History</strong>
+            <span>歷史紀錄</span>
+          </div>
+
+          <div className="stat-card">
+            <strong>Face ID</strong>
+            <span>已註冊</span>
+          </div>
+        </div>
+
         <div className="profile-section">
           <h3>自我介紹</h3>
-          <p>{currentUser.description || "尚無介紹"}</p>
+          <p>{currentUser.description || "尚無自我介紹"}</p>
         </div>
 
         <div className="profile-section">
           <h3>額外資訊</h3>
-          <p>{currentUser.extra_info || "無額外資訊"}</p>
+          <p>{currentUser.extra_info || "尚無額外資訊"}</p>
         </div>
 
         <div className="profile-info-list">
           <div className="info-row">
-            <span>ID</span>
+            <span>使用者 ID</span>
             <strong>{currentUser.id}</strong>
-          </div>
-
-          <div className="info-row">
-            <span>帳號狀態</span>
-            <strong>{currentUser.is_active === false ? "停用" : "啟用"}</strong>
           </div>
 
           <div className="info-row">
@@ -102,19 +113,40 @@ function Profile() {
           </div>
         </div>
 
-        <button className="profile-btn primary" onClick={() => navigate("/edit-profile")}>
-          編輯個人資料
-        </button>
+        <div className="profile-action-grid">
+          <button
+            className="profile-btn primary"
+            onClick={() => navigate("/quiz")}
+          >
+            Quiz Center
+          </button>
 
-        <button className="profile-btn secondary" onClick={() => navigate("/re-register-face")}>
-          重新註冊臉部
-        </button>
+          <button
+            className="profile-btn secondary"
+            onClick={() => navigate("/quiz/history")}
+          >
+            歷史紀錄
+          </button>
 
-        <button className="profile-btn primary" onClick={() => navigate("/camera")}>
-          進入 AR Camera
-        </button>
+          <button
+            className="profile-btn secondary"
+            onClick={() => navigate("/edit-profile")}
+          >
+            編輯資料
+          </button>
 
-        <button className="profile-btn secondary" onClick={() => navigate("/")}>
+          <button
+            className="profile-btn secondary"
+            onClick={() => navigate("/re-register-face")}
+          >
+            重新註冊臉部
+          </button>
+        </div>
+
+        <button
+          className="profile-btn ghost"
+          onClick={() => navigate("/")}
+        >
           回首頁
         </button>
 
