@@ -6,7 +6,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 20px;
+    padding: calc(var(--navbar-height) + 32px) 24px 32px;
     color: #e5e7eb;
 }
 

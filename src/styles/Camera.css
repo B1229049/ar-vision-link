@@ -4,6 +4,7 @@
   height: 100vh;
   overflow: hidden;
   background: black;
+  padding: calc(var(--navbar-height) + 32px) 24px 32px;
 }
 
 .video,
