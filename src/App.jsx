@@ -18,14 +18,14 @@ import HostConsole from "./pages/HostConsole";
 import ManageQuizzes from "./pages/ManageQuizzes";
 import QuizHistory from "./pages/QuizHistory";
 import ARQuizGame from "./pages/ARQuizGame";
-import AdminDashboard from "./pages/AdminDashboard";
 
-import AdminRoute from "./components/AdminRoute";
+
 import Navbar from "./components/Navbar";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
   return (
+    
     <BrowserRouter basename="/ar-vision-link">
       <Navbar />
 
@@ -133,44 +133,14 @@ function App() {
           }
         />
 
-        <Route
-          path="/quiz/manage"
-          element={
-            <ProtectedRoute>
-              <ManageQuizzes />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/quiz/manage" element={<ProtectedRoute><ManageQuizzes /></ProtectedRoute>} />
+        <Route path="/quiz/history" element={<ProtectedRoute><QuizHistory /></ProtectedRoute>} />
+        <Route path="/ar-quiz/:sessionId" element={<ProtectedRoute><ARQuizGame /></ProtectedRoute>} />
 
-        <Route
-          path="/quiz/history"
-          element={
-            <ProtectedRoute>
-              <QuizHistory />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/ar-quiz/:sessionId"
-          element={
-            <ProtectedRoute>
-              <ARQuizGame />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/admin"
-          element={
-            <ProtectedRoute>
-              <AdminRoute>
-                <AdminDashboard />
-              </AdminRoute>
-            </ProtectedRoute>
-          }
-        />
+        
       </Routes>
+
+      
     </BrowserRouter>
   );
 }

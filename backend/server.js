@@ -5,8 +5,6 @@ import { Server } from "socket.io";
 import { createClient } from "@supabase/supabase-js";
 import { GoogleGenAI } from "@google/genai";
 import multer from "multer";
-import dotenv from "dotenv";
-dotenv.config();
 
 const app = express();
 const server = http.createServer(app);
@@ -363,7 +361,7 @@ app.post("/api/users/register", async (req, res) => {
     if (error) {
       return res.status(500).json({ success: false, error: error.message });
     }
-
+    
     clearUserEmbeddingCache();
 
     res.json({ success: true, user: data });
