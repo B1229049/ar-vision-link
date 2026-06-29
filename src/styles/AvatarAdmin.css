@@ -1,0 +1,142 @@
+.avatar-admin-page {
+  min-height: 100vh;
+  width: 100%;
+  background: #050a08;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: calc(var(--navbar-height) + 28px) 24px 28px;
+  box-sizing: border-box;
+}
+
+.avatar-admin-card {
+  width: 100%;
+  max-width: 1120px;
+  color: white;
+}
+
+.avatar-admin-preview {
+  display: grid;
+  grid-template-columns: minmax(340px, 0.9fr) minmax(420px, 1.1fr);
+  gap: 24px;
+  align-items: stretch;
+}
+
+.avatar-admin-stage,
+.avatar-admin-panel {
+  border: 1px solid #273136;
+  border-radius: 24px;
+  background: linear-gradient(180deg, #183325 0%, #111f19 100%);
+  box-shadow: 0 20px 42px rgba(0, 0, 0, 0.45);
+}
+
+.avatar-admin-stage {
+  display: grid;
+  place-items: center;
+  min-height: 640px;
+  overflow: hidden;
+}
+
+.avatar-admin-renderer {
+  width: min(430px, 96%);
+}
+
+.avatar-admin-panel {
+  padding: 28px;
+  background: #1a2225;
+}
+
+.avatar-admin-panel h2 {
+  margin: 0 0 10px;
+  font-size: 28px;
+}
+
+.avatar-admin-panel p {
+  margin: 0 0 22px;
+  color: #8da2ae;
+  line-height: 1.6;
+}
+
+.avatar-admin-panel label {
+  display: block;
+  margin: 14px 0 8px;
+  color: #8da2ae;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.avatar-admin-panel input,
+.avatar-admin-panel select,
+.avatar-admin-export {
+  width: 100%;
+  padding: 11px 12px;
+  border: 1px solid #273136;
+  border-radius: 9px;
+  background: #13191b;
+  color: white;
+  font: inherit;
+}
+
+.avatar-admin-export {
+  min-height: 170px;
+  margin-top: 4px;
+  resize: vertical;
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.avatar-admin-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px 16px;
+  margin-top: 8px;
+}
+
+.avatar-admin-range span {
+  color: white;
+  font-variant-numeric: tabular-nums;
+}
+
+.avatar-admin-range input[type="range"] {
+  accent-color: #4caf50;
+}
+
+.avatar-admin-btn {
+  width: 100%;
+  margin-top: 22px;
+  border: none;
+  border-radius: 10px;
+  padding: 13px 16px;
+  background: #4caf50;
+  color: white;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.avatar-admin-btn.secondary {
+  margin-top: 10px;
+  background: #2a373d;
+}
+
+.avatar-admin-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.avatar-admin-hint {
+  margin-top: 10px !important;
+  font-size: 13px;
+}
+
+@media (max-width: 880px) {
+  .avatar-admin-preview,
+  .avatar-admin-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .avatar-admin-stage {
+    min-height: 430px;
+  }
+}

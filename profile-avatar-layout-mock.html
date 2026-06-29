@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Profile Avatar Layout Mock</title>
+    <style>
+      :root {
+        --bg: #f4f7fb;
+        --panel: #ffffff;
+        --ink: #182033;
+        --muted: #667085;
+        --line: #d9e2ef;
+        --blue: #2563eb;
+        --cyan: #06b6d4;
+        --soft-blue: #eaf3ff;
+        --cream: #fff8ea;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background:
+          linear-gradient(180deg, rgba(37, 99, 235, 0.08), transparent 42%),
+          var(--bg);
+        color: var(--ink);
+        font-family: "Segoe UI", "Noto Sans TC", Arial, sans-serif;
+      }
+
+      .navbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 32px;
+        background: rgba(255, 255, 255, 0.92);
+        border-bottom: 1px solid var(--line);
+        backdrop-filter: blur(12px);
+      }
+
+      .logo {
+        font-size: 20px;
+        font-weight: 800;
+      }
+
+      .nav-links {
+        display: flex;
+        gap: 10px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .page {
+        width: min(1120px, calc(100% - 40px));
+        margin: 42px auto;
+      }
+
+      .profile-shell {
+        display: grid;
+        grid-template-columns: minmax(300px, 0.85fr) minmax(360px, 1.15fr);
+        gap: 24px;
+        align-items: stretch;
+      }
+
+      .identity-panel,
+      .avatar-panel {
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        background: var(--panel);
+        box-shadow: 0 18px 40px rgba(24, 32, 51, 0.08);
+      }
+
+      .identity-panel {
+        padding: 28px;
+      }
+
+      .section-label {
+        display: inline-flex;
+        margin-bottom: 18px;
+        border-radius: 999px;
+        background: #e0f2fe;
+        color: #0369a1;
+        padding: 7px 12px;
+        font-size: 13px;
+        font-weight: 800;
+      }
+
+      .user-photo {
+        width: 148px;
+        height: 148px;
+        border-radius: 28px;
+        display: grid;
+        place-items: center;
+        margin-bottom: 22px;
+        background:
+          radial-gradient(circle at 35% 28%, rgba(255, 255, 255, 0.9), transparent 28%),
+          linear-gradient(135deg, var(--blue), var(--cyan));
+        color: white;
+        font-size: 56px;
+        font-weight: 900;
+        box-shadow: 0 16px 32px rgba(37, 99, 235, 0.22);
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 34px;
+        line-height: 1.15;
+      }
+
+      .nickname {
+        margin: 8px 0 18px;
+        color: var(--blue);
+        font-size: 18px;
+        font-weight: 800;
+      }
+
+      .description {
+        margin: 0 0 24px;
+        color: var(--muted);
+        line-height: 1.7;
+      }
+
+      .info-list {
+        display: grid;
+        gap: 12px;
+        margin: 0 0 26px;
+      }
+
+      .info-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 12px 0;
+        border-bottom: 1px solid #edf2f7;
+      }
+
+      .info-row span {
+        color: var(--muted);
+      }
+
+      .info-row strong {
+        text-align: right;
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .btn {
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 11px 14px;
+        background: white;
+        color: var(--ink);
+        font-size: 14px;
+        font-weight: 800;
+      }
+
+      .btn.primary {
+        border-color: var(--blue);
+        background: var(--blue);
+        color: white;
+      }
+
+      .btn.soft {
+        border-color: #bae6fd;
+        background: #f0f9ff;
+        color: #075985;
+      }
+
+      .avatar-panel {
+        position: relative;
+        overflow: hidden;
+        min-height: 560px;
+        padding: 28px;
+        background:
+          radial-gradient(circle at 50% 42%, rgba(255, 248, 234, 0.95), rgba(255, 248, 234, 0) 34%),
+          linear-gradient(160deg, #ffffff 0%, #eef7ff 52%, #fff7ed 100%);
+      }
+
+      .avatar-panel::before {
+        content: "";
+        position: absolute;
+        inset: 84px 70px auto;
+        height: 280px;
+        border-radius: 50%;
+        background: rgba(37, 99, 235, 0.08);
+        filter: blur(4px);
+      }
+
+      .avatar-head {
+        position: relative;
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        z-index: 1;
+      }
+
+      .avatar-title {
+        margin: 0;
+        font-size: 22px;
+      }
+
+      .avatar-subtitle {
+        margin: 6px 0 0;
+        color: var(--muted);
+      }
+
+      .status-pill {
+        align-self: flex-start;
+        border-radius: 999px;
+        background: #dcfce7;
+        color: #166534;
+        padding: 8px 12px;
+        font-size: 13px;
+        font-weight: 900;
+        white-space: nowrap;
+      }
+
+      .avatar-stage {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        place-items: center;
+        min-height: 390px;
+        margin-top: 18px;
+      }
+
+      .avatar-glow {
+        position: absolute;
+        width: min(360px, 80%);
+        aspect-ratio: 1;
+        border-radius: 50%;
+        background:
+          radial-gradient(circle, rgba(255, 255, 255, 0.92) 0 36%, rgba(186, 230, 253, 0.55) 37% 60%, rgba(255, 255, 255, 0) 70%);
+      }
+
+      .avatar-img {
+        position: relative;
+        width: min(330px, 78%);
+        height: auto;
+        filter: drop-shadow(0 24px 24px rgba(88, 64, 35, 0.2));
+      }
+
+      .platform {
+        position: absolute;
+        bottom: 34px;
+        width: 270px;
+        height: 42px;
+        border-radius: 50%;
+        background: radial-gradient(ellipse, rgba(37, 99, 235, 0.22), rgba(37, 99, 235, 0));
+      }
+
+      .avatar-note {
+        position: relative;
+        z-index: 1;
+        margin: 0;
+        border: 1px solid rgba(37, 99, 235, 0.12);
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.72);
+        padding: 14px 16px;
+        color: var(--muted);
+        line-height: 1.6;
+      }
+
+      .below-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin-top: 24px;
+      }
+
+      .quick-card {
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background: white;
+        padding: 18px;
+        box-shadow: 0 12px 26px rgba(24, 32, 51, 0.06);
+      }
+
+      .quick-card strong {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 18px;
+      }
+
+      .quick-card span {
+        color: var(--muted);
+        line-height: 1.5;
+      }
+
+      @media (max-width: 860px) {
+        .navbar,
+        .profile-shell,
+        .below-grid {
+          display: block;
+        }
+
+        .nav-links {
+          margin-top: 10px;
+          flex-wrap: wrap;
+        }
+
+        .avatar-panel {
+          margin-top: 20px;
+          min-height: 500px;
+        }
+
+        .quick-card {
+          margin-top: 14px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar">
+      <div class="logo">AR Vision Link</div>
+      <div class="nav-links">
+        <span>首頁</span>
+        <span>AR Camera</span>
+        <span>Quiz</span>
+        <span>登出</span>
+      </div>
+    </nav>
+
+    <main class="page">
+      <section class="profile-shell">
+        <aside class="identity-panel">
+          <span class="section-label">Profile</span>
+          <div class="user-photo">S</div>
+          <h1>Simon Chen</h1>
+          <div class="nickname">@Simon</div>
+          <p class="description">
+            喜歡自然科學與互動學習，常使用 AR Quiz 進行課堂活動與小組競賽。
+          </p>
+
+          <div class="info-list">
+            <div class="info-row">
+              <span>姓名</span>
+              <strong>Simon Chen</strong>
+            </div>
+            <div class="info-row">
+              <span>暱稱</span>
+              <strong>Simon</strong>
+            </div>
+            <div class="info-row">
+              <span>狀態</span>
+              <strong>已完成臉部註冊</strong>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button class="btn primary">編輯資料</button>
+            <button class="btn soft">重新註冊臉部</button>
+            <button class="btn">回 Quiz</button>
+          </div>
+        </aside>
+
+        <section class="avatar-panel">
+          <div class="avatar-head">
+            <div>
+              <h2 class="avatar-title">我的虛擬替身</h2>
+              <p class="avatar-subtitle">之後每位使用者都會在這裡展示自己的角色。</p>
+            </div>
+            <span class="status-pill">Default Avatar</span>
+          </div>
+
+          <div class="avatar-stage">
+            <div class="avatar-glow"></div>
+            <div class="platform"></div>
+            <img
+              class="avatar-img"
+              src="file:///C:/Users/user/Desktop/avatar_base.png"
+              alt="avatar base"
+            />
+          </div>
+
+          <p class="avatar-note">
+            這個區域可以保留成角色展示舞台。未來如果要加入髮型、服裝、徽章或稱號，
+            可以直接放在右側，不會擠壓左邊的個人資料。
+          </p>
+        </section>
+      </section>
+
+      <section class="below-grid">
+        <div class="quick-card">
+          <strong>個人資料</strong>
+          <span>左側專注顯示使用者頭像、姓名、暱稱與基本介紹。</span>
+        </div>
+        <div class="quick-card">
+          <strong>角色展示</strong>
+          <span>右側讓虛擬替身成為視覺主角，適合之後做角色客製化。</span>
+        </div>
+        <div class="quick-card">
+          <strong>操作入口</strong>
+          <span>編輯資料、重新註冊臉部、回到 Quiz 都集中在左側。</span>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import AvatarRenderer from "../components/AvatarRenderer";
 import "../styles/Profile.css";
 
 function Profile() {
@@ -51,23 +52,37 @@ function Profile() {
   return (
     <div className="profile-page">
       <div className="profile-card">
-        <div className="avatar-circle">
-          {currentUser.avatar_url ? (
-            <img
-              src={currentUser.avatar_url}
-              alt="avatar"
-              className="profile-avatar-img"
+        <div className="profile-hero">
+          <div className="profile-identity">
+            <div className="avatar-circle">
+              {currentUser.avatar_url ? (
+                <img
+                  src={currentUser.avatar_url}
+                  alt="avatar"
+                  className="profile-avatar-img"
+                />
+              ) : (
+                currentUser.name?.charAt(0)?.toUpperCase() || "U"
+              )}
+            </div>
+
+            <h2>{currentUser.name || "未命名使用者"}</h2>
+
+            <p className="profile-nickname">
+              @{currentUser.nickname || "unknown"}
+            </p>
+
+            <div className="profile-face-pill">Face ID　已註冊</div>
+          </div>
+
+          <div className="profile-avatar-stage">
+            <div className="profile-avatar-glow" />
+            <AvatarRenderer
+              config={currentUser.avatar_config}
+              className="profile-avatar-renderer"
             />
-          ) : (
-            currentUser.name?.charAt(0)?.toUpperCase() || "U"
-          )}
+          </div>
         </div>
-
-        <h2>{currentUser.name || "未命名使用者"}</h2>
-
-        <p className="profile-nickname">
-          @{currentUser.nickname || "unknown"}
-        </p>
 
         <div className="profile-stats">
           <div className="stat-card">
@@ -140,6 +155,13 @@ function Profile() {
             onClick={() => navigate("/re-register-face")}
           >
             重新註冊臉部
+          </button>
+
+          <button
+            className="profile-btn secondary"
+            onClick={() => navigate("/avatar-dressup")}
+          >
+            修改替身
           </button>
         </div>
 

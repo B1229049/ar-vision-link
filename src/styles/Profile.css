@@ -20,7 +20,7 @@
 
 .profile-card {
   width: 100%;
-  max-width: 560px;
+  max-width: 760px;
 
   background: rgba(255, 255, 255, 0.08);
 
@@ -43,11 +43,23 @@
     0 0 40px rgba(59, 130, 246, 0.12);
 }
 
+.profile-hero {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.9fr) minmax(260px, 1.1fr);
+  gap: 28px;
+  align-items: center;
+  margin-bottom: 26px;
+}
+
+.profile-identity {
+  text-align: left;
+}
+
 .avatar-circle {
   width: 110px;
   height: 110px;
 
-  margin: 0 auto 20px auto;
+  margin: 0 0 20px 0;
 
   border-radius: 50%;
 
@@ -83,6 +95,42 @@
   color: rgba(255, 255, 255, 0.72);
 
   font-size: 16px;
+}
+
+.profile-face-pill {
+  display: inline-flex;
+  margin-top: 18px;
+  padding: 10px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #93c5fd;
+  font-weight: 700;
+}
+
+.profile-avatar-stage {
+  position: relative;
+  min-height: 270px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 44%, rgba(255, 248, 234, 0.18), transparent 35%),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
+}
+
+.profile-avatar-glow {
+  position: absolute;
+  inset: 8% 8%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(147, 197, 253, 0.24), transparent 70%);
+}
+
+.profile-avatar-renderer {
+  position: relative;
+  z-index: 1;
+  width: min(320px, 96%);
+  margin: 0 auto;
 }
 
 .profile-section {
@@ -216,6 +264,15 @@
 }
 
 @media (max-width: 640px) {
+  .profile-hero {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .profile-identity {
+    text-align: center;
+  }
+
   .profile-card {
     padding: 24px;
   }
@@ -229,6 +286,13 @@
     height: 90px;
 
     font-size: 36px;
+
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .profile-avatar-stage {
+    min-height: 250px;
   }
 
   .profile-btn {

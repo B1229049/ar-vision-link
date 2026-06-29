@@ -1,0 +1,744 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AR Vision Link Avatar Calibrator</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: #050a08;
+        color: white;
+        font-family: "Segoe UI", "Noto Sans TC", Arial, sans-serif;
+      }
+
+      .app {
+        display: grid;
+        grid-template-columns: minmax(360px, 520px) minmax(420px, 1fr) 360px;
+        gap: 22px;
+        min-height: 100vh;
+        padding: 22px;
+      }
+
+      .panel {
+        border: 1px solid #273136;
+        border-radius: 22px;
+        background: #1a2225;
+        box-shadow: 0 16px 42px rgba(0, 0, 0, 0.36);
+        overflow: hidden;
+      }
+
+      .stage-panel {
+        display: grid;
+        place-items: center;
+        background: linear-gradient(180deg, #183325 0%, #111f19 100%);
+      }
+
+      .stage {
+        position: relative;
+        width: min(420px, 92%);
+        aspect-ratio: 408 / 612;
+        border-radius: 18px;
+      }
+
+      .layer {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        object-position: center bottom;
+        transform-origin: center center;
+        pointer-events: none;
+      }
+
+      .template-00,
+      .template-01,
+      .template-02 {
+        opacity: 1;
+      }
+
+      .layer-back {
+        z-index: 1;
+      }
+
+      .template-00 {
+        z-index: 2;
+      }
+
+      .template-01 {
+        z-index: 3;
+      }
+
+      .hair-front {
+        z-index: 4;
+      }
+
+      .face-front {
+        z-index: 5;
+      }
+
+      .template-02 {
+        z-index: 6;
+      }
+
+      .bottoms-front {
+        z-index: 7;
+      }
+
+      .top-front {
+        z-index: 8;
+      }
+
+      .toolbar,
+      .controls {
+        padding: 20px;
+      }
+
+      h1,
+      h2 {
+        margin: 0 0 12px;
+      }
+
+      p {
+        margin: 0 0 16px;
+        color: #9fb0bd;
+        line-height: 1.6;
+      }
+
+      label {
+        display: block;
+        margin: 14px 0 7px;
+        color: #9fb0bd;
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      select,
+      input,
+      textarea {
+        width: 100%;
+        border: 1px solid #273136;
+        border-radius: 10px;
+        background: #101719;
+        color: white;
+        padding: 10px 12px;
+        font: inherit;
+      }
+
+      input[type="range"] {
+        padding: 0;
+        accent-color: #4caf50;
+      }
+
+      .tabs,
+      .actions,
+      .preview-selectors {
+        display: grid;
+        gap: 10px;
+      }
+
+      .tabs {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .preview-selectors {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      button {
+        border: 0;
+        border-radius: 10px;
+        padding: 11px 13px;
+        background: #2a373d;
+        color: white;
+        font-weight: 800;
+        cursor: pointer;
+      }
+
+      button.active,
+      button.primary {
+        background: #2563eb;
+      }
+
+      button.good {
+        background: #4caf50;
+      }
+
+      button.warn {
+        background: #b45309;
+      }
+
+      .range-row {
+        margin-top: 14px;
+      }
+
+      .range-row label {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+        margin-top: 16px;
+        max-height: 360px;
+        overflow: auto;
+        padding-right: 4px;
+      }
+
+      .item-card {
+        position: relative;
+        aspect-ratio: 1;
+        border: 2px solid transparent;
+        border-radius: 12px;
+        background: #273136;
+        overflow: hidden;
+      }
+
+      .item-card.active {
+        border-color: #7dd3fc;
+      }
+
+      .item-card.equipped::after {
+        content: "穿戴中";
+        position: absolute;
+        left: 6px;
+        right: 6px;
+        bottom: 6px;
+        border-radius: 999px;
+        background: rgba(37, 99, 235, 0.86);
+        color: white;
+        padding: 3px 6px;
+        font-size: 11px;
+        font-weight: 800;
+      }
+
+      .thumb-layer {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        transform-origin: center center;
+      }
+
+      .export {
+        min-height: 360px;
+        margin-top: 12px;
+        font-family: Consolas, "Courier New", monospace;
+        font-size: 12px;
+        line-height: 1.5;
+      }
+
+      .small-note {
+        color: #cbd5e1;
+        font-size: 12px;
+      }
+
+      @media (max-width: 1100px) {
+        .app {
+          grid-template-columns: 1fr;
+        }
+
+        .stage-panel {
+          min-height: 620px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <script>
+      if (location.protocol === "file:") {
+        document.addEventListener("DOMContentLoaded", () => {
+          document.body.innerHTML = `
+            <main style="min-height:100vh;display:grid;place-items:center;padding:32px;background:#050a08;color:white;font-family:'Segoe UI','Noto Sans TC',Arial,sans-serif;">
+              <section style="max-width:720px;border:1px solid #273136;border-radius:22px;background:#1a2225;padding:28px;line-height:1.8;">
+                <h1 style="margin-top:0;">請用本地網站開啟校準工具</h1>
+                <p>這個檔案現在會讀取專案內的 <code>src/utils/avatarItemSettings.js</code>，所以不能直接雙擊 HTML 檔案開啟。</p>
+                <p>請在 <code>C:\\Users\\user\\Desktop\\TeamProject\\ar-vision-link</code> 執行：</p>
+                <pre style="white-space:pre-wrap;background:#101719;border-radius:12px;padding:16px;">npm run dev</pre>
+                <p>然後用瀏覽器打開：</p>
+                <pre style="white-space:pre-wrap;background:#101719;border-radius:12px;padding:16px;">http://127.0.0.1:5173/ar-vision-link/avatar-relative-calibrator.html</pre>
+              </section>
+            </main>
+          `;
+        });
+      }
+    </script>
+    <main class="app">
+      <section class="panel stage-panel">
+        <div class="stage" id="stage"></div>
+      </section>
+
+      <section class="panel toolbar">
+        <h1>Avatar 相對座標校準工具</h1>
+        <p>
+          這裡調的是模板與物件之間的相對大小和相對位置。匯出後覆蓋
+          <code>src/utils/avatarItemSettings.js</code>，重新部署前端，所有 user 共用同一套校準。
+        </p>
+
+        <h2>預覽穿搭</h2>
+        <div class="preview-selectors" id="preview-selectors"></div>
+
+        <h2 style="margin-top: 22px">選擇要校準的類別</h2>
+        <div class="tabs" id="tabs"></div>
+
+        <div class="grid" id="item-grid"></div>
+      </section>
+
+      <section class="panel controls">
+        <h2>校準控制</h2>
+        <p id="target-label">尚未選擇</p>
+
+        <label>圖層</label>
+        <select id="layer-select"></select>
+
+        <div class="range-row">
+          <label>角色縮放 <span id="scale-value">1.00</span></label>
+          <input id="scale" type="range" min="0.1" max="3" step="0.01" />
+        </div>
+
+        <div class="range-row">
+          <label>角色 X% <span id="x-value">0.00</span></label>
+          <input id="x-pct" type="range" min="-80" max="80" step="0.05" />
+        </div>
+
+        <div class="range-row">
+          <label>角色 Y% <span id="y-value">0.00</span></label>
+          <input id="y-pct" type="range" min="-80" max="80" step="0.05" />
+        </div>
+
+        <div class="range-row">
+          <label>縮圖縮放 <span id="thumb-scale-value">1.00</span></label>
+          <input id="thumb-scale" type="range" min="0.2" max="3" step="0.01" />
+        </div>
+
+        <div class="range-row">
+          <label>縮圖 X% <span id="thumb-x-value">0.00</span></label>
+          <input id="thumb-x-pct" type="range" min="-120" max="120" step="0.05" />
+        </div>
+
+        <div class="range-row">
+          <label>縮圖 Y% <span id="thumb-y-value">0.00</span></label>
+          <input id="thumb-y-pct" type="range" min="-120" max="120" step="0.05" />
+        </div>
+
+        <div class="actions" style="margin-top: 18px">
+          <button class="good" id="save-target">儲存目前目標</button>
+          <button id="reset-target">重置目前目標</button>
+          <button class="warn" id="copy-code">複製匯出碼</button>
+        </div>
+
+        <p class="small-note" style="margin-top: 14px">
+          資料會先存在此瀏覽器 localStorage：<code>arvl_avatar_relative_settings</code>。
+        </p>
+
+        <textarea id="export-output" class="export" readonly></textarea>
+      </section>
+    </main>
+
+    <script type="module">
+      import {
+        DEFAULT_AVATAR_ITEM_SETTINGS,
+        DEFAULT_AVATAR_TEMPLATE_SETTINGS,
+      } from "./src/utils/avatarItemSettings.js";
+
+      const ASSET_BASE = "public/avatar-assets";
+      const STORAGE_KEY = "arvl_avatar_relative_settings";
+
+      const categories = [
+        { key: "template", label: "模板" },
+        { key: "hair", label: "頭髮" },
+        { key: "face", label: "表情" },
+        { key: "top", label: "上衣" },
+        { key: "bottoms", label: "褲裝" },
+      ];
+
+      const templates = [
+        { id: "template-00", label: "模板00", img: `${ASSET_BASE}/templates/模板00.png`, className: "template-00" },
+        { id: "template-01", label: "模板01", img: `${ASSET_BASE}/templates/模板01.png`, className: "template-01" },
+        { id: "template-02", label: "模板02", img: `${ASSET_BASE}/templates/模板02.png`, className: "template-02" },
+      ];
+
+      const items = {
+        hair: [
+          { id: "hair-1", label: "頭髮01", frontImg: `${ASSET_BASE}/hair/頭髮01.png` },
+          { id: "hair-2", label: "頭髮02", frontImg: `${ASSET_BASE}/hair/頭髮02.png` },
+          { id: "hair-3", label: "頭髮03", frontImg: `${ASSET_BASE}/hair/頭髮03.png` },
+          { id: "hair-4", label: "頭髮04", frontImg: `${ASSET_BASE}/hair/頭髮04.png` },
+          { id: "hair-5", label: "頭髮05", frontImg: `${ASSET_BASE}/hair/頭髮05.png` },
+          { id: "hair-6", label: "頭髮06", frontImg: `${ASSET_BASE}/hair/頭髮06-1.png`, backImg: `${ASSET_BASE}/hair/頭髮06-2.png` },
+          { id: "hair-7", label: "頭髮07", frontImg: `${ASSET_BASE}/hair/頭髮07-1.png`, backImg: `${ASSET_BASE}/hair/頭髮07-2.png` },
+          { id: "hair-8", label: "頭髮08", frontImg: `${ASSET_BASE}/hair/頭髮08.png` },
+        ],
+        face: [
+          { id: "face-1", label: "表情01", frontImg: `${ASSET_BASE}/face/表情01.png` },
+          { id: "face-2", label: "表情02", frontImg: `${ASSET_BASE}/face/表情02.png` },
+          { id: "face-3", label: "表情03", frontImg: `${ASSET_BASE}/face/表情03.png` },
+          { id: "face-4", label: "表情04", frontImg: `${ASSET_BASE}/face/表情04.png` },
+          { id: "face-5", label: "表情05", frontImg: `${ASSET_BASE}/face/表情05.png` },
+        ],
+        top: [
+          { id: "top-1", label: "上衣01", frontImg: `${ASSET_BASE}/top/上衣01.png` },
+          { id: "top-2", label: "上衣02", frontImg: `${ASSET_BASE}/top/上衣02.png` },
+          { id: "top-3", label: "上衣03", frontImg: `${ASSET_BASE}/top/上衣03.png` },
+          { id: "top-4", label: "上衣04", frontImg: `${ASSET_BASE}/top/上衣04.png` },
+          { id: "top-5", label: "上衣05", frontImg: `${ASSET_BASE}/top/上衣05.png` },
+          { id: "top-6", label: "上衣06", frontImg: `${ASSET_BASE}/top/上衣06.png` },
+          { id: "top-7", label: "上衣07", frontImg: `${ASSET_BASE}/top/上衣07.png` },
+          { id: "top-8", label: "上衣08", frontImg: `${ASSET_BASE}/top/上衣08.png` },
+        ],
+        bottoms: [
+          { id: "bottoms-1", label: "褲裝01", frontImg: `${ASSET_BASE}/bottoms/褲裝01.png` },
+          { id: "bottoms-2", label: "褲裝02", frontImg: `${ASSET_BASE}/bottoms/褲裝02.png` },
+          { id: "bottoms-3", label: "褲裝03", frontImg: `${ASSET_BASE}/bottoms/褲裝03.png` },
+          { id: "bottoms-4", label: "褲裝04", frontImg: `${ASSET_BASE}/bottoms/褲裝04.png` },
+          { id: "bottoms-5", label: "褲裝05", frontImg: `${ASSET_BASE}/bottoms/褲裝05.png` },
+          { id: "bottoms-6", label: "褲裝06", frontImg: `${ASSET_BASE}/bottoms/褲裝06.png` },
+          { id: "bottoms-7", label: "褲裝07", frontImg: `${ASSET_BASE}/bottoms/褲裝07.png` },
+          { id: "bottoms-8", label: "褲裝08", frontImg: `${ASSET_BASE}/bottoms/褲裝08.png` },
+        ],
+      };
+
+      const defaultSetting = () => ({
+        scale: 1,
+        x_pct: 0,
+        y_pct: 0,
+        thumb_scale: 1,
+        thumb_x_pct: 0,
+        thumb_y_pct: 0,
+      });
+
+      const state = {
+        category: "top",
+        targetId: "top-1",
+        layer: "front",
+        preview: {
+          hair: "hair-1",
+          face: "face-1",
+          top: "top-1",
+          bottoms: "bottoms-1",
+        },
+        settings: loadSettings(),
+      };
+
+      function loadSettings() {
+        try {
+          const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+          return {
+            items: {
+              ...DEFAULT_AVATAR_ITEM_SETTINGS,
+              ...(saved.items || {}),
+            },
+            templates: {
+              ...DEFAULT_AVATAR_TEMPLATE_SETTINGS,
+              ...(saved.templates || {}),
+            },
+          };
+        } catch {
+          return {
+            items: { ...DEFAULT_AVATAR_ITEM_SETTINGS },
+            templates: { ...DEFAULT_AVATAR_TEMPLATE_SETTINGS },
+          };
+        }
+      }
+
+      function persistSettings() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state.settings));
+      }
+
+      function settingKey() {
+        if (state.category === "template") return state.targetId;
+        return `${state.targetId}_${state.layer}`;
+      }
+
+      function currentSetting() {
+        const key = settingKey();
+        const source = state.category === "template" ? state.settings.templates : state.settings.items;
+        return source[key] || defaultSetting();
+      }
+
+      function saveCurrentSetting(next) {
+        const key = settingKey();
+        const source = state.category === "template" ? state.settings.templates : state.settings.items;
+        source[key] = { ...defaultSetting(), ...next };
+        persistSettings();
+      }
+
+      function applyStyle(element, setting) {
+        element.style.transform = `translate(${setting.x_pct || 0}%, ${setting.y_pct || 0}%) scale(${setting.scale || 1})`;
+      }
+
+      function applyThumbStyle(element, setting) {
+        element.style.transform = `translate(${setting.thumb_x_pct || 0}%, ${setting.thumb_y_pct || 0}%) scale(${setting.thumb_scale || 1})`;
+      }
+
+      function itemSetting(itemId, layer = "front") {
+        return state.settings.items[`${itemId}_${layer}`] || state.settings.items[itemId] || defaultSetting();
+      }
+
+      function templateSetting(templateId) {
+        return state.settings.templates[templateId] || defaultSetting();
+      }
+
+      function renderStage() {
+        const stage = document.getElementById("stage");
+        stage.innerHTML = "";
+
+        ["bottoms", "top", "face", "hair"].forEach((category) => {
+          const item = items[category].find((entry) => entry.id === state.preview[category]);
+          if (!item?.backImg) return;
+
+          const back = document.createElement("img");
+          back.className = `layer layer-back ${category}-back`;
+          back.src = item.backImg;
+          applyStyle(back, itemSetting(item.id, "back"));
+          stage.appendChild(back);
+        });
+
+        ["template-00", "template-01"].forEach((templateId) => {
+          const template = templates.find((entry) => entry.id === templateId);
+          const img = document.createElement("img");
+          img.className = `layer ${template.className}`;
+          img.src = template.img;
+          applyStyle(img, templateSetting(template.id));
+          stage.appendChild(img);
+        });
+
+        ["hair", "face"].forEach((category) => {
+          const item = items[category].find((entry) => entry.id === state.preview[category]);
+          if (!item) return;
+
+          const front = document.createElement("img");
+          front.className = `layer ${category}-front`;
+          front.src = item.frontImg;
+          applyStyle(front, itemSetting(item.id, "front"));
+          stage.appendChild(front);
+        });
+
+        const bodyTemplate = templates.find((entry) => entry.id === "template-02");
+        const body = document.createElement("img");
+        body.className = `layer ${bodyTemplate.className}`;
+        body.src = bodyTemplate.img;
+        applyStyle(body, templateSetting(bodyTemplate.id));
+        stage.appendChild(body);
+
+        ["bottoms", "top"].forEach((category) => {
+          const item = items[category].find((entry) => entry.id === state.preview[category]);
+          if (!item) return;
+
+          const front = document.createElement("img");
+          front.className = `layer ${category}-front`;
+          front.src = item.frontImg;
+          applyStyle(front, itemSetting(item.id, "front"));
+          stage.appendChild(front);
+        });
+      }
+
+      function renderPreviewSelectors() {
+        const wrap = document.getElementById("preview-selectors");
+        wrap.innerHTML = "";
+        ["hair", "face", "top", "bottoms"].forEach((category) => {
+          const label = document.createElement("label");
+          label.textContent = categories.find((item) => item.key === category).label;
+          const select = document.createElement("select");
+          const noneOption = document.createElement("option");
+          noneOption.value = "";
+          noneOption.textContent = "不穿（本地預覽）";
+          select.appendChild(noneOption);
+          items[category].forEach((item) => {
+            const option = document.createElement("option");
+            option.value = item.id;
+            option.textContent = item.label;
+            select.appendChild(option);
+          });
+          select.value = state.preview[category];
+          select.addEventListener("change", () => {
+            state.preview[category] = select.value || null;
+            if (state.category === category) state.targetId = select.value;
+            renderAll();
+          });
+          const box = document.createElement("div");
+          box.append(label, select);
+          wrap.appendChild(box);
+        });
+      }
+
+      function renderTabs() {
+        const wrap = document.getElementById("tabs");
+        wrap.innerHTML = "";
+        categories.forEach((category) => {
+          const btn = document.createElement("button");
+          btn.textContent = category.label;
+          btn.className = state.category === category.key ? "active" : "";
+          btn.addEventListener("click", () => {
+            state.category = category.key;
+            state.targetId = category.key === "template" ? "template-00" : items[category.key][0].id;
+            state.layer = "front";
+            renderAll();
+          });
+          wrap.appendChild(btn);
+        });
+      }
+
+      function renderGrid() {
+        const grid = document.getElementById("item-grid");
+        grid.innerHTML = "";
+
+        const list = state.category === "template" ? templates : items[state.category];
+
+        list.forEach((item) => {
+          const btn = document.createElement("button");
+          btn.className = `item-card ${state.targetId === item.id ? "active" : ""} ${
+            state.category !== "template" && state.preview[state.category] === item.id
+              ? "equipped"
+              : ""
+          }`;
+          btn.title = item.label;
+
+          const img = document.createElement("img");
+          img.className = "thumb-layer";
+          img.src = item.frontImg || item.img;
+          const setting =
+            state.category === "template" ? templateSetting(item.id) : itemSetting(item.id, "front");
+          applyThumbStyle(img, setting);
+          btn.appendChild(img);
+
+          btn.addEventListener("click", () => {
+            state.targetId = item.id;
+            if (state.category !== "template") {
+              state.preview[state.category] =
+                state.preview[state.category] === item.id ? null : item.id;
+            }
+            state.layer = "front";
+            renderAll();
+          });
+
+          grid.appendChild(btn);
+        });
+      }
+
+      function renderLayerSelect() {
+        const select = document.getElementById("layer-select");
+        select.innerHTML = "";
+
+        if (state.category === "template") {
+          const option = document.createElement("option");
+          option.value = "template";
+          option.textContent = "模板";
+          select.appendChild(option);
+          select.disabled = true;
+          return;
+        }
+
+        const item = items[state.category].find((entry) => entry.id === state.targetId);
+        ["front", item?.backImg ? "back" : null].filter(Boolean).forEach((layer) => {
+          const option = document.createElement("option");
+          option.value = layer;
+          option.textContent = layer === "front" ? "上層" : "下層";
+          select.appendChild(option);
+        });
+        select.disabled = false;
+        select.value = state.layer;
+      }
+
+      function renderControls() {
+        renderLayerSelect();
+        const setting = currentSetting();
+        document.getElementById("target-label").textContent = `目前校準：${state.targetId}${state.category === "template" ? "" : ` / ${state.layer}`}`;
+
+        [
+          ["scale", "scale-value", setting.scale],
+          ["x-pct", "x-value", setting.x_pct],
+          ["y-pct", "y-value", setting.y_pct],
+          ["thumb-scale", "thumb-scale-value", setting.thumb_scale],
+          ["thumb-x-pct", "thumb-x-value", setting.thumb_x_pct],
+          ["thumb-y-pct", "thumb-y-value", setting.thumb_y_pct],
+        ].forEach(([inputId, valueId, value]) => {
+          const input = document.getElementById(inputId);
+          input.value = value;
+          document.getElementById(valueId).textContent = Number(value).toFixed(2);
+        });
+      }
+
+      function updateFromControls() {
+        const setting = {
+          scale: Number(document.getElementById("scale").value),
+          x_pct: Number(document.getElementById("x-pct").value),
+          y_pct: Number(document.getElementById("y-pct").value),
+          thumb_scale: Number(document.getElementById("thumb-scale").value),
+          thumb_x_pct: Number(document.getElementById("thumb-x-pct").value),
+          thumb_y_pct: Number(document.getElementById("thumb-y-pct").value),
+        };
+
+        saveCurrentSetting(setting);
+        renderAll();
+      }
+
+      function exportCode() {
+        const code = `// Global avatar item placement settings.
+// Exported from avatar-relative-calibrator.html.
+// These settings use relative percentages, so item placement scales with any avatar container.
+export const DEFAULT_AVATAR_ITEM_SETTINGS = ${JSON.stringify(state.settings.items, null, 2)};
+
+export const DEFAULT_AVATAR_BODY_Y = "0";
+
+export const DEFAULT_AVATAR_TEMPLATE_SETTINGS = ${JSON.stringify(state.settings.templates, null, 2)};
+`;
+        document.getElementById("export-output").value = code;
+        return code;
+      }
+
+      function renderAll(updateExport = true) {
+        renderPreviewSelectors();
+        renderTabs();
+        renderGrid();
+        renderControls();
+        renderStage();
+        if (updateExport) exportCode();
+      }
+
+      document.getElementById("layer-select").addEventListener("change", (event) => {
+        state.layer = event.target.value;
+        renderAll();
+      });
+
+      ["scale", "x-pct", "y-pct", "thumb-scale", "thumb-x-pct", "thumb-y-pct"].forEach((id) => {
+        document.getElementById(id).addEventListener("input", updateFromControls);
+      });
+
+      document.getElementById("save-target").addEventListener("click", () => {
+        updateFromControls();
+        alert("已儲存目前目標。");
+      });
+
+      document.getElementById("reset-target").addEventListener("click", () => {
+        saveCurrentSetting(defaultSetting());
+        renderAll();
+      });
+
+      document.getElementById("copy-code").addEventListener("click", async () => {
+        const code = exportCode();
+        try {
+          await navigator.clipboard.writeText(code);
+          alert("已複製匯出碼。");
+        } catch {
+          const output = document.getElementById("export-output");
+          output.select();
+          document.execCommand("copy");
+          alert("已嘗試複製匯出碼。");
+        }
+      });
+
+      renderAll();
+    </script>
+  </body>
+</html>

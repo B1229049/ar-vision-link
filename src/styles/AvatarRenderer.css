@@ -1,0 +1,59 @@
+.avatar-renderer {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 408 / 612;
+  /* Removed grid to be exactly like the calibrator stage */
+}
+
+.avatar-renderer-inner {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.avatar-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center bottom;
+  pointer-events: none;
+  transform-origin: center center;
+}
+
+.avatar-layer-bottoms-back,
+.avatar-layer-top-back,
+.avatar-layer-face-back,
+.avatar-layer-hair-back {
+  z-index: 1;
+}
+
+.avatar-base {
+  z-index: 2;
+}
+
+.avatar-head {
+  z-index: 3;
+}
+
+.avatar-layer-hair {
+  z-index: 4;
+}
+
+.avatar-layer-face {
+  z-index: 5;
+}
+
+.avatar-body {
+  z-index: 6;
+}
+
+.avatar-layer-bottoms {
+  z-index: 7;
+}
+
+.avatar-layer-top {
+  z-index: 8;
+}

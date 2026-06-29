@@ -18,6 +18,8 @@ import HostConsole from "./pages/HostConsole";
 import ManageQuizzes from "./pages/ManageQuizzes";
 import QuizHistory from "./pages/QuizHistory";
 import ARQuizGame from "./pages/ARQuizGame";
+import AvatarDressup from "./pages/AvatarDressup";
+import AvatarAdmin from "./pages/AvatarAdmin";
 
 
 import Navbar from "./components/Navbar";
@@ -136,6 +138,8 @@ function App() {
         <Route path="/quiz/manage" element={<ProtectedRoute><ManageQuizzes /></ProtectedRoute>} />
         <Route path="/quiz/history" element={<ProtectedRoute><QuizHistory /></ProtectedRoute>} />
         <Route path="/ar-quiz/:sessionId" element={<ProtectedRoute><ARQuizGame /></ProtectedRoute>} />
+        <Route path="/avatar-dressup" element={<ProtectedRoute><AvatarDressup /></ProtectedRoute>} />
+        <Route path="/avatar-admin" element={<AvatarAdmin />} />
 
         
       </Routes>

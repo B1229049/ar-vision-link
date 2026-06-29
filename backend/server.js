@@ -53,6 +53,7 @@ const USER_PUBLIC_SELECT = `
   description,
   extra_info,
   avatar_url,
+  avatar_config,
   is_active,
   created_at,
   updated_at
@@ -65,11 +66,53 @@ const USER_PRIVATE_SELECT = `
   description,
   extra_info,
   avatar_url,
+  avatar_config,
   is_active,
   created_at,
   updated_at,
   face_embedding
 `;
+
+const AVATAR_ITEMS = {
+  hair: [
+    "hair-1",
+    "hair-2",
+    "hair-3",
+    "hair-4",
+    "hair-5",
+    "hair-6",
+    "hair-7",
+    "hair-8",
+  ],
+  face: ["face-1", "face-2", "face-3", "face-4", "face-5"],
+  top: [
+    "top-1",
+    "top-2",
+    "top-3",
+    "top-4",
+    "top-5",
+    "top-6",
+    "top-7",
+    "top-8",
+  ],
+  bottoms: [
+    "bottoms-1",
+    "bottoms-2",
+    "bottoms-3",
+    "bottoms-4",
+    "bottoms-5",
+    "bottoms-6",
+    "bottoms-7",
+    "bottoms-8",
+  ],
+};
+
+const DEFAULT_AVATAR_CONFIG = {
+  hair: "hair-1",
+  face: "face-1",
+  top: "top-1",
+  bottoms: "bottoms-1",
+};
 
 const QUIZ_SELECT = `
   quiz_id,
@@ -212,6 +255,59 @@ function calculateScore(isCorrect, timeLeft = 0) {
   return baseScore + bonus;
 }
 
+function pickRandomItem(category) {
+  const options = AVATAR_ITEMS[category] || [];
+  return options[Math.floor(Math.random() * options.length)];
+}
+
+function createRandomAvatarConfig() {
+  return {
+    hair: pickRandomItem("hair"),
+    face: pickRandomItem("face"),
+    top: pickRandomItem("top"),
+    bottoms: pickRandomItem("bottoms"),
+  };
+}
+
+function normalizeAvatarConfig(config) {
+  const normalized = { ...DEFAULT_AVATAR_CONFIG };
+
+  if (!config || typeof config !== "object" || Array.isArray(config)) {
+    return normalized;
+  }
+
+  for (const category of Object.keys(AVATAR_ITEMS)) {
+    if (AVATAR_ITEMS[category].includes(config[category])) {
+      normalized[category] = config[category];
+    }
+  }
+
+  return normalized;
+}
+
+function requireAvatarAdmin(req, res) {
+  const expectedKey = process.env.AVATAR_ADMIN_KEY;
+  const providedKey = req.headers["x-avatar-admin-key"];
+
+  if (!expectedKey) {
+    res.status(500).json({
+      success: false,
+      error: "後端尚未設定 AVATAR_ADMIN_KEY",
+    });
+    return false;
+  }
+
+  if (!providedKey || providedKey !== expectedKey) {
+    res.status(403).json({
+      success: false,
+      error: "沒有素材設定權限",
+    });
+    return false;
+  }
+
+  return true;
+}
+
 let userEmbeddingCache = null;
 let userEmbeddingCacheTime = 0;
 
@@ -324,6 +420,7 @@ app.post("/api/users/register", async (req, res) => {
       extra_info,
       avatar_url,
       face_embedding,
+      avatar_config,
     } = req.body;
 
     if (!name?.trim()) {
@@ -351,6 +448,9 @@ app.post("/api/users/register", async (req, res) => {
           description: description?.trim() || "",
           extra_info: extra_info?.trim() || "",
           avatar_url: avatar_url || "",
+          avatar_config: normalizeAvatarConfig(
+            avatar_config || createRandomAvatarConfig()
+          ),
           is_active: true,
           face_embedding: cleanEmbedding,
         },
@@ -536,6 +636,215 @@ app.put("/api/users/:id/face", async (req, res) => {
     res.json({
       success: true,
       user: data,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message,
+    });
+  }
+});
+
+app.put("/api/users/:id/avatar", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const avatarConfig = normalizeAvatarConfig(req.body.avatar_config);
+
+    const { data, error } = await supabase
+      .from("users")
+      .update({
+        avatar_config: avatarConfig,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", id)
+      .select(USER_PUBLIC_SELECT)
+      .single();
+
+    if (error) {
+      return res.status(500).json({
+        success: false,
+        error: error.message,
+      });
+    }
+
+    res.json({
+      success: true,
+      user: data,
+      avatar_config: data.avatar_config,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message,
+    });
+  }
+});
+
+function rowsToAvatarSettings(rows = []) {
+  return rows.reduce((acc, row) => {
+    acc[`${row.item_id}_${row.layer}`] = {
+      scale: Number(row.scale) || 1,
+      x: Number(row.x) || 0,
+      y: Number(row.y) || 0,
+      thumb_scale: Number(row.thumb_scale) || 1,
+      thumb_x: Number(row.thumb_x) || 0,
+      thumb_y: Number(row.thumb_y) || 0,
+    };
+
+    return acc;
+  }, {});
+}
+
+app.get("/api/avatar/item-settings", async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from("avatar_item_settings")
+      .select("*")
+      .order("category", { ascending: true })
+      .order("item_id", { ascending: true });
+
+    if (error) {
+      return res.status(500).json({
+        success: false,
+        error: error.message,
+      });
+    }
+
+    res.json({
+      success: true,
+      settings: rowsToAvatarSettings(data || []),
+      rows: data || [],
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message,
+    });
+  }
+});
+
+app.put("/api/avatar/item-settings/:itemId/:layer", async (req, res) => {
+  try {
+    if (!requireAvatarAdmin(req, res)) return;
+
+    const { itemId, layer } = req.params;
+    const category = itemId.split("-")[0];
+
+    if (!AVATAR_ITEMS[category]?.includes(itemId)) {
+      return res.status(400).json({
+        success: false,
+        error: "無效的 avatar item_id",
+      });
+    }
+
+    if (!["front", "back"].includes(layer)) {
+      return res.status(400).json({
+        success: false,
+        error: "layer 必須是 front 或 back",
+      });
+    }
+
+    const row = {
+      category,
+      item_id: itemId,
+      layer,
+      scale: Number(req.body.scale) || 1,
+      x: Number(req.body.x) || 0,
+      y: Number(req.body.y) || 0,
+      thumb_scale: Number(req.body.thumb_scale) || 1,
+      thumb_x: Number(req.body.thumb_x) || 0,
+      thumb_y: Number(req.body.thumb_y) || 0,
+      updated_at: new Date().toISOString(),
+    };
+
+    const { error } = await supabase
+      .from("avatar_item_settings")
+      .upsert(row, {
+        onConflict: "item_id,layer",
+      });
+
+    if (error) {
+      return res.status(500).json({
+        success: false,
+        error: error.message,
+      });
+    }
+
+    const { data: rows, error: loadError } = await supabase
+      .from("avatar_item_settings")
+      .select("*")
+      .order("category", { ascending: true })
+      .order("item_id", { ascending: true });
+
+    if (loadError) {
+      return res.status(500).json({
+        success: false,
+        error: loadError.message,
+      });
+    }
+
+    res.json({
+      success: true,
+      setting: row,
+      settings: rowsToAvatarSettings(rows || []),
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message,
+    });
+  }
+});
+
+app.post("/api/avatar/backfill-users", async (req, res) => {
+  try {
+    if (!requireAvatarAdmin(req, res)) return;
+
+    const { data: users, error } = await supabase
+      .from("users")
+      .select("id, avatar_config")
+      .eq("is_active", true);
+
+    if (error) {
+      return res.status(500).json({
+        success: false,
+        error: error.message,
+      });
+    }
+
+    let updatedCount = 0;
+
+    for (const user of users || []) {
+      const existingConfig = user.avatar_config;
+      const hasCompleteConfig =
+        existingConfig &&
+        Object.keys(AVATAR_ITEMS).every((category) =>
+          AVATAR_ITEMS[category].includes(existingConfig[category])
+        );
+
+      if (hasCompleteConfig) continue;
+
+      const { error: updateError } = await supabase
+        .from("users")
+        .update({
+          avatar_config: createRandomAvatarConfig(),
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", user.id);
+
+      if (updateError) {
+        return res.status(500).json({
+          success: false,
+          error: updateError.message,
+        });
+      }
+
+      updatedCount++;
+    }
+
+    res.json({
+      success: true,
+      updated_count: updatedCount,
     });
   } catch (err) {
     res.status(500).json({
