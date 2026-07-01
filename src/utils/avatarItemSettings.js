@@ -275,7 +275,7 @@ export const DEFAULT_AVATAR_ITEM_SETTINGS = {
     "thumb_y_pct": 0
   },
   "face-7_front": {
-    "scale": 0.45,
+    "scale": 0.48,
     "x_pct": -3.6,
     "y_pct": -6.5,
     "thumb_scale": 1,

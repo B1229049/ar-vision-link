@@ -66,7 +66,7 @@ function Profile() {
               )}
             </div>
 
-            <h2>{currentUser.name || "未命名使用者"}</h2>
+            <h2 className="profile-name">{currentUser.name || "未命名使用者"}</h2>
 
             <p className="profile-nickname">
               @{currentUser.nickname || "unknown"}
@@ -161,7 +161,7 @@ function Profile() {
             className="profile-btn secondary"
             onClick={() => navigate("/avatar-dressup")}
           >
-            修改替身
+            修改虛擬替身
           </button>
         </div>
 

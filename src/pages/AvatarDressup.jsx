@@ -26,6 +26,41 @@ function thumbTransform(setting) {
   }px) scale(${scale})`;
 }
 
+function CategoryIcon({ type }) {
+  if (type === "face") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="12" r="9" />
+        <path d="M8.5 10h.01M15.5 10h.01M8.5 15c1.9 1.8 5.1 1.8 7 0" />
+      </svg>
+    );
+  }
+
+  if (type === "top") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M8 4 4.5 6.2 3 11l3 1.2V20h12v-7.8l3-1.2-1.5-4.8L16 4l-4 2.2L8 4Z" />
+        <path d="M9 4c.6 1.4 1.6 2.1 3 2.1S14.4 5.4 15 4" />
+      </svg>
+    );
+  }
+
+  if (type === "bottoms") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M7 4h10l.8 16H14l-2-9.2L10 20H6.2L7 4Z" />
+        <path d="M12 4v6.8" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M4 14.5C4 8 7.5 4 12.2 4 17 4 20 7.8 20 13.8c0 3.2-1.2 5.8-3 7.2.4-2.6-.2-4.8-1.6-6.4-.7 2.1-2.1 4.1-4.3 5.4.5-2.4.2-4.7-.8-6.4-1.3 2.1-3.2 3.5-5.3 4.1.6-1.1 1-2.2 1-3.2H4Z" />
+    </svg>
+  );
+}
+
 function AvatarDressup() {
   const navigate = useNavigate();
 
@@ -131,13 +166,6 @@ function AvatarDressup() {
               className="avatar-dressup-renderer"
             />
           </div>
-
-          <div className="avatar-dressup-info">
-            <h2>修改替身</h2>
-            <p>
-              每個部位都會保留一個物件。選擇新的物件後按儲存，就會更新到你的個人頁。
-            </p>
-          </div>
         </div>
 
         <div className="avatar-tabs">
@@ -148,8 +176,11 @@ function AvatarDressup() {
                 activeCategory === category.key ? "active" : ""
               }`}
               onClick={() => setActiveCategory(category.key)}
+              aria-label={category.label}
+              title={category.label}
             >
-              {category.label}
+              <CategoryIcon type={category.key} />
+              <span>{category.label}</span>
             </button>
           ))}
         </div>
@@ -157,13 +188,16 @@ function AvatarDressup() {
         <div className="avatar-item-grid">
           {activeItems.map((item) => {
             const active = avatarConfig[activeCategory] === item.id;
-            const setting = getItemSetting(itemSettings, item.id, "front");
+            const frontSetting = getItemSetting(itemSettings, item.id, "front");
+            const backSetting = getItemSetting(itemSettings, item.id, "back");
 
             return (
               <button
                 key={item.id}
                 className={`avatar-item-card ${active ? "active" : ""}`}
                 onClick={() => selectItem(activeCategory, item.id)}
+                aria-label={item.label}
+                title={item.label}
               >
                 <span className="avatar-item-thumb">
                   {item.backImg && (
@@ -171,19 +205,18 @@ function AvatarDressup() {
                       src={item.backImg}
                       alt=""
                       style={{
-                        transform: thumbTransform(setting),
+                        transform: thumbTransform(backSetting),
                       }}
                     />
                   )}
                   <img
                     src={item.frontImg}
-                    alt={item.label}
+                    alt=""
                     style={{
-                      transform: thumbTransform(setting),
+                      transform: thumbTransform(frontSetting),
                     }}
                   />
                 </span>
-                <span>{item.label}</span>
               </button>
             );
           })}
