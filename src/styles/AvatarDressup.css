@@ -28,13 +28,13 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 560px;
-  padding: 28px 24px 10px;
+  min-height: 430px;
+  padding: 20px 24px 0;
 }
 
 .avatar-dressup-stage {
-  width: min(430px, 94%);
-  min-height: 500px;
+  width: min(310px, 94%);
+  min-height: 400px;
   border: 0;
   border-radius: 0;
   background: transparent;
@@ -44,7 +44,7 @@
 }
 
 .avatar-dressup-renderer {
-  width: min(400px, 100%);
+  width: min(280px, 100%);
 }
 
 .avatar-tabs {
@@ -52,7 +52,7 @@
   grid-template-columns: repeat(4, 1fr);
   gap: 0;
   margin-top: 0;
-  padding: 0 28px 22px;
+  padding: 0 28px 16px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -124,7 +124,7 @@
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 20px;
-  padding: 32px 28px 20px;
+  padding: 24px 28px 20px;
   margin-top: 0;
 }
 
@@ -198,17 +198,17 @@
   }
 
   .avatar-dressup-preview {
-    min-height: 470px;
+    min-height: 350px;
     padding-inline: 12px;
   }
 
   .avatar-dressup-stage {
-    width: min(360px, 96%);
-    min-height: 430px;
+    width: min(260px, 96%);
+    min-height: 330px;
   }
 
   .avatar-dressup-renderer {
-    width: min(350px, 100%);
+    width: min(245px, 100%);
   }
 
   .avatar-dressup-actions {
