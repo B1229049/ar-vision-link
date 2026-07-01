@@ -307,12 +307,12 @@ export const DEFAULT_AVATAR_ITEM_SETTINGS = {
     "thumb_y_pct": 0
   },
   "top-11_front": {
-    "scale": 0.44,
+    "scale": 0.7,
     "x_pct": -0.7,
-    "y_pct": 14.85,
-    "thumb_scale": 0.94,
+    "y_pct": 8.05,
+    "thumb_scale": 1.46,
     "thumb_x_pct": 0,
-    "thumb_y_pct": 1.45
+    "thumb_y_pct": -6.85
   },
   "top-12_front": {
     "scale": 0.46,
