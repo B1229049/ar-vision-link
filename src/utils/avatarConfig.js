@@ -37,6 +37,10 @@ export const AVATAR_ITEMS = {
       backImg: asset("hair/頭髮07-2.png"),
     },
     { id: "hair-8", label: "頭髮 08", frontImg: asset("hair/頭髮08.png") },
+    { id: "hair-9", label: "頭髮 09", frontImg: asset("hair/頭髮09.png") },
+    { id: "hair-10", label: "頭髮 10", frontImg: asset("hair/頭髮10.png") },
+    { id: "hair-11", label: "頭髮 11", frontImg: asset("hair/頭髮11.png") },
+    { id: "hair-12", label: "頭髮 12", frontImg: asset("hair/頭髮12.png") },
   ],
   face: [
     { id: "face-1", label: "表情 01", frontImg: asset("face/表情01.png") },
@@ -44,6 +48,9 @@ export const AVATAR_ITEMS = {
     { id: "face-3", label: "表情 03", frontImg: asset("face/表情03.png") },
     { id: "face-4", label: "表情 04", frontImg: asset("face/表情04.png") },
     { id: "face-5", label: "表情 05", frontImg: asset("face/表情05.png") },
+    { id: "face-6", label: "表情 06", frontImg: asset("face/表情06.png") },
+    { id: "face-7", label: "表情 07", frontImg: asset("face/表情07.png") },
+    { id: "face-8", label: "表情 08", frontImg: asset("face/表情08.png") },
   ],
   top: [
     { id: "top-1", label: "上衣 01", frontImg: asset("top/上衣01.png") },
@@ -54,6 +61,10 @@ export const AVATAR_ITEMS = {
     { id: "top-6", label: "上衣 06", frontImg: asset("top/上衣06.png") },
     { id: "top-7", label: "上衣 07", frontImg: asset("top/上衣07.png") },
     { id: "top-8", label: "上衣 08", frontImg: asset("top/上衣08.png") },
+    { id: "top-9", label: "上衣 09", frontImg: asset("top/上衣09.png") },
+    { id: "top-10", label: "上衣 10", frontImg: asset("top/上衣10.png") },
+    { id: "top-11", label: "上衣 11", frontImg: asset("top/上衣11.png") },
+    { id: "top-12", label: "上衣 12", frontImg: asset("top/上衣12.png") },
   ],
   bottoms: [
     { id: "bottoms-1", label: "褲裝 01", frontImg: asset("bottoms/褲裝01.png") },
