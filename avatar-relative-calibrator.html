@@ -368,20 +368,32 @@
         { id: "template-02", label: "模板02", img: `${ASSET_BASE}/templates/模板02.png`, className: "template-02" },
       ];
 
+      const splitHairIds = new Set(["06", "07", "09", "10"]);
+
+      function hairItem(number) {
+        const padded = String(number).padStart(2, "0");
+        const id = `hair-${number}`;
+        const base = `${ASSET_BASE}/hair/頭髮${padded}`;
+
+        return splitHairIds.has(padded)
+          ? { id, label: `頭髮${padded}`, frontImg: `${base}-1.png`, backImg: `${base}-2.png` }
+          : { id, label: `頭髮${padded}`, frontImg: `${base}.png` };
+      }
+
       const items = {
         hair: [
-          { id: "hair-1", label: "頭髮01", frontImg: `${ASSET_BASE}/hair/頭髮01.png` },
-          { id: "hair-2", label: "頭髮02", frontImg: `${ASSET_BASE}/hair/頭髮02.png` },
-          { id: "hair-3", label: "頭髮03", frontImg: `${ASSET_BASE}/hair/頭髮03.png` },
-          { id: "hair-4", label: "頭髮04", frontImg: `${ASSET_BASE}/hair/頭髮04.png` },
-          { id: "hair-5", label: "頭髮05", frontImg: `${ASSET_BASE}/hair/頭髮05.png` },
-          { id: "hair-6", label: "頭髮06", frontImg: `${ASSET_BASE}/hair/頭髮06-1.png`, backImg: `${ASSET_BASE}/hair/頭髮06-2.png` },
-          { id: "hair-7", label: "頭髮07", frontImg: `${ASSET_BASE}/hair/頭髮07-1.png`, backImg: `${ASSET_BASE}/hair/頭髮07-2.png` },
-          { id: "hair-8", label: "頭髮08", frontImg: `${ASSET_BASE}/hair/頭髮08.png` },
-          { id: "hair-9", label: "頭髮09", frontImg: `${ASSET_BASE}/hair/頭髮09.png` },
-          { id: "hair-10", label: "頭髮10", frontImg: `${ASSET_BASE}/hair/頭髮10.png` },
-          { id: "hair-11", label: "頭髮11", frontImg: `${ASSET_BASE}/hair/頭髮11.png` },
-          { id: "hair-12", label: "頭髮12", frontImg: `${ASSET_BASE}/hair/頭髮12.png` },
+          hairItem(1),
+          hairItem(2),
+          hairItem(3),
+          hairItem(4),
+          hairItem(5),
+          hairItem(6),
+          hairItem(7),
+          hairItem(8),
+          hairItem(9),
+          hairItem(10),
+          hairItem(11),
+          hairItem(12),
         ],
         face: [
           { id: "face-1", label: "表情01", frontImg: `${ASSET_BASE}/face/表情01.png` },
@@ -615,13 +627,26 @@
           }`;
           btn.title = item.label;
 
-          const img = document.createElement("img");
-          img.className = "thumb-layer";
-          img.src = item.frontImg || item.img;
-          const setting =
-            state.category === "template" ? templateSetting(item.id) : itemSetting(item.id, "front");
-          applyThumbStyle(img, setting);
-          btn.appendChild(img);
+          if (state.category === "template") {
+            const img = document.createElement("img");
+            img.className = "thumb-layer";
+            img.src = item.img;
+            applyThumbStyle(img, templateSetting(item.id));
+            btn.appendChild(img);
+          } else {
+            [
+              ["back", item.backImg],
+              ["front", item.frontImg],
+            ]
+              .filter(([, src]) => Boolean(src))
+              .forEach(([layer, src]) => {
+                const img = document.createElement("img");
+                img.className = `thumb-layer ${state.category}-${layer}`;
+                img.src = src;
+                applyThumbStyle(img, itemSetting(item.id, layer));
+                btn.appendChild(img);
+              });
+          }
 
           btn.addEventListener("click", () => {
             state.targetId = item.id;
