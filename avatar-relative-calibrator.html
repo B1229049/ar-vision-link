@@ -58,7 +58,6 @@
       }
 
       .template-00,
-      .template-01,
       .template-02 {
         opacity: 1;
       }
@@ -69,10 +68,6 @@
 
       .template-00 {
         z-index: 2;
-      }
-
-      .template-01 {
-        z-index: 3;
       }
 
       .hair-front {
@@ -182,6 +177,32 @@
         display: flex;
         justify-content: space-between;
         gap: 10px;
+      }
+
+      .toggle-row {
+        display: none;
+        margin-top: 16px;
+        border: 1px solid #273136;
+        border-radius: 12px;
+        background: #101719;
+        padding: 12px;
+      }
+
+      .toggle-row.visible {
+        display: block;
+      }
+
+      .toggle-label {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        margin: 0;
+        color: #dbeafe;
+      }
+
+      .toggle-label input {
+        width: auto;
       }
 
       .grid {
@@ -331,6 +352,13 @@
           <input id="thumb-y-pct" type="range" min="-120" max="120" step="0.05" />
         </div>
 
+        <div class="toggle-row" id="hair-back-thumb-row">
+          <label class="toggle-label">
+            <span>縮圖顯示頭髮 -2 後層</span>
+            <input id="show-back-thumb" type="checkbox" />
+          </label>
+        </div>
+
         <div class="actions" style="margin-top: 18px">
           <button class="good" id="save-target">儲存目前目標</button>
           <button id="reset-target">重置目前目標</button>
@@ -338,7 +366,7 @@
         </div>
 
         <p class="small-note" style="margin-top: 14px">
-          資料會先存在此瀏覽器 localStorage：<code>arvl_avatar_relative_settings</code>。
+          調整會先套用在預覽；按下「儲存目前目標」後，才會寫入此瀏覽器 localStorage：<code>arvl_avatar_relative_settings</code>。
         </p>
 
         <textarea id="export-output" class="export" readonly></textarea>
@@ -364,7 +392,6 @@
 
       const templates = [
         { id: "template-00", label: "模板00", img: `${ASSET_BASE}/templates/模板00.png`, className: "template-00" },
-        { id: "template-01", label: "模板01", img: `${ASSET_BASE}/templates/模板01.png`, className: "template-01" },
         { id: "template-02", label: "模板02", img: `${ASSET_BASE}/templates/模板02.png`, className: "template-02" },
       ];
 
@@ -438,6 +465,7 @@
         thumb_scale: 1,
         thumb_x_pct: 0,
         thumb_y_pct: 0,
+        show_thumb: true,
       });
 
       const state = {
@@ -451,12 +479,14 @@
           bottoms: "bottoms-1",
         },
         settings: loadSettings(),
+        draftKey: null,
+        draftSetting: null,
       };
 
       function loadSettings() {
         try {
           const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-          return {
+          const settings = {
             items: {
               ...DEFAULT_AVATAR_ITEM_SETTINGS,
               ...(saved.items || {}),
@@ -466,11 +496,15 @@
               ...(saved.templates || {}),
             },
           };
+          delete settings.templates["template-01"];
+          return settings;
         } catch {
-          return {
+          const settings = {
             items: { ...DEFAULT_AVATAR_ITEM_SETTINGS },
             templates: { ...DEFAULT_AVATAR_TEMPLATE_SETTINGS },
           };
+          delete settings.templates["template-01"];
+          return settings;
         }
       }
 
@@ -486,7 +520,34 @@
       function currentSetting() {
         const key = settingKey();
         const source = state.category === "template" ? state.settings.templates : state.settings.items;
-        return source[key] || defaultSetting();
+        return { ...defaultSetting(), ...(source[key] || {}) };
+      }
+
+      function startDraft() {
+        state.draftKey = settingKey();
+        state.draftSetting = { ...defaultSetting(), ...currentSetting() };
+      }
+
+      function ensureDraft() {
+        if (state.draftKey !== settingKey() || !state.draftSetting) {
+          startDraft();
+        }
+        return state.draftSetting;
+      }
+
+      function displaySetting(itemId, layer = "front") {
+        const key = `${itemId}_${layer}`;
+        if (state.category !== "template" && state.draftKey === key && state.draftSetting) {
+          return state.draftSetting;
+        }
+        return itemSetting(itemId, layer);
+      }
+
+      function displayTemplateSetting(templateId) {
+        if (state.category === "template" && state.draftKey === templateId && state.draftSetting) {
+          return state.draftSetting;
+        }
+        return templateSetting(templateId);
       }
 
       function saveCurrentSetting(next) {
@@ -505,11 +566,17 @@
       }
 
       function itemSetting(itemId, layer = "front") {
-        return state.settings.items[`${itemId}_${layer}`] || state.settings.items[itemId] || defaultSetting();
+        return {
+          ...defaultSetting(),
+          ...(state.settings.items[`${itemId}_${layer}`] || state.settings.items[itemId] || {}),
+        };
       }
 
       function templateSetting(templateId) {
-        return state.settings.templates[templateId] || defaultSetting();
+        return {
+          ...defaultSetting(),
+          ...(state.settings.templates[templateId] || {}),
+        };
       }
 
       function renderStage() {
@@ -523,16 +590,16 @@
           const back = document.createElement("img");
           back.className = `layer layer-back ${category}-back`;
           back.src = item.backImg;
-          applyStyle(back, itemSetting(item.id, "back"));
+          applyStyle(back, displaySetting(item.id, "back"));
           stage.appendChild(back);
         });
 
-        ["template-00", "template-01"].forEach((templateId) => {
+        ["template-00"].forEach((templateId) => {
           const template = templates.find((entry) => entry.id === templateId);
           const img = document.createElement("img");
           img.className = `layer ${template.className}`;
           img.src = template.img;
-          applyStyle(img, templateSetting(template.id));
+          applyStyle(img, displayTemplateSetting(template.id));
           stage.appendChild(img);
         });
 
@@ -543,7 +610,7 @@
           const front = document.createElement("img");
           front.className = `layer ${category}-front`;
           front.src = item.frontImg;
-          applyStyle(front, itemSetting(item.id, "front"));
+          applyStyle(front, displaySetting(item.id, "front"));
           stage.appendChild(front);
         });
 
@@ -551,7 +618,7 @@
         const body = document.createElement("img");
         body.className = `layer ${bodyTemplate.className}`;
         body.src = bodyTemplate.img;
-        applyStyle(body, templateSetting(bodyTemplate.id));
+        applyStyle(body, displayTemplateSetting(bodyTemplate.id));
         stage.appendChild(body);
 
         ["bottoms", "top"].forEach((category) => {
@@ -561,7 +628,7 @@
           const front = document.createElement("img");
           front.className = `layer ${category}-front`;
           front.src = item.frontImg;
-          applyStyle(front, itemSetting(item.id, "front"));
+          applyStyle(front, displaySetting(item.id, "front"));
           stage.appendChild(front);
         });
       }
@@ -586,7 +653,10 @@
           select.value = state.preview[category];
           select.addEventListener("change", () => {
             state.preview[category] = select.value || null;
-            if (state.category === category) state.targetId = select.value;
+            if (state.category === category) {
+              state.targetId = select.value || items[category][0].id;
+              startDraft();
+            }
             renderAll();
           });
           const box = document.createElement("div");
@@ -606,6 +676,7 @@
             state.category = category.key;
             state.targetId = category.key === "template" ? "template-00" : items[category.key][0].id;
             state.layer = "front";
+            startDraft();
             renderAll();
           });
           wrap.appendChild(btn);
@@ -631,7 +702,7 @@
             const img = document.createElement("img");
             img.className = "thumb-layer";
             img.src = item.img;
-            applyThumbStyle(img, templateSetting(item.id));
+            applyThumbStyle(img, displayTemplateSetting(item.id));
             btn.appendChild(img);
           } else {
             [
@@ -640,10 +711,13 @@
             ]
               .filter(([, src]) => Boolean(src))
               .forEach(([layer, src]) => {
+                const setting = displaySetting(item.id, layer);
+                if (layer === "back" && setting.show_thumb === false) return;
+
                 const img = document.createElement("img");
                 img.className = `thumb-layer ${state.category}-${layer}`;
                 img.src = src;
-                applyThumbStyle(img, itemSetting(item.id, layer));
+                applyThumbStyle(img, setting);
                 btn.appendChild(img);
               });
           }
@@ -655,6 +729,7 @@
                 state.preview[state.category] === item.id ? null : item.id;
             }
             state.layer = "front";
+            startDraft();
             renderAll();
           });
 
@@ -688,7 +763,7 @@
 
       function renderControls() {
         renderLayerSelect();
-        const setting = currentSetting();
+        const setting = ensureDraft();
         document.getElementById("target-label").textContent = `目前校準：${state.targetId}${state.category === "template" ? "" : ` / ${state.layer}`}`;
 
         [
@@ -703,19 +778,29 @@
           input.value = value;
           document.getElementById(valueId).textContent = Number(value).toFixed(2);
         });
+
+        const selectedItem = items[state.category]?.find((entry) => entry.id === state.targetId);
+        const thumbToggleRow = document.getElementById("hair-back-thumb-row");
+        const thumbToggle = document.getElementById("show-back-thumb");
+        const canToggleBackThumb =
+          state.category === "hair" && state.layer === "back" && Boolean(selectedItem?.backImg);
+
+        thumbToggleRow.classList.toggle("visible", canToggleBackThumb);
+        thumbToggle.checked = setting.show_thumb !== false;
       }
 
       function updateFromControls() {
-        const setting = {
+        const previous = ensureDraft();
+        state.draftSetting = {
           scale: Number(document.getElementById("scale").value),
           x_pct: Number(document.getElementById("x-pct").value),
           y_pct: Number(document.getElementById("y-pct").value),
           thumb_scale: Number(document.getElementById("thumb-scale").value),
           thumb_x_pct: Number(document.getElementById("thumb-x-pct").value),
           thumb_y_pct: Number(document.getElementById("thumb-y-pct").value),
+          show_thumb: previous.show_thumb !== false,
         };
 
-        saveCurrentSetting(setting);
         renderAll();
       }
 
@@ -744,6 +829,7 @@ export const DEFAULT_AVATAR_TEMPLATE_SETTINGS = ${JSON.stringify(state.settings.
 
       document.getElementById("layer-select").addEventListener("change", (event) => {
         state.layer = event.target.value;
+        startDraft();
         renderAll();
       });
 
@@ -753,11 +839,23 @@ export const DEFAULT_AVATAR_TEMPLATE_SETTINGS = ${JSON.stringify(state.settings.
 
       document.getElementById("save-target").addEventListener("click", () => {
         updateFromControls();
+        saveCurrentSetting(ensureDraft());
+        startDraft();
+        renderAll();
         alert("已儲存目前目標。");
       });
 
       document.getElementById("reset-target").addEventListener("click", () => {
-        saveCurrentSetting(defaultSetting());
+        state.draftKey = settingKey();
+        state.draftSetting = defaultSetting();
+        renderAll();
+      });
+
+      document.getElementById("show-back-thumb").addEventListener("change", (event) => {
+        state.draftSetting = {
+          ...ensureDraft(),
+          show_thumb: event.target.checked,
+        };
         renderAll();
       });
 
@@ -774,6 +872,7 @@ export const DEFAULT_AVATAR_TEMPLATE_SETTINGS = ${JSON.stringify(state.settings.
         }
       });
 
+      startDraft();
       renderAll();
     </script>
   </body>

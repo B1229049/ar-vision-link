@@ -97,7 +97,6 @@ export const DEFAULT_AVATAR_CONFIG = {
 
 export const AVATAR_TEMPLATE = {
   base: asset("templates/模板00.png"),
-  head: asset("templates/模板01.png"),
   body: asset("templates/模板02.png"),
 };
 

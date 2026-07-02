@@ -35,7 +35,6 @@ function AvatarRenderer({ config, itemSettings, className = "" }) {
   const normalizedConfig = normalizeAvatarConfig(config);
   const bodyY = Number(DEFAULT_AVATAR_BODY_Y) || 0;
   const baseTemplateSetting = getTemplateSetting("template-00");
-  const headTemplateSetting = getTemplateSetting("template-01");
   const bodyTemplateSetting = getTemplateSetting("template-02");
 
   const resolvedItems = AVATAR_CATEGORIES.reduce((acc, { key }) => {
@@ -66,13 +65,6 @@ function AvatarRenderer({ config, itemSettings, className = "" }) {
           src={AVATAR_TEMPLATE.base}
           alt=""
           style={layerStyle(baseTemplateSetting)}
-        />
-
-        <img
-          className="avatar-layer avatar-head"
-          src={AVATAR_TEMPLATE.head}
-          alt=""
-          style={layerStyle(headTemplateSetting)}
         />
 
         {resolvedItems.hair && (

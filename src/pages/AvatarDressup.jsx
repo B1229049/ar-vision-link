@@ -191,6 +191,7 @@ function AvatarDressup() {
             const active = avatarConfig[activeCategory] === item.id;
             const frontSetting = getItemSetting(itemSettings, item.id, "front");
             const backSetting = getItemSetting(itemSettings, item.id, "back");
+            const showBackThumb = backSetting.show_thumb !== false;
 
             return (
               <button
@@ -201,7 +202,7 @@ function AvatarDressup() {
                 title={item.label}
               >
                 <span className="avatar-item-thumb">
-                  {item.backImg && (
+                  {item.backImg && showBackThumb && (
                     <img
                       src={item.backImg}
                       alt=""
