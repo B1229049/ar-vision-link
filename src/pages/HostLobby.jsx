@@ -25,6 +25,7 @@ function HostLobby() {
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [starting, setStarting] = useState(false);
+  const [playerPanelOpen, setPlayerPanelOpen] = useState(true);
 
   useEffect(() => {
     const savedUser = localStorage.getItem("currentUser");
@@ -239,6 +240,23 @@ function HostLobby() {
     alert("房號已複製！");
   }
 
+  function getJoinUrl() {
+    if (!session?.room_code) return "";
+
+    const basePath = import.meta.env.BASE_URL || "/";
+    const cleanBasePath = basePath.endsWith("/") ? basePath : `${basePath}/`;
+
+    return `${window.location.origin}${cleanBasePath}quiz/join?room=${session.room_code}`;
+  }
+
+  async function copyJoinUrl() {
+    const joinUrl = getJoinUrl();
+    if (!joinUrl) return;
+
+    await navigator.clipboard.writeText(joinUrl);
+    alert("房間網址已複製！");
+  }
+
   function startGame() {
     if (!session?.session_id || starting) return;
 
@@ -367,88 +385,165 @@ function HostLobby() {
         )}
 
         {session && (
-          <div className="room-box">
-            <p className="room-label">房號 Room Code</p>
-
-            <div className="room-code">{session.room_code}</div>
-
-            <p className="room-hint">
-              請玩家到「加入測驗」輸入這組房號。
-            </p>
-
-            <div className="host-session-info">
-              <div>
-                <span>測驗</span>
-                <strong>{quiz?.title || "載入中..."}</strong>
-              </div>
-
-              <div>
-                <span>題目數</span>
-                <strong>{questions.length} 題</strong>
-              </div>
-
-              <div>
-                <span>玩家</span>
-                <strong>{players.length} 人</strong>
-              </div>
-
-              <div>
-                <span>模式</span>
-                <strong>{getModeLabel(session.game_mode || gameMode)}</strong>
-              </div>
-
-              <div>
-                <span>狀態</span>
-                <strong>{session.started_at ? "已開始" : "等待中"}</strong>
-              </div>
-            </div>
-
-            <div className="host-player-box">
-              <h3>即時玩家列表</h3>
-
-              {players.length === 0 ? (
-                <p className="host-player-hint">目前還沒有玩家加入。</p>
-              ) : (
-                <div className="host-player-list">
-                  {players.map((record) => {
-                    const user = record.users;
-
-                    return (
-                      <div className="host-player-item" key={record.record_id}>
-                        <div className="host-player-avatar">
-                          {user?.avatar_url ? (
-                            <img src={user.avatar_url} alt="avatar" />
-                          ) : (
-                            user?.name?.charAt(0) || "U"
-                          )}
-                        </div>
-
-                        <div className="host-player-info">
-                          <strong>{user?.name || "未知玩家"}</strong>
-                          <span>@{user?.nickname || "unknown"}</span>
-                        </div>
-
-                        <div className="host-player-score">
-                          {record.score || 0} 分
-                        </div>
-                      </div>
-                    );
-                  })}
+          <div className="host-active-layout">
+            <div className="room-box">
+              <div className="room-url-row">
+                <div>
+                  <p className="room-url-label">房間網址</p>
+                  <div className="room-url-text">{getJoinUrl()}</div>
                 </div>
-              )}
+
+                <button
+                  type="button"
+                  className="room-copy-btn"
+                  onClick={copyJoinUrl}
+                >
+                  複製
+                </button>
+              </div>
+
+              <p className="room-label">房號 Room Code</p>
+
+              <div className="room-code">{session.room_code}</div>
+
+              <div className="room-qr-panel">
+                <img
+                  className="room-qr-img"
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(
+                    getJoinUrl()
+                  )}`}
+                  alt="加入房間 QR Code"
+                />
+
+                <button
+                  type="button"
+                  className="room-copy-btn wide"
+                  onClick={copyJoinUrl}
+                >
+                  複製房間網址
+                </button>
+              </div>
+
+              <p className="room-hint">
+                玩家掃描 QR Code 或開啟網址後，仍需完成臉部登入才可加入房間。
+              </p>
+
+              <div className="host-session-info">
+                <div>
+                  <span>測驗</span>
+                  <strong>{quiz?.title || "載入中..."}</strong>
+                </div>
+
+                <div>
+                  <span>題目數</span>
+                  <strong>{questions.length} 題</strong>
+                </div>
+
+                <div>
+                  <span>玩家</span>
+                  <strong>{players.length} 人</strong>
+                </div>
+
+                <div>
+                  <span>模式</span>
+                  <strong>{getModeLabel(session.game_mode || gameMode)}</strong>
+                </div>
+
+                <div>
+                  <span>狀態</span>
+                  <strong>{session.started_at ? "已開始" : "等待中"}</strong>
+                </div>
+              </div>
+
+              <div className="host-player-cloud">
+                <div className="host-player-cloud-head">
+                  <h3>已加入玩家</h3>
+                  <button
+                    type="button"
+                    className="host-player-panel-toggle"
+                    onClick={() => setPlayerPanelOpen((open) => !open)}
+                  >
+                    {playerPanelOpen ? "隱藏名單" : "查看名單"}
+                  </button>
+                </div>
+
+                {players.length === 0 ? (
+                  <p className="host-player-hint">目前還沒有玩家加入。</p>
+                ) : (
+                  <div className="host-player-cloud-list">
+                    {players.map((record) => {
+                      const user = record.users;
+
+                      return (
+                        <div
+                          className="host-player-cloud-item"
+                          key={record.record_id}
+                        >
+                          <strong>{user?.name || "未知玩家"}</strong>
+
+                          <div className="host-player-cloud-avatar">
+                            {user?.avatar_url ? (
+                              <img src={user.avatar_url} alt="avatar" />
+                            ) : (
+                              user?.name?.charAt(0) || "U"
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              <button className="host-btn secondary" onClick={copyRoomCode}>
+                複製房號
+              </button>
+
+              <button
+                className="host-btn primary"
+                onClick={startGame}
+                disabled={starting}
+              >
+                {starting ? "開始中..." : "開始遊戲"}
+              </button>
             </div>
 
-            <button className="host-btn secondary" onClick={copyRoomCode}>
-              複製房號
-            </button>
+            {playerPanelOpen && (
+              <aside className="host-player-side-panel">
+                <h3>玩家名單</h3>
 
-            <button
-              className="host-btn primary"
-              onClick={startGame}
-              disabled={starting}
-            >
-              {starting ? "開始中..." : "開始遊戲"}
-            </button>
+                {players.length === 0 ? (
+                  <p className="host-player-hint">目前還沒有玩家加入。</p>
+                ) : (
+                  <div className="host-player-side-list">
+                    {players.map((record, index) => {
+                      const user = record.users;
+
+                      return (
+                        <div
+                          className="host-player-side-item"
+                          key={record.record_id}
+                        >
+                          <span className="host-player-number">
+                            {index + 1}
+                          </span>
+
+                          <div className="host-player-avatar">
+                            {user?.avatar_url ? (
+                              <img src={user.avatar_url} alt="avatar" />
+                            ) : (
+                              user?.name?.charAt(0) || "U"
+                            )}
+                          </div>
+
+                          <strong>{user?.name || "未知玩家"}</strong>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </aside>
+            )}
           </div>
         )}
 

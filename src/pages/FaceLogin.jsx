@@ -78,6 +78,13 @@ function FaceLogin() {
       const user = JSON.parse(savedUser);
       setCurrentUser(user);
       setLoginStatus(`已自動登入：${user.name}`);
+
+      const pendingRedirect = localStorage.getItem("pendingRedirect");
+
+      if (pendingRedirect) {
+        localStorage.removeItem("pendingRedirect");
+        navigate(pendingRedirect);
+      }
     } else {
       init();
     }
@@ -198,6 +205,14 @@ function FaceLogin() {
       stopCamera();
 
       setTimeout(() => {
+        const pendingRedirect = localStorage.getItem("pendingRedirect");
+
+        if (pendingRedirect) {
+          localStorage.removeItem("pendingRedirect");
+          navigate(pendingRedirect);
+          return;
+        }
+
         navigate("/profile");
       }, 800);
     } catch (err) {

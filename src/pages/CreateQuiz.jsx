@@ -352,7 +352,7 @@ function CreateQuiz() {
               </div>
 
               <div className="option-grid">
-                <div className="quiz-field">
+                <div className="quiz-field quiz-option-field option-a">
                   <label>選項 A</label>
                   <input
                     value={q.option_a}
@@ -363,7 +363,7 @@ function CreateQuiz() {
                   />
                 </div>
 
-                <div className="quiz-field">
+                <div className="quiz-field quiz-option-field option-b">
                   <label>選項 B</label>
                   <input
                     value={q.option_b}
@@ -374,7 +374,7 @@ function CreateQuiz() {
                   />
                 </div>
 
-                <div className="quiz-field">
+                <div className="quiz-field quiz-option-field option-c">
                   <label>選項 C</label>
                   <input
                     value={q.option_c}
@@ -385,7 +385,7 @@ function CreateQuiz() {
                   />
                 </div>
 
-                <div className="quiz-field">
+                <div className="quiz-field quiz-option-field option-d">
                   <label>選項 D</label>
                   <input
                     value={q.option_d}

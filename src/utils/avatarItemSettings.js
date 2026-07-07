@@ -29,11 +29,12 @@ export const DEFAULT_AVATAR_ITEM_SETTINGS = {
   },
   "face-1_front": {
     "scale": 0.67,
-    "x_pct": -4.55,
+    "x_pct": -3.6,
     "y_pct": -4.55,
     "thumb_scale": 1.3,
     "thumb_x_pct": 0,
-    "thumb_y_pct": 0
+    "thumb_y_pct": 0,
+    "show_thumb": true
   },
   "face-2_front": {
     "scale": 0.65,
@@ -45,11 +46,12 @@ export const DEFAULT_AVATAR_ITEM_SETTINGS = {
   },
   "face-3_front": {
     "scale": 0.7,
-    "x_pct": -3.6,
+    "x_pct": -2.65,
     "y_pct": -6.5,
     "thumb_scale": 1.3,
     "thumb_x_pct": 0,
-    "thumb_y_pct": 0
+    "thumb_y_pct": 0,
+    "show_thumb": true
   },
   "face-4_front": {
     "scale": 0.66,
@@ -92,12 +94,13 @@ export const DEFAULT_AVATAR_ITEM_SETTINGS = {
     "thumb_y_pct": 2.6
   },
   "hair-5_front": {
-    "scale": 1.05,
+    "scale": 0.96,
     "x_pct": -2.15,
     "y_pct": -10.45,
     "thumb_scale": 1.09,
     "thumb_x_pct": 0,
-    "thumb_y_pct": 7.85
+    "thumb_y_pct": 7.85,
+    "show_thumb": true
   },
   "hair-6_front": {
     "scale": 1,
@@ -271,7 +274,7 @@ export const DEFAULT_AVATAR_ITEM_SETTINGS = {
   },
   "hair-12_front": {
     "scale": 1.12,
-    "x_pct": 4.15,
+    "x_pct": 2.7,
     "y_pct": -2.65,
     "thumb_scale": 1,
     "thumb_x_pct": 0,
@@ -280,23 +283,25 @@ export const DEFAULT_AVATAR_ITEM_SETTINGS = {
   },
   "face-6_front": {
     "scale": 0.68,
-    "x_pct": -3.6,
+    "x_pct": -3.1,
     "y_pct": -7.5,
     "thumb_scale": 1.44,
     "thumb_x_pct": 0,
-    "thumb_y_pct": 0
+    "thumb_y_pct": 0,
+    "show_thumb": true
   },
   "face-7_front": {
     "scale": 0.48,
-    "x_pct": -3.6,
+    "x_pct": -3.1,
     "y_pct": -6.5,
     "thumb_scale": 1,
     "thumb_x_pct": 0,
-    "thumb_y_pct": 0
+    "thumb_y_pct": 0,
+    "show_thumb": true
   },
   "face-8_front": {
     "scale": 0.63,
-    "x_pct": -3.6,
+    "x_pct": -3.1,
     "y_pct": -4.55,
     "thumb_scale": 1.27,
     "thumb_x_pct": 0,
@@ -322,8 +327,8 @@ export const DEFAULT_AVATAR_ITEM_SETTINGS = {
   },
   "top-11_front": {
     "scale": 0.39,
-    "x_pct": -0.7,
-    "y_pct": 13.4,
+    "x_pct": -0.4,
+    "y_pct": 13.6,
     "thumb_scale": 0.88,
     "thumb_x_pct": 0,
     "thumb_y_pct": 0.4,
@@ -393,4 +398,11 @@ export const DEFAULT_AVATAR_TEMPLATE_SETTINGS = {
     "thumb_x_pct": 0,
     "thumb_y_pct": 0
   }
+};
+
+export const DEFAULT_AVATAR_CROP_SETTINGS = {
+  "size_pct": 55.35,
+  "x_pct": -16.5,
+  "y_pct": -43.45,
+  "scale": 1.28
 };

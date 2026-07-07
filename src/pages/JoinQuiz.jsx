@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { io } from "socket.io-client";
 import "../styles/JoinQuiz.css";
 
 function JoinQuiz() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const BACKEND_URL =
     import.meta.env.VITE_API_URL || "https://ar-vision-link.onrender.com";
@@ -35,10 +36,16 @@ function JoinQuiz() {
 
     setCurrentUser(JSON.parse(savedUser));
 
+    const roomFromUrl = searchParams.get("room");
+
+    if (roomFromUrl) {
+      setRoomCode(roomFromUrl.toUpperCase());
+    }
+
     return () => {
       socketRef.current?.disconnect();
     };
-  }, [navigate]);
+  }, [navigate, searchParams]);
 
   function getFinalPlayMode(targetSession = session) {
     const gameMode = targetSession?.game_mode || "choice";
@@ -402,7 +409,6 @@ function JoinQuiz() {
 
                       <div className="joined-player-info">
                         <strong>{user?.name || "未知玩家"}</strong>
-                        <span>@{user?.nickname || "unknown"}</span>
                       </div>
 
                       <div className="joined-player-score">

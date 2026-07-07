@@ -666,13 +666,21 @@ app.put("/api/users/:id/avatar", async (req, res) => {
   try {
     const { id } = req.params;
     const avatarConfig = normalizeAvatarConfig(req.body.avatar_config);
+    const avatarUrl =
+      typeof req.body.avatar_url === "string" ? req.body.avatar_url : undefined;
+
+    const updateData = {
+      avatar_config: avatarConfig,
+      updated_at: new Date().toISOString(),
+    };
+
+    if (avatarUrl !== undefined) {
+      updateData.avatar_url = avatarUrl;
+    }
 
     const { data, error } = await supabase
       .from("users")
-      .update({
-        avatar_config: avatarConfig,
-        updated_at: new Date().toISOString(),
-      })
+      .update(updateData)
       .eq("id", id)
       .select(USER_PUBLIC_SELECT)
       .single();

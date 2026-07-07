@@ -182,9 +182,30 @@
   transition: all 0.2s ease;
 }
 
+.option-btn.option-a {
+  background: rgba(37, 99, 235, 0.86);
+  border-color: rgba(147, 197, 253, 0.72);
+}
+
+.option-btn.option-b {
+  background: rgba(225, 29, 72, 0.86);
+  border-color: rgba(251, 113, 133, 0.72);
+}
+
+.option-btn.option-c {
+  background: rgba(245, 158, 11, 0.9);
+  border-color: rgba(252, 211, 77, 0.72);
+  color: #172033;
+}
+
+.option-btn.option-d {
+  background: rgba(22, 163, 74, 0.86);
+  border-color: rgba(134, 239, 172, 0.72);
+}
+
 .option-btn:hover {
   transform: translateY(-2px);
-  background: rgba(59, 130, 246, 0.28);
+  filter: brightness(1.08);
 }
 
 .option-btn.correct {
@@ -212,6 +233,10 @@
   align-items: center;
   flex-shrink: 0;
   font-weight: 800;
+}
+
+.option-btn.option-c .option-key {
+  color: #172033;
 }
 
 .answer-result {

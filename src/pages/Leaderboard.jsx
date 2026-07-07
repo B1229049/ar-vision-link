@@ -118,7 +118,6 @@ function Leaderboard() {
 
                   <div className="leader-info">
                     <strong>{user?.name || "未知玩家"}</strong>
-                    <span>@{user?.nickname || "unknown"}</span>
                   </div>
 
                   <div className="leader-score">

@@ -397,17 +397,19 @@ function QuizGame() {
   }
 
   function getOptionClass(optionKey) {
-    if (!answered) return "option-btn";
+    const baseClass = `option-btn option-${optionKey.toLowerCase()}`;
+
+    if (!answered) return baseClass;
 
     if (optionKey === currentQuestion.correct_answer) {
-      return "option-btn correct";
+      return `${baseClass} correct`;
     }
 
     if (optionKey === selectedAnswer) {
-      return "option-btn wrong";
+      return `${baseClass} wrong`;
     }
 
-    return "option-btn disabled";
+    return `${baseClass} disabled`;
   }
 
   function leaveGame() {

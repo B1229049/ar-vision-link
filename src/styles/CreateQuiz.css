@@ -112,6 +112,46 @@
     0 0 0 3px rgba(59, 130, 246, 0.22);
 }
 
+.quiz-option-field {
+  padding: 12px;
+  border-radius: 18px;
+  border: 1px solid var(--option-border, rgba(255, 255, 255, 0.12));
+  background: var(--option-bg, rgba(255, 255, 255, 0.06));
+}
+
+.quiz-option-field label {
+  color: var(--option-label, rgba(255, 255, 255, 0.86));
+}
+
+.quiz-option-field input {
+  background: rgba(15, 23, 42, 0.45);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+.quiz-option-field.option-a {
+  --option-bg: rgba(37, 99, 235, 0.28);
+  --option-border: rgba(96, 165, 250, 0.48);
+  --option-label: #bfdbfe;
+}
+
+.quiz-option-field.option-b {
+  --option-bg: rgba(225, 29, 72, 0.24);
+  --option-border: rgba(251, 113, 133, 0.48);
+  --option-label: #fecdd3;
+}
+
+.quiz-option-field.option-c {
+  --option-bg: rgba(245, 158, 11, 0.24);
+  --option-border: rgba(251, 191, 36, 0.5);
+  --option-label: #fde68a;
+}
+
+.quiz-option-field.option-d {
+  --option-bg: rgba(22, 163, 74, 0.24);
+  --option-border: rgba(74, 222, 128, 0.46);
+  --option-label: #bbf7d0;
+}
+
 .ai-wrapper {
   margin-bottom: 28px;
 }

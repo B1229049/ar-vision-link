@@ -90,6 +90,17 @@
         z-index: 8;
       }
 
+      .crop-frame {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        z-index: 30;
+        border: 3px solid #facc15;
+        border-radius: 14px;
+        box-shadow: 0 0 0 999px rgba(0, 0, 0, 0.38);
+        pointer-events: none;
+      }
+
       .toolbar,
       .controls {
         padding: 20px;
@@ -177,6 +188,14 @@
         display: flex;
         justify-content: space-between;
         gap: 10px;
+      }
+
+      .collapsible-tools {
+        display: none;
+      }
+
+      .collapsible-tools.visible {
+        display: block;
       }
 
       .toggle-row {
@@ -359,6 +378,41 @@
           </label>
         </div>
 
+        <button
+          type="button"
+          id="toggle-crop-tools"
+          style="width: 100%; margin-top: 24px"
+        >
+          顯示全域頭像裁切框
+        </button>
+
+        <div class="collapsible-tools" id="crop-tools-panel">
+          <h2 style="margin-top: 18px">全域頭像裁切框</h2>
+          <p class="small-note">
+            這個正方形裁切框會套用給所有 user，用來從目前穿搭產生排行榜與 Lobby 的 avatar_url。
+          </p>
+
+          <div class="range-row">
+            <label>正方形邊長% <span id="crop-size-value">46.00</span></label>
+            <input id="crop-size-pct" type="range" min="20" max="90" step="0.05" />
+          </div>
+
+          <div class="range-row">
+            <label>裁切框 X% <span id="crop-x-value">0.00</span></label>
+            <input id="crop-x-pct" type="range" min="-50" max="50" step="0.05" />
+          </div>
+
+          <div class="range-row">
+            <label>裁切框 Y% <span id="crop-y-value">-18.00</span></label>
+            <input id="crop-y-pct" type="range" min="-60" max="60" step="0.05" />
+          </div>
+
+          <div class="range-row">
+            <label>頭像輸出縮放 <span id="crop-scale-value">1.00</span></label>
+            <input id="crop-scale" type="range" min="0.5" max="2" step="0.01" />
+          </div>
+        </div>
+
         <div class="actions" style="margin-top: 18px">
           <button class="good" id="save-target">儲存目前目標</button>
           <button id="reset-target">重置目前目標</button>
@@ -375,6 +429,7 @@
 
     <script type="module">
       import {
+        DEFAULT_AVATAR_CROP_SETTINGS,
         DEFAULT_AVATAR_ITEM_SETTINGS,
         DEFAULT_AVATAR_TEMPLATE_SETTINGS,
       } from "./src/utils/avatarItemSettings.js";
@@ -478,6 +533,7 @@
           top: "top-1",
           bottoms: "bottoms-1",
         },
+        showCropTools: false,
         settings: loadSettings(),
         draftKey: null,
         draftSetting: null,
@@ -495,6 +551,10 @@
               ...DEFAULT_AVATAR_TEMPLATE_SETTINGS,
               ...(saved.templates || {}),
             },
+            crop: {
+              ...DEFAULT_AVATAR_CROP_SETTINGS,
+              ...(saved.crop || {}),
+            },
           };
           delete settings.templates["template-01"];
           return settings;
@@ -502,6 +562,7 @@
           const settings = {
             items: { ...DEFAULT_AVATAR_ITEM_SETTINGS },
             templates: { ...DEFAULT_AVATAR_TEMPLATE_SETTINGS },
+            crop: { ...DEFAULT_AVATAR_CROP_SETTINGS },
           };
           delete settings.templates["template-01"];
           return settings;
@@ -631,6 +692,18 @@
           applyStyle(front, displaySetting(item.id, "front"));
           stage.appendChild(front);
         });
+
+        if (state.showCropTools) {
+          const crop = state.settings.crop || DEFAULT_AVATAR_CROP_SETTINGS;
+          const squareSize = Number(crop.size_pct) || 46;
+          const squareSizePx = stage.clientWidth * (squareSize / 100);
+          const cropFrame = document.createElement("div");
+          cropFrame.className = "crop-frame";
+          cropFrame.style.width = `${squareSizePx}px`;
+          cropFrame.style.height = `${squareSizePx}px`;
+          cropFrame.style.transform = `translate(calc(-50% + ${Number(crop.x_pct) || 0}%), calc(-50% + ${Number(crop.y_pct) || 0}%)) scale(${Number(crop.scale) || 1})`;
+          stage.appendChild(cropFrame);
+        }
       }
 
       function renderPreviewSelectors() {
@@ -804,6 +877,42 @@
         renderAll();
       }
 
+      function renderCropControls() {
+        const crop = state.settings.crop || DEFAULT_AVATAR_CROP_SETTINGS;
+        const panel = document.getElementById("crop-tools-panel");
+        const toggle = document.getElementById("toggle-crop-tools");
+
+        panel.classList.toggle("visible", state.showCropTools);
+        toggle.textContent = state.showCropTools
+          ? "隱藏全域頭像裁切框"
+          : "顯示全域頭像裁切框";
+
+        [
+          ["crop-size-pct", "crop-size-value", crop.size_pct],
+          ["crop-x-pct", "crop-x-value", crop.x_pct],
+          ["crop-y-pct", "crop-y-value", crop.y_pct],
+          ["crop-scale", "crop-scale-value", crop.scale],
+        ].forEach(([inputId, valueId, value]) => {
+          const input = document.getElementById(inputId);
+          input.value = value;
+          document.getElementById(valueId).textContent = Number(value).toFixed(2);
+        });
+      }
+
+      function updateCropControls() {
+        state.settings.crop = {
+          size_pct: Number(document.getElementById("crop-size-pct").value) || 46,
+          x_pct: Number(document.getElementById("crop-x-pct").value) || 0,
+          y_pct: Number(document.getElementById("crop-y-pct").value) || 0,
+          scale: Number(document.getElementById("crop-scale").value) || 1,
+        };
+
+        persistSettings();
+        renderCropControls();
+        renderStage();
+        exportCode();
+      }
+
       function exportCode() {
         const code = `// Global avatar item placement settings.
 // Exported from avatar-relative-calibrator.html.
@@ -813,6 +922,8 @@ export const DEFAULT_AVATAR_ITEM_SETTINGS = ${JSON.stringify(state.settings.item
 export const DEFAULT_AVATAR_BODY_Y = "0";
 
 export const DEFAULT_AVATAR_TEMPLATE_SETTINGS = ${JSON.stringify(state.settings.templates, null, 2)};
+
+export const DEFAULT_AVATAR_CROP_SETTINGS = ${JSON.stringify(state.settings.crop, null, 2)};
 `;
         document.getElementById("export-output").value = code;
         return code;
@@ -823,6 +934,7 @@ export const DEFAULT_AVATAR_TEMPLATE_SETTINGS = ${JSON.stringify(state.settings.
         renderTabs();
         renderGrid();
         renderControls();
+        renderCropControls();
         renderStage();
         if (updateExport) exportCode();
       }
@@ -835,6 +947,16 @@ export const DEFAULT_AVATAR_TEMPLATE_SETTINGS = ${JSON.stringify(state.settings.
 
       ["scale", "x-pct", "y-pct", "thumb-scale", "thumb-x-pct", "thumb-y-pct"].forEach((id) => {
         document.getElementById(id).addEventListener("input", updateFromControls);
+      });
+
+      ["crop-size-pct", "crop-x-pct", "crop-y-pct", "crop-scale"].forEach((id) => {
+        document.getElementById(id).addEventListener("input", updateCropControls);
+      });
+
+      document.getElementById("toggle-crop-tools").addEventListener("click", () => {
+        state.showCropTools = !state.showCropTools;
+        renderCropControls();
+        renderStage();
       });
 
       document.getElementById("save-target").addEventListener("click", () => {
