@@ -9,11 +9,8 @@
 
 .virtual-avatar-head-renderer {
   position: absolute;
-  left: 50%;
-  top: 50%;
+  left: var(--avatar-head-left);
+  top: var(--avatar-head-top);
   width: var(--avatar-head-stage-width);
-  transform: translate(
-    var(--avatar-head-translate-x),
-    var(--avatar-head-translate-y)
-  );
+  height: var(--avatar-head-stage-height);
 }

@@ -9,9 +9,11 @@ function VirtualAvatarHead({ config, className = "" }) {
   const xPct = Number(crop.x_pct) || 0;
   const yPct = Number(crop.y_pct) || 0;
 
-  const stageWidthPct = (10000 / sizePct) * scale;
-  const translateX = -50 - xPct;
-  const translateY = -50 - yPct;
+  const sourceSizePct = sizePct / scale;
+  const stageWidthPct = 10000 / sourceSizePct;
+  const stageHeightPct = stageWidthPct * 1.5;
+  const rendererLeftPct = -(5000 / sourceSizePct + xPct - 50);
+  const rendererTopPct = -(7500 / sourceSizePct + yPct - 50);
 
   return (
     <div className={`virtual-avatar-head ${className}`}>
@@ -20,8 +22,9 @@ function VirtualAvatarHead({ config, className = "" }) {
         className="virtual-avatar-head-renderer"
         style={{
           "--avatar-head-stage-width": `${stageWidthPct}%`,
-          "--avatar-head-translate-x": `${translateX}%`,
-          "--avatar-head-translate-y": `${translateY}%`,
+          "--avatar-head-stage-height": `${stageHeightPct}%`,
+          "--avatar-head-left": `${rendererLeftPct}%`,
+          "--avatar-head-top": `${rendererTopPct}%`,
         }}
       />
     </div>
