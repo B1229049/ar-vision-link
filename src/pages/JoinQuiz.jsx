@@ -373,28 +373,48 @@ function JoinQuiz() {
             )}
           </div>
 
-          <div
-            className={
-              playerPanelOpen
-                ? "waiting-player-strip open"
-                : "waiting-player-strip"
-            }
-          >
-            {players.map((record, index) => {
-              const user = record.users;
-
-              return (
-                <div className="waiting-player-chip" key={record.record_id}>
-                  <span>{index + 1}</span>
-                  <VirtualAvatarHead
-                    config={user?.avatar_config}
-                    className="waiting-player-head"
-                  />
-                  <strong>{user?.name || "未知玩家"}</strong>
+          {playerPanelOpen && (
+            <div
+              className="waiting-player-overlay"
+              onClick={() => setPlayerPanelOpen(false)}
+            >
+              <section
+                className="waiting-player-panel"
+                onClick={(event) => event.stopPropagation()}
+              >
+                <div className="waiting-player-panel-header">
+                  <h3>玩家名單</h3>
+                  <button
+                    type="button"
+                    aria-label="關閉玩家名單"
+                    onClick={() => setPlayerPanelOpen(false)}
+                  >
+                    X
+                  </button>
                 </div>
-              );
-            })}
-          </div>
+
+                <div className="waiting-player-list">
+                  {players.map((record, index) => {
+                    const user = record.users;
+
+                    return (
+                      <div
+                        className="waiting-player-chip"
+                        key={record.record_id}
+                      >
+                        <span>{index + 1}</span>
+                        <VirtualAvatarHead
+                          config={user?.avatar_config}
+                          className="waiting-player-head"
+                        />
+                        <strong>{user?.name || "未知玩家"}</strong>
+                      </div>
+                    );
+                  })}
+                </div>
+              </section>
+            </div>
+          )}
 
           <div className="waiting-message">
             {session?.started_at
