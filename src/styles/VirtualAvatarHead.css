@@ -1,0 +1,19 @@
+.virtual-avatar-head {
+  width: 100%;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: 12px;
+  position: relative;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.virtual-avatar-head-renderer {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--avatar-head-stage-width);
+  transform: translate(
+    var(--avatar-head-translate-x),
+    var(--avatar-head-translate-y)
+  );
+}

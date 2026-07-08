@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
 import AvatarRenderer from "../components/AvatarRenderer";
+import VirtualAvatarHead from "../components/VirtualAvatarHead";
 import "../styles/HostLobby.css";
 
 function HostLobby() {
@@ -396,7 +397,7 @@ function HostLobby() {
               className="host-player-drawer-toggle"
               onClick={() => setPlayerPanelOpen((open) => !open)}
             >
-              {playerPanelOpen ? "關閉玩家名單" : `玩家 ${players.length}`}
+              {playerPanelOpen ? "關閉玩家名單" : "顯示玩家名單"}
             </button>
 
             <section className="wayground-join-board">
@@ -511,12 +512,10 @@ function HostLobby() {
                             {index + 1}
                           </span>
 
-                          <div className="host-player-avatar virtual">
-                            <AvatarRenderer
-                              config={user?.avatar_config}
-                              className="host-player-avatar-renderer"
-                            />
-                          </div>
+                          <VirtualAvatarHead
+                            config={user?.avatar_config}
+                            className="host-player-avatar-head"
+                          />
 
                           <strong>{user?.name || "未知玩家"}</strong>
                         </div>

@@ -401,7 +401,7 @@ export const DEFAULT_AVATAR_TEMPLATE_SETTINGS = {
 };
 
 export const DEFAULT_AVATAR_CROP_SETTINGS = {
-  "size_pct": 55.35,
+  "size_pct": 60.45,
   "x_pct": -16.5,
   "y_pct": -43.45,
   "scale": 1.28

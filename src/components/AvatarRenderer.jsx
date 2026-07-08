@@ -31,7 +31,7 @@ function layerStyle(setting) {
   };
 }
 
-function AvatarRenderer({ config, itemSettings, className = "" }) {
+function AvatarRenderer({ config, itemSettings, className = "", style }) {
   const normalizedConfig = normalizeAvatarConfig(config);
   const bodyY = Number(DEFAULT_AVATAR_BODY_Y) || 0;
   const baseTemplateSetting = getTemplateSetting("template-00");
@@ -43,7 +43,7 @@ function AvatarRenderer({ config, itemSettings, className = "" }) {
   }, {});
 
   return (
-    <div className={`avatar-renderer ${className}`}>
+    <div className={`avatar-renderer ${className}`} style={style}>
       <div className="avatar-renderer-inner">
         {["bottoms", "top", "face", "hair"].map((category) => {
           const item = resolvedItems[category];
