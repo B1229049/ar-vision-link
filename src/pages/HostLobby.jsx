@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
+import AvatarRenderer from "../components/AvatarRenderer";
 import "../styles/HostLobby.css";
 
 function HostLobby() {
@@ -25,7 +26,7 @@ function HostLobby() {
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [starting, setStarting] = useState(false);
-  const [playerPanelOpen, setPlayerPanelOpen] = useState(true);
+  const [playerPanelOpen, setPlayerPanelOpen] = useState(false);
 
   useEffect(() => {
     const savedUser = localStorage.getItem("currentUser");
@@ -289,13 +290,17 @@ function HostLobby() {
   }
 
   return (
-    <div className="host-lobby-page">
+    <div className={session ? "host-lobby-page active-room" : "host-lobby-page"}>
       <div className="host-lobby-card">
-        <h2>主持遊戲</h2>
+        {!session && (
+          <>
+            <h2>主持遊戲</h2>
 
-        <p className="host-subtitle">
-          選擇你建立的測驗，設定答題模式，產生房號讓玩家加入。
-        </p>
+            <p className="host-subtitle">
+              選擇你建立的測驗，設定答題模式，產生房號讓玩家加入。
+            </p>
+          </>
+        )}
 
         {!session && (
           <>
@@ -385,122 +390,100 @@ function HostLobby() {
         )}
 
         {session && (
-          <div className="host-active-layout">
-            <div className="room-box">
-              <div className="room-url-row">
-                <div>
-                  <p className="room-url-label">房間網址</p>
-                  <div className="room-url-text">{getJoinUrl()}</div>
-                </div>
+          <div className="wayground-lobby">
+            <button
+              type="button"
+              className="host-player-drawer-toggle"
+              onClick={() => setPlayerPanelOpen((open) => !open)}
+            >
+              {playerPanelOpen ? "關閉玩家名單" : `玩家 ${players.length}`}
+            </button>
 
-                <button
-                  type="button"
-                  className="room-copy-btn"
-                  onClick={copyJoinUrl}
-                >
-                  複製
-                </button>
-              </div>
-
-              <p className="room-label">房號 Room Code</p>
-
-              <div className="room-code">{session.room_code}</div>
-
-              <div className="room-qr-panel">
-                <img
-                  className="room-qr-img"
-                  src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(
-                    getJoinUrl()
-                  )}`}
-                  alt="加入房間 QR Code"
-                />
-
-                <button
-                  type="button"
-                  className="room-copy-btn wide"
-                  onClick={copyJoinUrl}
-                >
-                  複製房間網址
-                </button>
-              </div>
-
-              <p className="room-hint">
-                玩家掃描 QR Code 或開啟網址後，仍需完成臉部登入才可加入房間。
-              </p>
-
-              <div className="host-session-info">
-                <div>
-                  <span>測驗</span>
-                  <strong>{quiz?.title || "載入中..."}</strong>
-                </div>
-
-                <div>
-                  <span>題目數</span>
-                  <strong>{questions.length} 題</strong>
-                </div>
-
-                <div>
-                  <span>玩家</span>
-                  <strong>{players.length} 人</strong>
-                </div>
-
-                <div>
-                  <span>模式</span>
-                  <strong>{getModeLabel(session.game_mode || gameMode)}</strong>
-                </div>
-
-                <div>
-                  <span>狀態</span>
-                  <strong>{session.started_at ? "已開始" : "等待中"}</strong>
-                </div>
-              </div>
-
-              <div className="host-player-cloud">
-                <div className="host-player-cloud-head">
-                  <h3>已加入玩家</h3>
+            <section className="wayground-join-board">
+              <div className="join-board-main">
+                <div className="join-board-row">
+                  <div className="join-step">1</div>
+                  <div className="join-copy">
+                    <span>Join using any device</span>
+                    <strong>{getJoinUrl()}</strong>
+                  </div>
                   <button
                     type="button"
-                    className="host-player-panel-toggle"
-                    onClick={() => setPlayerPanelOpen((open) => !open)}
+                    className="join-copy-btn"
+                    onClick={copyJoinUrl}
+                    aria-label="複製房間網址"
                   >
-                    {playerPanelOpen ? "隱藏名單" : "查看名單"}
+                    複製
                   </button>
                 </div>
 
-                {players.length === 0 ? (
-                  <p className="host-player-hint">目前還沒有玩家加入。</p>
-                ) : (
-                  <div className="host-player-cloud-list">
-                    {players.map((record) => {
-                      const user = record.users;
-
-                      return (
-                        <div
-                          className="host-player-cloud-item"
-                          key={record.record_id}
-                        >
-                          <strong>{user?.name || "未知玩家"}</strong>
-
-                          <div className="host-player-cloud-avatar">
-                            {user?.avatar_url ? (
-                              <img src={user.avatar_url} alt="avatar" />
-                            ) : (
-                              user?.name?.charAt(0) || "U"
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
+                <div className="join-board-row">
+                  <div className="join-step">2</div>
+                  <div className="join-copy">
+                    <span>Enter the join code</span>
+                    <strong className="join-code">{session.room_code}</strong>
                   </div>
-                )}
+                  <button
+                    type="button"
+                    className="join-copy-btn"
+                    onClick={copyRoomCode}
+                    aria-label="複製房號"
+                  >
+                    複製
+                  </button>
+                </div>
               </div>
 
-              <button className="host-btn secondary" onClick={copyRoomCode}>
-                複製房號
-              </button>
+              <div className="join-board-meta">
+                <div>
+                  <span>Quiz</span>
+                  <strong>{quiz?.title || "載入中..."}</strong>
+                </div>
+                <div>
+                  <span>Questions</span>
+                  <strong>{questions.length}</strong>
+                </div>
+                <div>
+                  <span>Players</span>
+                  <strong>{players.length}</strong>
+                </div>
+                <div>
+                  <span>Mode</span>
+                  <strong>{getModeLabel(session.game_mode || gameMode)}</strong>
+                </div>
+              </div>
+            </section>
 
+            <section className="lobby-avatar-stage">
+              {players.length === 0 ? (
+                <div className="lobby-empty-players">
+                  等待玩家加入...
+                </div>
+              ) : (
+                <div className="lobby-avatar-list">
+                  {players.map((record) => {
+                    const user = record.users;
+
+                    return (
+                      <div
+                        className="lobby-avatar-player"
+                        key={record.record_id}
+                      >
+                        <strong>{user?.name || "未知玩家"}</strong>
+                        <AvatarRenderer
+                          config={user?.avatar_config}
+                          className="lobby-avatar-renderer"
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </section>
+
+            <div className="lobby-controls">
               <button
-                className="host-btn primary"
+                className="lobby-start-btn"
                 onClick={startGame}
                 disabled={starting}
               >
@@ -528,12 +511,11 @@ function HostLobby() {
                             {index + 1}
                           </span>
 
-                          <div className="host-player-avatar">
-                            {user?.avatar_url ? (
-                              <img src={user.avatar_url} alt="avatar" />
-                            ) : (
-                              user?.name?.charAt(0) || "U"
-                            )}
+                          <div className="host-player-avatar virtual">
+                            <AvatarRenderer
+                              config={user?.avatar_config}
+                              className="host-player-avatar-renderer"
+                            />
                           </div>
 
                           <strong>{user?.name || "未知玩家"}</strong>
@@ -547,7 +529,10 @@ function HostLobby() {
           </div>
         )}
 
-        <button className="host-btn ghost" onClick={() => navigate("/quiz")}>
+        <button
+          className={session ? "host-btn ghost lobby-exit" : "host-btn ghost"}
+          onClick={() => navigate("/quiz")}
+        >
           返回 AR Vision Link
         </button>
       </div>

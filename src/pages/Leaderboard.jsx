@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import AvatarRenderer from "../components/AvatarRenderer";
 import "../styles/Leaderboard.css";
 
 function Leaderboard() {
@@ -109,11 +110,10 @@ function Leaderboard() {
                   </div>
 
                   <div className="leader-avatar">
-                    {user?.avatar_url ? (
-                      <img src={user.avatar_url} alt="avatar" />
-                    ) : (
-                      user?.name?.charAt(0) || "U"
-                    )}
+                    <AvatarRenderer
+                      config={user?.avatar_config}
+                      className="leader-avatar-renderer"
+                    />
                   </div>
 
                   <div className="leader-info">

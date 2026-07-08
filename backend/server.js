@@ -252,7 +252,8 @@ async function getLeaderboard(sessionId) {
         id,
         name,
         nickname,
-        avatar_url
+        avatar_url,
+        avatar_config
       )
     `)
     .eq("session_id", sessionId)
