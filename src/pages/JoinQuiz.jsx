@@ -23,6 +23,7 @@ function JoinQuiz() {
   const [quiz, setQuiz] = useState(null);
   const [questions, setQuestions] = useState([]);
   const [players, setPlayers] = useState([]);
+  const [playerPanelOpen, setPlayerPanelOpen] = useState(false);
 
   const [playMode, setPlayMode] = useState(
     localStorage.getItem("quizPlayMode") || "normal"
@@ -316,54 +317,36 @@ function JoinQuiz() {
             </div>
             <div>
               <span>模式</span>
-              <strong>{getModeLabel(gameMode)}</strong>
+              <div className="summary-mode-actions">
+                <button
+                  type="button"
+                  className={playMode === "normal" ? "active" : ""}
+                  onClick={() => updatePlayMode("normal")}
+                  disabled={!canChooseMode && gameMode !== "normal"}
+                >
+                  普通
+                </button>
+                <button
+                  type="button"
+                  className={playMode === "ar" ? "active" : ""}
+                  onClick={() => updatePlayMode("ar")}
+                  disabled={!canChooseMode && gameMode !== "ar"}
+                >
+                  AR
+                </button>
+              </div>
             </div>
           </div>
 
-          {!session?.started_at && (
-            <div className="mode-select-box">
-              <h3>選擇答題模式</h3>
-              {playMode === "ar" && (
-                <p className="mode-warning">
-                  AR 模式需要相機權限。請確認瀏覽器已允許使用相機。
-                </p>
-              )}
-
-              <button
-                type="button"
-                className={
-                  playMode === "normal"
-                    ? "mode-select-btn active"
-                    : "mode-select-btn"
-                }
-                onClick={() => updatePlayMode("normal")}
-                disabled={!canChooseMode && gameMode !== "normal"}
-              >
-                普通模式
-                <span>使用一般 Quiz 畫面答題</span>
-              </button>
-
-              <button
-                type="button"
-                className={
-                  playMode === "ar"
-                    ? "mode-select-btn active"
-                    : "mode-select-btn"
-                }
-                onClick={() => updatePlayMode("ar")}
-                disabled={!canChooseMode && gameMode !== "ar"}
-              >
-                AR 模式
-                <span>使用相機與手指指向答案</span>
-              </button>
-
-              {!canChooseMode && (
-                <p className="joined-player-hint">
-                  本場測驗由主持人指定為「{getModeLabel(gameMode)}」。
-                </p>
-              )}
-            </div>
-          )}
+          <div className="waiting-room-list-toggle-row">
+            <button
+              type="button"
+              className="waiting-room-list-toggle"
+              onClick={() => setPlayerPanelOpen((open) => !open)}
+            >
+              {playerPanelOpen ? "隱藏玩家名單" : "顯示玩家名單"}
+            </button>
+          </div>
 
           <div className="waiting-avatar-stage">
             {players.length === 0 ? (
@@ -390,7 +373,13 @@ function JoinQuiz() {
             )}
           </div>
 
-          <div className="waiting-player-strip">
+          <div
+            className={
+              playerPanelOpen
+                ? "waiting-player-strip open"
+                : "waiting-player-strip"
+            }
+          >
             {players.map((record, index) => {
               const user = record.users;
 
