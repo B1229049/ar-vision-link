@@ -9,11 +9,11 @@ function VirtualAvatarHead({ config, className = "" }) {
   const xPct = Number(crop.x_pct) || 0;
   const yPct = Number(crop.y_pct) || 0;
 
-  const sourceSizePct = sizePct / scale;
+  const sourceSizePct = sizePct * scale;
   const stageWidthPct = 10000 / sourceSizePct;
   const stageHeightPct = stageWidthPct * 1.5;
-  const rendererLeftPct = -(5000 / sourceSizePct + xPct - 50);
-  const rendererTopPct = -(7500 / sourceSizePct + yPct - 50);
+  const rendererLeftPct = -(5000 / sourceSizePct + xPct / scale - 50);
+  const rendererTopPct = -(7500 / sourceSizePct + yPct / scale - 50);
 
   return (
     <div className={`virtual-avatar-head ${className}`}>

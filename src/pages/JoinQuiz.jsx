@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { io } from "socket.io-client";
+import AvatarRenderer from "../components/AvatarRenderer";
+import VirtualAvatarHead from "../components/VirtualAvatarHead";
 import "../styles/JoinQuiz.css";
 
 function JoinQuiz() {
@@ -297,48 +299,24 @@ function JoinQuiz() {
     const canChooseMode = gameMode === "choice";
 
     return (
-      <div className="join-quiz-page">
-        <div className="join-quiz-card joined">
-          <h2>已加入房間</h2>
-
-          <p className="join-quiz-subtitle">
-            請在遊戲開始前選擇答題模式，主持人開始後會自動進入。
-          </p>
-
-          <div className="joined-room-panel">
-            <p className="joined-room-label">Room Code</p>
-            <div className="joined-room-code">{session?.room_code}</div>
-          </div>
-
-          <div className="joined-info-box">
-            <div className="joined-info-row">
-              <span>測驗名稱</span>
+      <div className="join-quiz-page waiting-room-page">
+        <div className="join-quiz-card joined waiting-room-card">
+          <div className="waiting-room-summary">
+            <div>
+              <span>測驗</span>
               <strong>{quiz?.title || "載入中..."}</strong>
             </div>
-
-            <div className="joined-info-row">
-              <span>題目數量</span>
+            <div>
+              <span>題目</span>
               <strong>{questions.length} 題</strong>
             </div>
-
-            <div className="joined-info-row">
-              <span>玩家數量</span>
+            <div>
+              <span>玩家</span>
               <strong>{players.length} 人</strong>
             </div>
-
-            <div className="joined-info-row">
-              <span>主持人設定</span>
+            <div>
+              <span>模式</span>
               <strong>{getModeLabel(gameMode)}</strong>
-            </div>
-
-            <div className="joined-info-row">
-              <span>目前選擇</span>
-              <strong>{playMode === "ar" ? "AR 模式" : "普通模式"}</strong>
-            </div>
-
-            <div className="joined-info-row">
-              <span>狀態</span>
-              <strong>{session?.started_at ? "已開始" : "等待中"}</strong>
             </div>
           </div>
 
@@ -387,38 +365,46 @@ function JoinQuiz() {
             </div>
           )}
 
-          <div className="joined-player-box">
-            <h3>玩家列表</h3>
-
+          <div className="waiting-avatar-stage">
             {players.length === 0 ? (
-              <p className="joined-player-hint">目前還沒有玩家。</p>
+              <p className="joined-player-hint">等待玩家加入...</p>
             ) : (
-              <div className="joined-player-list">
+              <div className="waiting-avatar-list">
                 {players.map((record) => {
                   const user = record.users;
 
                   return (
-                    <div className="joined-player-item" key={record.record_id}>
-                      <div className="joined-player-avatar">
-                        {user?.avatar_url ? (
-                          <img src={user.avatar_url} alt="avatar" />
-                        ) : (
-                          user?.name?.charAt(0) || "U"
-                        )}
-                      </div>
-
-                      <div className="joined-player-info">
-                        <strong>{user?.name || "未知玩家"}</strong>
-                      </div>
-
-                      <div className="joined-player-score">
-                        {record.score || 0} 分
-                      </div>
+                    <div
+                      className="waiting-avatar-player"
+                      key={record.record_id}
+                    >
+                      <strong>{user?.name || "未知玩家"}</strong>
+                      <AvatarRenderer
+                        config={user?.avatar_config}
+                        className="waiting-avatar-renderer"
+                      />
                     </div>
                   );
                 })}
               </div>
             )}
+          </div>
+
+          <div className="waiting-player-strip">
+            {players.map((record, index) => {
+              const user = record.users;
+
+              return (
+                <div className="waiting-player-chip" key={record.record_id}>
+                  <span>{index + 1}</span>
+                  <VirtualAvatarHead
+                    config={user?.avatar_config}
+                    className="waiting-player-head"
+                  />
+                  <strong>{user?.name || "未知玩家"}</strong>
+                </div>
+              );
+            })}
           </div>
 
           <div className="waiting-message">

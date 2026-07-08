@@ -117,9 +117,11 @@ export async function renderAvatarImage(config, itemSettings = {}) {
   const crop = DEFAULT_AVATAR_CROP_SETTINGS;
   const cropSize = ((Number(crop.size_pct) || 46) / 100) * STAGE_WIDTH;
   const cropScale = Number(crop.scale) || 1;
-  const sourceSize = cropSize / cropScale;
-  const centerX = STAGE_WIDTH / 2 + ((Number(crop.x_pct) || 0) / 100) * STAGE_WIDTH;
-  const centerY = STAGE_HEIGHT / 2 + ((Number(crop.y_pct) || 0) / 100) * STAGE_HEIGHT;
+  const sourceSize = cropSize * cropScale;
+  const centerX =
+    STAGE_WIDTH / 2 + ((Number(crop.x_pct) || 0) / 100) * cropSize;
+  const centerY =
+    STAGE_HEIGHT / 2 + ((Number(crop.y_pct) || 0) / 100) * cropSize;
 
   const outputCanvas = document.createElement("canvas");
   outputCanvas.width = OUTPUT_SIZE;

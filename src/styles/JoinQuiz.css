@@ -392,3 +392,221 @@
   font-size: 0.9rem;
   line-height: 1.5;
 }
+
+.waiting-room-page {
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  padding: calc(var(--navbar-height) + 18px) 0 24px;
+  background:
+    radial-gradient(circle at 22% 18%, rgba(168, 85, 247, 0.24), transparent 32rem),
+    radial-gradient(circle at 84% 26%, rgba(14, 165, 233, 0.2), transparent 28rem),
+    linear-gradient(180deg, #150a2e 0%, #111827 48%, #050816 100%);
+}
+
+.waiting-room-card {
+  width: 100%;
+  max-width: none;
+  min-height: calc(100vh - var(--navbar-height) - 42px);
+  padding: 0 24px;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+  display: grid;
+  grid-template-rows: auto auto 1fr auto auto;
+  gap: 18px;
+}
+
+.waiting-room-summary {
+  width: min(760px, calc(100vw - 120px));
+  margin: 0 auto;
+  padding: 12px;
+  border-radius: 18px;
+  background: rgba(3, 7, 18, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 22px 58px rgba(0, 0, 0, 0.52);
+  backdrop-filter: blur(16px);
+  display: grid;
+  grid-template-columns: 2fr repeat(3, 1fr);
+  gap: 10px;
+}
+
+.waiting-room-summary div {
+  padding: 12px 14px;
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.08);
+  text-align: left;
+}
+
+.waiting-room-summary span {
+  display: block;
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.waiting-room-summary strong {
+  display: block;
+  color: white;
+  font-size: 16px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.waiting-avatar-stage {
+  min-height: 330px;
+  display: flex;
+  align-items: end;
+  justify-content: center;
+  padding-top: 10px;
+}
+
+.waiting-avatar-list {
+  width: 100%;
+  display: flex;
+  align-items: end;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: clamp(18px, 4vw, 54px);
+}
+
+.waiting-avatar-player {
+  width: clamp(100px, 13vw, 150px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  filter: drop-shadow(0 18px 24px rgba(0, 0, 0, 0.45));
+}
+
+.waiting-avatar-player strong {
+  max-width: 140px;
+  padding: 5px 8px;
+  margin-bottom: -3px;
+  border-radius: 999px;
+  background: rgba(3, 7, 18, 0.62);
+  color: white;
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.waiting-avatar-renderer {
+  width: 100%;
+}
+
+.waiting-player-strip {
+  width: min(620px, calc(100vw - 80px));
+  margin: 0 auto;
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.waiting-player-chip {
+  min-width: 152px;
+  padding: 9px 12px;
+  border-radius: 16px;
+  background: rgba(3, 7, 18, 0.56);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: grid;
+  grid-template-columns: 24px 42px minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+  text-align: left;
+}
+
+.waiting-player-chip > span {
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #bfdbfe;
+  font-weight: 900;
+}
+
+.waiting-player-head {
+  width: 42px;
+  border-radius: 10px;
+}
+
+.waiting-player-chip strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.waiting-room-card .mode-select-box {
+  width: min(480px, calc(100vw - 80px));
+  margin: 0 auto;
+  background: rgba(3, 7, 18, 0.58);
+  backdrop-filter: blur(14px);
+}
+
+.waiting-room-card .waiting-message,
+.waiting-room-card .join-btn.secondary {
+  width: min(480px, calc(100vw - 80px));
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@media (max-width: 640px) {
+  .waiting-room-page {
+    padding: calc(var(--navbar-height) + 14px) 0 24px;
+  }
+
+  .waiting-room-card {
+    min-height: calc(100vh - var(--navbar-height) - 38px);
+    padding: 0 14px;
+    gap: 14px;
+  }
+
+  .waiting-room-summary {
+    width: 100%;
+    grid-template-columns: repeat(3, 1fr);
+    padding: 10px;
+  }
+
+  .waiting-room-summary div:first-child {
+    grid-column: 1 / -1;
+  }
+
+  .waiting-room-summary div:nth-child(4) {
+    display: none;
+  }
+
+  .waiting-room-summary span {
+    font-size: 12px;
+  }
+
+  .waiting-room-summary strong {
+    font-size: 15px;
+  }
+
+  .waiting-room-card .mode-select-box {
+    width: 100%;
+    padding: 16px;
+    border-radius: 20px;
+  }
+
+  .waiting-avatar-stage {
+    min-height: 280px;
+    padding-top: 0;
+  }
+
+  .waiting-avatar-player {
+    width: min(44vw, 150px);
+  }
+
+  .waiting-player-strip,
+  .waiting-room-card .waiting-message,
+  .waiting-room-card .join-btn.secondary {
+    width: 100%;
+  }
+}
