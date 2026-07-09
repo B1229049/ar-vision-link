@@ -24,6 +24,7 @@ import AvatarAdmin from "./pages/AvatarAdmin";
 
 import Navbar from "./components/Navbar";
 import ProtectedRoute from "./components/ProtectedRoute";
+import "./styles/GlobalPageTheme.css";
 
 function App() {
   return (
