@@ -55,10 +55,10 @@ function Profile() {
         <div className="profile-hero">
           <div className="profile-identity">
             <div className="avatar-circle">
-              {currentUser.avatar_url ? (
+              {currentUser.profile_url ? (
                 <img
-                  src={currentUser.avatar_url}
-                  alt="avatar"
+                  src={currentUser.profile_url}
+                  alt="profile"
                   className="profile-avatar-img"
                 />
               ) : (

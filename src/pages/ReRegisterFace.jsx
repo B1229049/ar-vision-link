@@ -234,7 +234,7 @@ function ReRegisterFace() {
         },
         body: JSON.stringify({
           face_embedding: embedding,
-          avatar_url: capturedImage,
+          profile_url: capturedImage,
         }),
       });
 

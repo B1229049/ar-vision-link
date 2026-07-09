@@ -244,7 +244,7 @@ function Register() {
           extra_info: extraInfo.trim(),
           is_active: true,
           face_embedding: embedding,
-          avatar_url: capturedImage,
+          profile_url: capturedImage,
         }),
       });
 

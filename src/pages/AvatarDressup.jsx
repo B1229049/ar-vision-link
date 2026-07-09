@@ -7,7 +7,6 @@ import {
   getItemSetting,
   normalizeAvatarConfig,
 } from "../utils/avatarConfig";
-import { renderAvatarImage } from "../utils/renderAvatarImage";
 import "../styles/AvatarDressup.css";
 
 const BACKEND_URL =
@@ -106,8 +105,6 @@ function AvatarDressup() {
     setSaving(true);
 
     try {
-      const avatarUrl = await renderAvatarImage(finalConfig, itemSettings);
-
       const response = await fetch(
         `${BACKEND_URL}/api/users/${currentUser.id}/avatar`,
         {
@@ -117,7 +114,6 @@ function AvatarDressup() {
           },
           body: JSON.stringify({
             avatar_config: finalConfig,
-            avatar_url: avatarUrl,
           }),
         }
       );
@@ -132,7 +128,6 @@ function AvatarDressup() {
       const updatedUser = {
         ...currentUser,
         avatar_config: result.avatar_config,
-        avatar_url: result.user?.avatar_url || avatarUrl,
       };
 
       localStorage.setItem("currentUser", JSON.stringify(updatedUser));

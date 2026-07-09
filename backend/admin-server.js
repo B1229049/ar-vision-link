@@ -52,7 +52,7 @@ app.get("/api/admin/users", async (req, res) => {
         nickname,
         description,
         extra_info,
-        avatar_url,
+        profile_url,
         is_active,
         role,
         admin,
@@ -79,7 +79,7 @@ app.put("/api/admin/users/:id", async (req, res) => {
       nickname,
       description,
       extra_info,
-      avatar_url,
+      profile_url,
       is_active,
       role,
       admin,
@@ -93,7 +93,7 @@ app.put("/api/admin/users/:id", async (req, res) => {
     if (nickname !== undefined) payload.nickname = nickname?.trim() || null;
     if (description !== undefined) payload.description = description?.trim() || null;
     if (extra_info !== undefined) payload.extra_info = extra_info?.trim() || null;
-    if (avatar_url !== undefined) payload.avatar_url = avatar_url?.trim() || null;
+    if (profile_url !== undefined) payload.profile_url = profile_url?.trim() || null;
     if (is_active !== undefined) payload.is_active = !!is_active;
     if (role !== undefined) payload.role = role;
     if (admin !== undefined) payload.admin = !!admin;
@@ -108,7 +108,7 @@ app.put("/api/admin/users/:id", async (req, res) => {
         nickname,
         description,
         extra_info,
-        avatar_url,
+        profile_url,
         is_active,
         role,
         admin,

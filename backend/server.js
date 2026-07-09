@@ -52,7 +52,7 @@ const USER_PUBLIC_SELECT = `
   nickname,
   description,
   extra_info,
-  avatar_url,
+  profile_url,
   avatar_config,
   is_active,
   created_at,
@@ -65,7 +65,7 @@ const USER_PRIVATE_SELECT = `
   nickname,
   description,
   extra_info,
-  avatar_url,
+  profile_url,
   avatar_config,
   is_active,
   created_at,
@@ -252,7 +252,7 @@ async function getLeaderboard(sessionId) {
         id,
         name,
         nickname,
-        avatar_url,
+        profile_url,
         avatar_config
       )
     `)
@@ -436,7 +436,7 @@ app.post("/api/users/register", async (req, res) => {
       nickname,
       description,
       extra_info,
-      avatar_url,
+      profile_url,
       face_embedding,
       avatar_config,
     } = req.body;
@@ -465,7 +465,7 @@ app.post("/api/users/register", async (req, res) => {
           nickname: nickname?.trim() || "",
           description: description?.trim() || "",
           extra_info: extra_info?.trim() || "",
-          avatar_url: avatar_url || "",
+          profile_url: profile_url || "",
           avatar_config: normalizeAvatarConfig(
             avatar_config || createRandomAvatarConfig()
           ),
@@ -497,7 +497,7 @@ app.put("/api/users/:id", async (req, res) => {
       nickname,
       description,
       extra_info,
-      avatar_url,
+      profile_url,
       is_active,
     } = req.body;
 
@@ -509,7 +509,7 @@ app.put("/api/users/:id", async (req, res) => {
     if (nickname !== undefined) updateData.nickname = nickname;
     if (description !== undefined) updateData.description = description;
     if (extra_info !== undefined) updateData.extra_info = extra_info;
-    if (avatar_url !== undefined) updateData.avatar_url = avatar_url;
+    if (profile_url !== undefined) updateData.profile_url = profile_url;
     if (is_active !== undefined) updateData.is_active = is_active;
 
     const { data, error } = await supabase
@@ -622,7 +622,7 @@ app.post("/api/face-login", async (req, res) => {
 app.put("/api/users/:id/face", async (req, res) => {
   try {
     const { id } = req.params;
-    const { face_embedding, avatar_url } = req.body;
+    const { face_embedding, profile_url } = req.body;
 
     if (!Array.isArray(face_embedding)) {
       return res.status(400).json({
@@ -635,7 +635,7 @@ app.put("/api/users/:id/face", async (req, res) => {
       .from("users")
       .update({
         face_embedding: face_embedding.map(Number),
-        avatar_url,
+        profile_url,
         updated_at: new Date().toISOString(),
       })
       .eq("id", id)
@@ -667,17 +667,11 @@ app.put("/api/users/:id/avatar", async (req, res) => {
   try {
     const { id } = req.params;
     const avatarConfig = normalizeAvatarConfig(req.body.avatar_config);
-    const avatarUrl =
-      typeof req.body.avatar_url === "string" ? req.body.avatar_url : undefined;
 
     const updateData = {
       avatar_config: avatarConfig,
       updated_at: new Date().toISOString(),
     };
-
-    if (avatarUrl !== undefined) {
-      updateData.avatar_url = avatarUrl;
-    }
 
     const { data, error } = await supabase
       .from("users")
@@ -1633,7 +1627,7 @@ app.get("/api/player-records/session/:sessionId", async (req, res) => {
           id,
           name,
           nickname,
-          avatar_url
+          profile_url
         )
       `)
       .eq("session_id", sessionId)
@@ -1788,7 +1782,7 @@ app.get("/api/player-answers/session/:sessionId/question/:questionId", async (re
           id,
           name,
           nickname,
-          avatar_url
+          profile_url
         )
       `)
       .eq("session_id", sessionId)
@@ -1981,7 +1975,7 @@ app.get("/api/history/player/:userId/session/:sessionId", async (req, res) => {
           id,
           name,
           nickname,
-          avatar_url
+          profile_url
         )
       `)
       .eq("session_id", sessionId)
@@ -2165,7 +2159,7 @@ app.get("/api/history/host/:hostId/session/:sessionId", async (req, res) => {
           id,
           name,
           nickname,
-          avatar_url
+          profile_url
         )
       `)
       .eq("session_id", sessionId)
@@ -2193,7 +2187,7 @@ app.get("/api/history/host/:hostId/session/:sessionId", async (req, res) => {
           id,
           name,
           nickname,
-          avatar_url
+          profile_url
         ),
         questions (
           question_id,

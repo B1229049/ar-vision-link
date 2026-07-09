@@ -31,8 +31,8 @@ function QuizHome() {
     <div className="quiz-home-page">
       <div className="quiz-home-card">
         <div className="quiz-avatar">
-          {currentUser.avatar_url ? (
-            <img src={currentUser.avatar_url} alt="avatar" />
+          {currentUser.profile_url ? (
+            <img src={currentUser.profile_url} alt="profile" />
           ) : (
             currentUser.name?.charAt(0) || "U"
           )}

@@ -249,7 +249,7 @@ function QuizGame() {
             id: currentUser.id,
             name: currentUser.name,
             nickname: currentUser.nickname,
-            avatar_url: currentUser.avatar_url,
+            profile_url: currentUser.profile_url,
           },
         });
       } catch (err) {

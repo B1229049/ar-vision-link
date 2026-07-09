@@ -434,8 +434,8 @@ function JoinQuiz() {
     <div className="join-quiz-page">
       <div className="join-quiz-card">
         <div className="join-quiz-avatar">
-          {currentUser.avatar_url ? (
-            <img src={currentUser.avatar_url} alt="avatar" />
+          {currentUser.profile_url ? (
+            <img src={currentUser.profile_url} alt="profile" />
           ) : (
             currentUser.name?.charAt(0) || "U"
           )}
