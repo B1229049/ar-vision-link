@@ -68,12 +68,12 @@ function Home() {
           <div className="hero-proof">
             <div className="proof-card online">
               <span>ONLINE USERS</span>
-              <strong>18</strong>
+              <strong>0</strong>
             </div>
 
             <div className="proof-card online">
               <span>LIVE ROOMS</span>
-              <strong>4</strong>
+              <strong>0</strong>
             </div>
 
             <div className="proof-card">
@@ -84,10 +84,7 @@ function Home() {
         </div>
 
         <div className="hero-empty-visual" aria-label="homepage visual placeholder">
-          <div className="hero-empty-frame">
-            <div className="hero-empty-orbit"></div>
-            <div className="hero-empty-panel"></div>
-          </div>
+          <div className="hero-empty-frame" />
         </div>
       </section>
 
@@ -130,10 +127,6 @@ function Home() {
               老師可以上傳教材 PDF 或貼上重點內容，系統會自動產生題目、
               A/B/C/D 選項與正確答案，並可再手動編輯。
             </p>
-
-            <Link to="/quiz/create" className="home-btn primary narrow">
-              開始 AI 出題
-            </Link>
           </div>
 
           <div className="mock-panel">
@@ -171,10 +164,6 @@ function Home() {
               使用 Camera 頁面偵測多張臉，後端批次比對使用者資料，
               前端只顯示公開資訊與 AR 互動效果。
             </p>
-
-            <Link to="/camera" className="home-btn secondary narrow">
-              開啟 AR Camera
-            </Link>
           </div>
         </div>
 
@@ -185,10 +174,6 @@ function Home() {
             <p>
               各式各樣的時裝造型，快來蒐集吧！打造出最帥氣、最美麗的你！
             </p>
-
-            <Link to="/avatar-dressup" className="home-btn secondary narrow">
-              前往換裝
-            </Link>
           </div>
 
           <div className="dressup-empty-panel" aria-label="avatar dress-up visual placeholder" />
