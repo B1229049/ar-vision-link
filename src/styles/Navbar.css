@@ -18,7 +18,7 @@
   padding: 0 28px;
   box-sizing: border-box;
 
-  background: rgba(15, 23, 42, 0.82);
+  background: rgba(8, 13, 31, 0.92);
   backdrop-filter: blur(16px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 
@@ -104,7 +104,7 @@
     left: 0;
 
     width: 100%;
-    background: rgba(15, 23, 42, 0.96);
+    background: rgba(8, 13, 31, 0.98);
     backdrop-filter: blur(16px);
 
     flex-direction: column;

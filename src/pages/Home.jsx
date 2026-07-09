@@ -26,16 +26,11 @@ function Home() {
     <div className="home-page">
       <section className="home-hero">
         <div className="hero-left">
-          <div className="hero-badge">AR Vision Link</div>
-
-          <h1>
-            結合 AR、人臉辨識與 AI 出題的
-            <span> 即時互動測驗平台</span>
-          </h1>
+          <h1>AR Vision Link</h1>
 
           <p>
-            支援臉部登入、多人 AR 辨識、即時 Quiz 遊戲，以及 Gemini AI
-            文字 / PDF 自動出題，讓課堂、展示與活動互動更加智慧化。
+            支援臉部登入、AR 辨識、多人online答題，以及 AI
+            自動出題，讓課堂、展示與活動互動更加有趣的平台。
           </p>
 
           <div className="hero-actions">
@@ -60,48 +55,38 @@ function Home() {
             ) : (
               <>
                 <Link to="/face-login" className="home-btn primary">
-                  臉部登入
+                  Face ID 登入
                 </Link>
 
                 <Link to="/register" className="home-btn secondary">
-                  註冊帳號
-                </Link>
-
-                <Link to="/quiz/join" className="home-btn secondary">
-                  加入測驗
+                  建立帳號
                 </Link>
               </>
             )}
           </div>
+
+          <div className="hero-proof">
+            <div className="proof-card online">
+              <span>ONLINE USERS</span>
+              <strong>18</strong>
+            </div>
+
+            <div className="proof-card online">
+              <span>LIVE ROOMS</span>
+              <strong>4</strong>
+            </div>
+
+            <div className="proof-card">
+              <span>FACE ID</span>
+              <strong>Ready</strong>
+            </div>
+          </div>
         </div>
 
-        <div className="hero-dashboard">
-          <div className="dashboard-card main">
-            <span>AI Quiz</span>
-            <strong>PDF → 選擇題</strong>
-            <p>自動產生題目、選項與正確答案</p>
-          </div>
-
-          <div className="dashboard-grid">
-            <div className="mini-card">
-              <strong>Face Login</strong>
-              <span>臉部登入</span>
-            </div>
-
-            <div className="mini-card">
-              <strong>AR Camera</strong>
-              <span>多人辨識</span>
-            </div>
-
-            <div className="mini-card">
-              <strong>Real-time</strong>
-              <span>同步作答</span>
-            </div>
-
-            <div className="mini-card">
-              <strong>Gemini</strong>
-              <span>AI 出題</span>
-            </div>
+        <div className="hero-empty-visual" aria-label="homepage visual placeholder">
+          <div className="hero-empty-frame">
+            <div className="hero-empty-orbit"></div>
+            <div className="hero-empty-panel"></div>
           </div>
         </div>
       </section>
@@ -115,25 +100,21 @@ function Home() {
 
         <div className="feature-grid">
           <Link to="/face-login" className="feature-card">
-            <div className="feature-icon">01</div>
             <h3>臉部登入</h3>
             <p>使用 face descriptor 進行後端比對，不讓前端取得臉部特徵資料。</p>
           </Link>
 
           <Link to="/quiz/create" className="feature-card">
-            <div className="feature-icon">02</div>
             <h3>AI 自動出題</h3>
             <p>貼上文字或上傳 PDF，透過 Gemini 產生可編輯的四選一題目。</p>
           </Link>
 
           <Link to="/quiz" className="feature-card">
-            <div className="feature-icon">03</div>
             <h3>即時 Quiz</h3>
             <p>主持人建立房間，玩家輸入房號加入，支援即時題目同步與計分。</p>
           </Link>
 
           <Link to="/camera" className="feature-card">
-            <div className="feature-icon">04</div>
             <h3>多人 AR 辨識</h3>
             <p>同時辨識多位使用者，顯示 AR 寶箱與個人資訊卡片。</p>
           </Link>
@@ -195,6 +176,22 @@ function Home() {
               開啟 AR Camera
             </Link>
           </div>
+        </div>
+
+        <div className="showcase-card dressup-showcase">
+          <div>
+            <span className="showcase-label">Avatar Dress-up</span>
+            <h2>裝扮你的虛擬替身</h2>
+            <p>
+              各式各樣的時裝造型，快來蒐集吧！打造出最帥氣、最美麗的你！
+            </p>
+
+            <Link to="/avatar-dressup" className="home-btn secondary narrow">
+              前往換裝
+            </Link>
+          </div>
+
+          <div className="dressup-empty-panel" aria-label="avatar dress-up visual placeholder" />
         </div>
       </section>
 
