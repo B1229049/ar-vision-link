@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { io } from "socket.io-client";
 import TrackedPlayerVideo from "../components/TrackedPlayerVideo";
+import VirtualAvatarHead from "../components/VirtualAvatarHead";
 import "../styles/HostConsole.css";
 
 const BACKEND_URL =
@@ -525,17 +526,13 @@ function HostConsole() {
 
                 return (
                   <div className="answer-item" key={record.record_id}>
-                    <div className="answer-avatar">
-                      {user?.avatar_url ? (
-                        <img src={user.avatar_url} alt="avatar" />
-                      ) : (
-                        user?.name?.charAt(0) || "U"
-                      )}
-                    </div>
+                    <VirtualAvatarHead
+                      config={user?.avatar_config}
+                      className="answer-avatar"
+                    />
 
                     <div className="answer-user">
                       <strong>{user?.name || "未知玩家"}</strong>
-                      <span>@{user?.nickname || "unknown"}</span>
                     </div>
 
                     <div className="answer-status">
