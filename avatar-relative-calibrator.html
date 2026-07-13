@@ -439,10 +439,10 @@
 
       const categories = [
         { key: "template", label: "模板" },
-        { key: "hair", label: "頭髮" },
-        { key: "face", label: "表情" },
-        { key: "top", label: "上衣" },
-        { key: "bottoms", label: "褲裝" },
+        { key: "hair", label: "頭部" },
+        { key: "face", label: "臉部" },
+        { key: "top", label: "上半身" },
+        { key: "bottoms", label: "下半身" },
       ];
 
       const templates = [
@@ -450,67 +450,44 @@
         { id: "template-02", label: "模板02", img: `${ASSET_BASE}/templates/模板02.png`, className: "template-02" },
       ];
 
-      const splitHairIds = new Set(["06", "07", "09", "10"]);
+      const splitHairIds = new Set([7, 8, 10, 14, 15]);
+
+      function numberedItem(category, prefix, number) {
+        const padded = String(number).padStart(2, "0");
+
+        return {
+          id: `${category}-${number}`,
+          label: `${prefix}${padded}`,
+          frontImg: `${ASSET_BASE}/${category}/${prefix}${padded}.png`,
+        };
+      }
 
       function hairItem(number) {
         const padded = String(number).padStart(2, "0");
         const id = `hair-${number}`;
         const base = `${ASSET_BASE}/hair/頭髮${padded}`;
+        const item = {
+          id,
+          label: `頭髮${padded}`,
+          thumbImg: `${base}-0.png`,
+        };
 
-        return splitHairIds.has(padded)
-          ? { id, label: `頭髮${padded}`, frontImg: `${base}-1.png`, backImg: `${base}-2.png` }
-          : { id, label: `頭髮${padded}`, frontImg: `${base}.png` };
+        return splitHairIds.has(number)
+          ? { ...item, frontImg: `${base}-1.png`, backImg: `${base}-2.png` }
+          : { ...item, frontImg: `${base}.png` };
       }
 
       const items = {
-        hair: [
-          hairItem(1),
-          hairItem(2),
-          hairItem(3),
-          hairItem(4),
-          hairItem(5),
-          hairItem(6),
-          hairItem(7),
-          hairItem(8),
-          hairItem(9),
-          hairItem(10),
-          hairItem(11),
-          hairItem(12),
-        ],
-        face: [
-          { id: "face-1", label: "表情01", frontImg: `${ASSET_BASE}/face/表情01.png` },
-          { id: "face-2", label: "表情02", frontImg: `${ASSET_BASE}/face/表情02.png` },
-          { id: "face-3", label: "表情03", frontImg: `${ASSET_BASE}/face/表情03.png` },
-          { id: "face-4", label: "表情04", frontImg: `${ASSET_BASE}/face/表情04.png` },
-          { id: "face-5", label: "表情05", frontImg: `${ASSET_BASE}/face/表情05.png` },
-          { id: "face-6", label: "表情06", frontImg: `${ASSET_BASE}/face/表情06.png` },
-          { id: "face-7", label: "表情07", frontImg: `${ASSET_BASE}/face/表情07.png` },
-          { id: "face-8", label: "表情08", frontImg: `${ASSET_BASE}/face/表情08.png` },
-        ],
-        top: [
-          { id: "top-1", label: "上衣01", frontImg: `${ASSET_BASE}/top/上衣01.png` },
-          { id: "top-2", label: "上衣02", frontImg: `${ASSET_BASE}/top/上衣02.png` },
-          { id: "top-3", label: "上衣03", frontImg: `${ASSET_BASE}/top/上衣03.png` },
-          { id: "top-4", label: "上衣04", frontImg: `${ASSET_BASE}/top/上衣04.png` },
-          { id: "top-5", label: "上衣05", frontImg: `${ASSET_BASE}/top/上衣05.png` },
-          { id: "top-6", label: "上衣06", frontImg: `${ASSET_BASE}/top/上衣06.png` },
-          { id: "top-7", label: "上衣07", frontImg: `${ASSET_BASE}/top/上衣07.png` },
-          { id: "top-8", label: "上衣08", frontImg: `${ASSET_BASE}/top/上衣08.png` },
-          { id: "top-9", label: "上衣09", frontImg: `${ASSET_BASE}/top/上衣09.png` },
-          { id: "top-10", label: "上衣10", frontImg: `${ASSET_BASE}/top/上衣10.png` },
-          { id: "top-11", label: "上衣11", frontImg: `${ASSET_BASE}/top/上衣11.png` },
-          { id: "top-12", label: "上衣12", frontImg: `${ASSET_BASE}/top/上衣12.png` },
-        ],
-        bottoms: [
-          { id: "bottoms-1", label: "褲裝01", frontImg: `${ASSET_BASE}/bottoms/褲裝01.png` },
-          { id: "bottoms-2", label: "褲裝02", frontImg: `${ASSET_BASE}/bottoms/褲裝02.png` },
-          { id: "bottoms-3", label: "褲裝03", frontImg: `${ASSET_BASE}/bottoms/褲裝03.png` },
-          { id: "bottoms-4", label: "褲裝04", frontImg: `${ASSET_BASE}/bottoms/褲裝04.png` },
-          { id: "bottoms-5", label: "褲裝05", frontImg: `${ASSET_BASE}/bottoms/褲裝05.png` },
-          { id: "bottoms-6", label: "褲裝06", frontImg: `${ASSET_BASE}/bottoms/褲裝06.png` },
-          { id: "bottoms-7", label: "褲裝07", frontImg: `${ASSET_BASE}/bottoms/褲裝07.png` },
-          { id: "bottoms-8", label: "褲裝08", frontImg: `${ASSET_BASE}/bottoms/褲裝08.png` },
-        ],
+        hair: Array.from({ length: 16 }, (_, index) => hairItem(index + 1)),
+        face: Array.from({ length: 12 }, (_, index) =>
+          numberedItem("face", "表情", index + 1)
+        ),
+        top: Array.from({ length: 16 }, (_, index) =>
+          numberedItem("top", "上衣", index + 1)
+        ),
+        bottoms: Array.from({ length: 8 }, (_, index) =>
+          numberedItem("bottoms", "褲裝", index + 1)
+        ),
       };
 
       const defaultSetting = () => ({
@@ -793,6 +770,14 @@
                 applyThumbStyle(img, setting);
                 btn.appendChild(img);
               });
+
+            if (item.thumbImg) {
+              const customThumb = document.createElement("img");
+              customThumb.className = "thumb-layer custom-thumb";
+              customThumb.src = item.thumbImg;
+              customThumb.addEventListener("error", () => customThumb.remove());
+              btn.appendChild(customThumb);
+            }
           }
 
           btn.addEventListener("click", () => {

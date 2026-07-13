@@ -74,54 +74,10 @@ const USER_PRIVATE_SELECT = `
 `;
 
 const AVATAR_ITEMS = {
-  hair: [
-    "hair-1",
-    "hair-2",
-    "hair-3",
-    "hair-4",
-    "hair-5",
-    "hair-6",
-    "hair-7",
-    "hair-8",
-    "hair-9",
-    "hair-10",
-    "hair-11",
-    "hair-12",
-  ],
-  face: [
-    "face-1",
-    "face-2",
-    "face-3",
-    "face-4",
-    "face-5",
-    "face-6",
-    "face-7",
-    "face-8",
-  ],
-  top: [
-    "top-1",
-    "top-2",
-    "top-3",
-    "top-4",
-    "top-5",
-    "top-6",
-    "top-7",
-    "top-8",
-    "top-9",
-    "top-10",
-    "top-11",
-    "top-12",
-  ],
-  bottoms: [
-    "bottoms-1",
-    "bottoms-2",
-    "bottoms-3",
-    "bottoms-4",
-    "bottoms-5",
-    "bottoms-6",
-    "bottoms-7",
-    "bottoms-8",
-  ],
+  hair: Array.from({ length: 16 }, (_, index) => `hair-${index + 1}`),
+  face: Array.from({ length: 12 }, (_, index) => `face-${index + 1}`),
+  top: Array.from({ length: 16 }, (_, index) => `top-${index + 1}`),
+  bottoms: Array.from({ length: 8 }, (_, index) => `bottoms-${index + 1}`),
 };
 
 const DEFAULT_AVATAR_CONFIG = {

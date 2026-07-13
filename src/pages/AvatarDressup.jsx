@@ -218,6 +218,16 @@ function AvatarDressup() {
                       transform: thumbTransform(frontSetting),
                     }}
                   />
+                  {item.thumbImg && (
+                    <img
+                      className="avatar-item-custom-thumb"
+                      src={item.thumbImg}
+                      alt=""
+                      onError={(event) => {
+                        event.currentTarget.style.display = "none";
+                      }}
+                    />
+                  )}
                 </span>
               </button>
             );

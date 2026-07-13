@@ -83,9 +83,6 @@ function Home() {
           </div>
         </div>
 
-        <div className="hero-empty-visual" aria-label="homepage visual placeholder">
-          <div className="hero-empty-frame" />
-        </div>
       </section>
 
       <section className="home-section">
@@ -121,7 +118,6 @@ function Home() {
       <section className="showcase-section">
         <div className="showcase-card ai-showcase">
           <div>
-            <span className="showcase-label">AI Quiz Creator</span>
             <h2>PDF / 文字一鍵生成測驗</h2>
             <p>
               老師可以上傳教材 PDF 或貼上重點內容，系統會自動產生題目、
@@ -140,6 +136,14 @@ function Home() {
         </div>
 
         <div className="showcase-card ar-showcase">
+          <div>
+            <h2>多人辨識與 AR 互動展示</h2>
+            <p>
+              使用 Camera 頁面偵測多張臉，後端批次比對使用者資料，
+              前端只顯示公開資訊與 AR 互動效果。
+            </p>
+          </div>
+
           <div className="ar-preview">
             <div className="camera-frame">
               <div className="face-dot one"></div>
@@ -156,20 +160,10 @@ function Home() {
               </div>
             </div>
           </div>
-
-          <div>
-            <span className="showcase-label">AR Recognition</span>
-            <h2>多人辨識與 AR 互動展示</h2>
-            <p>
-              使用 Camera 頁面偵測多張臉，後端批次比對使用者資料，
-              前端只顯示公開資訊與 AR 互動效果。
-            </p>
-          </div>
         </div>
 
         <div className="showcase-card dressup-showcase">
           <div>
-            <span className="showcase-label">Avatar Dress-up</span>
             <h2>裝扮你的虛擬替身</h2>
             <p>
               各式各樣的時裝造型，快來蒐集吧！打造出最帥氣、最美麗的你！
