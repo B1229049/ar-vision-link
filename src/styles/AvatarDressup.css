@@ -1,4 +1,5 @@
 .avatar-dressup-page {
+  height: 100dvh;
   min-height: 100vh;
   width: 100%;
   background: linear-gradient(135deg, #07131f 0%, #0b1a18 45%, #10291d 100%);
@@ -7,17 +8,22 @@
   align-items: center;
   padding: calc(var(--navbar-height) + 32px) 24px 32px;
   box-sizing: border-box;
+  overflow: hidden;
 }
 
 .avatar-dressup-card {
   width: 100%;
-  max-width: 720px;
+  height: 100%;
+  max-width: 640px;
   background: rgba(8, 31, 24, 0.88);
   border: 1px solid rgba(255, 255, 255, 0.12);
   backdrop-filter: blur(18px);
   border-radius: 24px;
   padding: 0;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  container-type: inline-size;
   color: white;
   box-shadow:
     0 12px 32px rgba(0, 0, 0, 0.35),
@@ -28,13 +34,14 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 344px;
+  height: 260px;
+  min-height: 260px;
   padding: 20px 24px 0;
 }
 
 .avatar-dressup-stage {
-  width: min(248px, 94%);
-  min-height: 320px;
+  width: min(184px, 94%);
+  min-height: 252px;
   border: 0;
   border-radius: 0;
   background: transparent;
@@ -44,10 +51,11 @@
 }
 
 .avatar-dressup-renderer {
-  width: min(224px, 100%);
+  width: min(168px, 100%);
 }
 
 .avatar-tabs {
+  flex: 0 0 auto;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 0;
@@ -121,11 +129,37 @@
 }
 
 .avatar-item-grid {
+  --avatar-grid-gap: 16px;
+  --avatar-grid-padding-x: 28px;
+  --avatar-grid-padding-y: 20px;
+  --avatar-grid-cell-size: calc(
+    (
+        100cqw - var(--avatar-grid-padding-x) - var(--avatar-grid-padding-x) -
+          var(--avatar-grid-gap) - var(--avatar-grid-gap) -
+          var(--avatar-grid-gap)
+      ) / 4
+  );
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
-  padding: 24px 28px 20px;
+  gap: var(--avatar-grid-gap);
+  width: 100%;
+  max-height: calc(
+    var(--avatar-grid-cell-size) + var(--avatar-grid-cell-size) +
+      var(--avatar-grid-cell-size) + var(--avatar-grid-gap) +
+      var(--avatar-grid-gap) + var(--avatar-grid-padding-y) +
+      var(--avatar-grid-padding-y)
+  );
+  min-height: 0;
+  padding: var(--avatar-grid-padding-y) var(--avatar-grid-padding-x);
   margin-top: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  box-sizing: border-box;
+}
+
+.avatar-item-grid::-webkit-scrollbar {
+  display: none;
 }
 
 .avatar-item-card {
@@ -166,11 +200,13 @@
 }
 
 .avatar-dressup-actions {
+  flex: 0 0 auto;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 14px;
-  padding: 4px 28px 28px;
-  margin-top: 0;
+  padding: 12px 28px 20px;
+  margin-top: auto;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .avatar-item-thumb .avatar-item-custom-thumb {
@@ -198,35 +234,52 @@
 }
 
 @media (max-width: 760px) {
+  .avatar-dressup-page {
+    padding-top: calc(var(--navbar-height) + 16px);
+    padding-bottom: 16px;
+  }
+
   .avatar-dressup-card {
     border-radius: 0;
   }
 
   .avatar-dressup-preview {
-    min-height: 280px;
+    height: 220px;
+    min-height: 220px;
     padding-inline: 12px;
   }
 
   .avatar-dressup-stage {
-    width: min(208px, 96%);
-    min-height: 264px;
+    width: min(158px, 96%);
+    min-height: 216px;
   }
 
   .avatar-dressup-renderer {
-    width: min(196px, 100%);
+    width: min(144px, 100%);
   }
 
   .avatar-dressup-actions {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 12px 16px 16px;
   }
 
   .avatar-tabs {
-    padding-inline: 12px;
+    padding: 0 12px 10px;
+  }
+
+  .avatar-tab {
+    min-height: 68px;
+    padding-block: 8px 16px;
   }
 
   .avatar-item-grid {
-    grid-template-columns: repeat(4, 1fr);
-    gap: 20px;
-    padding-inline: 0;
+    --avatar-grid-gap: 12px;
+    --avatar-grid-padding-x: 16px;
+    --avatar-grid-padding-y: 16px;
+  }
+
+  .avatar-dressup-btn {
+    padding: 13px 10px;
   }
 }
