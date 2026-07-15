@@ -169,86 +169,88 @@ function AvatarDressup() {
           </div>
         </div>
 
-        <div className="avatar-tabs">
-          {AVATAR_CATEGORIES.map((category) => (
-            <button
-              key={category.key}
-              className={`avatar-tab ${
-                activeCategory === category.key ? "active" : ""
-              }`}
-              onClick={() => setActiveCategory(category.key)}
-              aria-label={category.label}
-              title={category.label}
-            >
-              <CategoryIcon type={category.key} />
-              <span>{category.label}</span>
-            </button>
-          ))}
-        </div>
-
-        <div className="avatar-item-grid">
-          {activeItems.map((item) => {
-            const active = avatarConfig[activeCategory] === item.id;
-            const frontSetting = getItemSetting(itemSettings, item.id, "front");
-            const backSetting = getItemSetting(itemSettings, item.id, "back");
-            const showBackThumb = backSetting.show_thumb !== false;
-
-            return (
+        <div className="avatar-dressup-controls">
+          <div className="avatar-tabs">
+            {AVATAR_CATEGORIES.map((category) => (
               <button
-                key={item.id}
-                className={`avatar-item-card ${active ? "active" : ""}`}
-                onClick={() => selectItem(activeCategory, item.id)}
-                aria-label={item.label}
-                title={item.label}
+                key={category.key}
+                className={`avatar-tab ${
+                  activeCategory === category.key ? "active" : ""
+                }`}
+                onClick={() => setActiveCategory(category.key)}
+                aria-label={category.label}
+                title={category.label}
               >
-                <span className="avatar-item-thumb">
-                  {item.backImg && showBackThumb && (
+                <CategoryIcon type={category.key} />
+                <span>{category.label}</span>
+              </button>
+            ))}
+          </div>
+
+          <div className="avatar-item-grid">
+            {activeItems.map((item) => {
+              const active = avatarConfig[activeCategory] === item.id;
+              const frontSetting = getItemSetting(itemSettings, item.id, "front");
+              const backSetting = getItemSetting(itemSettings, item.id, "back");
+              const showBackThumb = backSetting.show_thumb !== false;
+
+              return (
+                <button
+                  key={item.id}
+                  className={`avatar-item-card ${active ? "active" : ""}`}
+                  onClick={() => selectItem(activeCategory, item.id)}
+                  aria-label={item.label}
+                  title={item.label}
+                >
+                  <span className="avatar-item-thumb">
+                    {item.backImg && showBackThumb && (
+                      <img
+                        src={item.backImg}
+                        alt=""
+                        style={{
+                          transform: thumbTransform(backSetting),
+                        }}
+                      />
+                    )}
                     <img
-                      src={item.backImg}
+                      src={item.frontImg}
                       alt=""
                       style={{
-                        transform: thumbTransform(backSetting),
+                        transform: thumbTransform(frontSetting),
                       }}
                     />
-                  )}
-                  <img
-                    src={item.frontImg}
-                    alt=""
-                    style={{
-                      transform: thumbTransform(frontSetting),
-                    }}
-                  />
-                  {item.thumbImg && (
-                    <img
-                      className="avatar-item-custom-thumb"
-                      src={item.thumbImg}
-                      alt=""
-                      onError={(event) => {
-                        event.currentTarget.style.display = "none";
-                      }}
-                    />
-                  )}
-                </span>
-              </button>
-            );
-          })}
-        </div>
+                    {item.thumbImg && (
+                      <img
+                        className="avatar-item-custom-thumb"
+                        src={item.thumbImg}
+                        alt=""
+                        onError={(event) => {
+                          event.currentTarget.style.display = "none";
+                        }}
+                      />
+                    )}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
 
-        <div className="avatar-dressup-actions">
-          <button
-            className="avatar-dressup-btn primary"
-            onClick={saveAvatar}
-            disabled={saving}
-          >
-            {saving ? "儲存中..." : "儲存替身"}
-          </button>
+          <div className="avatar-dressup-actions">
+            <button
+              className="avatar-dressup-btn primary"
+              onClick={saveAvatar}
+              disabled={saving}
+            >
+              {saving ? "儲存中..." : "儲存替身"}
+            </button>
 
-          <button
-            className="avatar-dressup-btn secondary"
-            onClick={() => navigate("/profile")}
-          >
-            取消
-          </button>
+            <button
+              className="avatar-dressup-btn secondary"
+              onClick={() => navigate("/profile")}
+            >
+              取消
+            </button>
+          </div>
         </div>
       </div>
     </div>

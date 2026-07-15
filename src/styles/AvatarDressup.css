@@ -16,8 +16,8 @@
   height: 100%;
   max-width: 640px;
   background: transparent !important;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(18px);
+  border: 0 !important;
+  backdrop-filter: none !important;
   border-radius: 24px;
   padding: 0;
   overflow: hidden;
@@ -25,9 +25,7 @@
   flex-direction: column;
   container-type: inline-size;
   color: white;
-  box-shadow:
-    0 12px 32px rgba(0, 0, 0, 0.35),
-    0 0 40px rgba(16, 185, 129, 0.1);
+  box-shadow: none !important;
 }
 
 .avatar-dressup-preview {
@@ -38,6 +36,18 @@
   min-height: 260px;
   padding: 20px 24px 0;
   background: transparent !important;
+}
+
+.avatar-dressup-controls {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  flex-direction: column;
+  overflow: hidden;
+  background: rgba(3, 10, 24, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.28);
 }
 
 .avatar-dressup-stage {
@@ -208,7 +218,7 @@
   grid-template-columns: 1fr 1fr;
   gap: 14px;
   padding: 12px 28px 20px;
-  margin-top: auto;
+  margin-top: 0;
   background: rgba(3, 10, 24, 0.82);
   border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
@@ -247,10 +257,19 @@
     border-radius: 0;
   }
 
+  .avatar-dressup-controls {
+    display: flex;
+    flex: 0 0 auto;
+    border-radius: 18px;
+  }
+
   .avatar-dressup-preview {
     height: clamp(235px, 30dvh, 270px);
     min-height: clamp(235px, 30dvh, 270px);
     padding-inline: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 18px;
+    margin-bottom: 14px;
   }
 
   .avatar-dressup-stage {
@@ -266,12 +285,14 @@
   .avatar-dressup-actions {
     grid-template-columns: 1fr 1fr;
     gap: 10px;
-    padding: 10px 16px 16px;
-    margin-top: auto;
+    padding: 12px 16px 16px;
+    margin-top: 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
   }
 
   .avatar-tabs {
-    padding: 14px 12px 6px;
+    padding: 18px 12px 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   }
 
   .avatar-tab {
@@ -297,6 +318,19 @@
     --avatar-grid-gap: 10px;
     --avatar-grid-padding-x: 16px;
     --avatar-grid-padding-y: 14px;
+    height: calc(
+      var(--avatar-grid-cell-size) + var(--avatar-grid-cell-size) +
+        var(--avatar-grid-cell-size) + var(--avatar-grid-gap) +
+        var(--avatar-grid-gap) + var(--avatar-grid-padding-y) +
+        var(--avatar-grid-padding-y)
+    );
+    min-height: calc(
+      var(--avatar-grid-cell-size) + var(--avatar-grid-cell-size) +
+        var(--avatar-grid-cell-size) + var(--avatar-grid-gap) +
+        var(--avatar-grid-gap) + var(--avatar-grid-padding-y) +
+        var(--avatar-grid-padding-y)
+    );
+    align-content: start;
   }
 
   .avatar-dressup-btn {
@@ -313,19 +347,30 @@
   .avatar-dressup-card {
     max-width: 1180px;
     display: grid;
-    grid-template-columns: minmax(220px, 0.85fr) minmax(0, 1.35fr);
-    grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-columns: minmax(260px, 0.85fr) minmax(0, 1.35fr);
+    grid-template-rows: minmax(0, 1fr);
+    gap: clamp(20px, 2.5vw, 36px);
+    overflow: visible;
   }
 
   .avatar-dressup-preview {
     grid-column: 1;
-    grid-row: 1 / 4;
+    grid-row: 1;
     width: 100%;
     height: 100%;
     min-height: 0;
     padding: clamp(12px, 2.5dvh, 28px);
     box-sizing: border-box;
-    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    border-right: 0;
+  }
+
+  .avatar-dressup-controls {
+    grid-column: 2;
+    grid-row: 1;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    min-width: 0;
+    height: 100%;
   }
 
   .avatar-dressup-stage {
@@ -339,9 +384,9 @@
   }
 
   .avatar-tabs {
-    grid-column: 2;
+    grid-column: 1;
     grid-row: 1;
-    padding: clamp(24px, 4dvh, 36px) clamp(16px, 2.5vw, 28px) 10px;
+    padding: clamp(38px, 6dvh, 54px) clamp(16px, 2.5vw, 28px) 10px;
   }
 
   .avatar-tab {
@@ -363,7 +408,7 @@
     --avatar-grid-gap: clamp(8px, 1.4dvh, 14px);
     --avatar-grid-padding-x: clamp(14px, 2vw, 24px);
     --avatar-grid-padding-y: clamp(10px, 1.8dvh, 18px);
-    grid-column: 2;
+    grid-column: 1;
     grid-row: 2;
     height: 100%;
     max-height: none;
@@ -384,7 +429,7 @@
   }
 
   .avatar-dressup-actions {
-    grid-column: 2;
+    grid-column: 1;
     grid-row: 3;
     margin-top: 0;
     padding: 10px clamp(14px, 2vw, 24px) clamp(12px, 2dvh, 20px);
