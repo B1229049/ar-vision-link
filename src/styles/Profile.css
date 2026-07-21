@@ -173,6 +173,66 @@
   color: rgba(255, 255, 255, 0.86);
 }
 
+.profile-media-section {
+  margin-top: 28px;
+  text-align: left;
+}
+
+.profile-section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.profile-section-heading h3 {
+  margin: 0;
+  color: #93c5fd;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.profile-section-heading span {
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.profile-media-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.profile-media-tile {
+  position: relative;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.11), rgba(255, 255, 255, 0.03)),
+    radial-gradient(circle at 52% 40%, rgba(147, 197, 253, 0.18), transparent 44%);
+}
+
+.profile-media-grid.empty .profile-media-tile {
+  opacity: 0.8;
+}
+
+.profile-media-empty-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 14px;
+  font-weight: 700;
+  text-align: center;
+}
+
 .profile-info-list {
   margin-top: 28px;
 
@@ -346,45 +406,6 @@
   border-radius: 50%;
 }
 
-.profile-stats {
-  margin-top: 24px;
-
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-
-  gap: 12px;
-}
-
-.stat-card {
-  padding: 14px;
-
-  text-align: center;
-
-  border-radius: 16px;
-
-  background: rgba(255, 255, 255, 0.08);
-
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.stat-card strong {
-  display: block;
-
-  color: #93c5fd;
-
-  font-size: 18px;
-}
-
-.stat-card span {
-  display: block;
-
-  margin-top: 6px;
-
-  color: rgba(255, 255, 255, 0.65);
-
-  font-size: 13px;
-}
-
 .profile-action-grid {
   margin-top: 24px;
 
@@ -407,8 +428,15 @@
 }
 
 @media (max-width: 640px) {
-  .profile-stats,
   .profile-action-grid {
     grid-template-columns: 1fr;
+  }
+
+  .profile-media-grid {
+    gap: 6px;
+  }
+
+  .profile-media-tile {
+    border-radius: 10px;
   }
 }

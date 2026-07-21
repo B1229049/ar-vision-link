@@ -84,23 +84,6 @@ function Profile() {
           </div>
         </div>
 
-        <div className="profile-stats">
-          <div className="stat-card">
-            <strong>Quiz</strong>
-            <span>測驗中心</span>
-          </div>
-
-          <div className="stat-card">
-            <strong>History</strong>
-            <span>歷史紀錄</span>
-          </div>
-
-          <div className="stat-card">
-            <strong>Face ID</strong>
-            <span>已註冊</span>
-          </div>
-        </div>
-
         <div className="profile-section">
           <h3>自我介紹</h3>
           <p>{currentUser.description || "尚無自我介紹"}</p>
@@ -109,6 +92,25 @@ function Profile() {
         <div className="profile-section">
           <h3>額外資訊</h3>
           <p>{currentUser.extra_info || "尚無額外資訊"}</p>
+        </div>
+
+        <div className="profile-media-section">
+          <div className="profile-section-heading">
+            <h3>個人 AR 影音</h3>
+            <span>0 個項目</span>
+          </div>
+
+          <div className="profile-media-grid empty">
+            {Array.from({ length: 6 }).map((_, index) => (
+              <div className="profile-media-tile" key={index}>
+                {index === 0 && (
+                  <div className="profile-media-empty-text">
+                    尚無 AR 影音
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
 
         <div className="profile-info-list">
@@ -145,13 +147,6 @@ function Profile() {
 
           <button
             className="profile-btn secondary"
-            onClick={() => navigate("/edit-profile")}
-          >
-            編輯資料
-          </button>
-
-          <button
-            className="profile-btn secondary"
             onClick={() => navigate("/re-register-face")}
           >
             重新註冊臉部
@@ -164,6 +159,13 @@ function Profile() {
             修改虛擬替身
           </button>
         </div>
+
+        <button
+          className="profile-btn secondary"
+          onClick={() => navigate("/edit-profile")}
+        >
+          編輯資料
+        </button>
 
         <button
           className="profile-btn ghost"
