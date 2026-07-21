@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { io } from "socket.io-client";
 import AvatarRenderer from "../components/AvatarRenderer";
-import VirtualAvatarHead from "../components/VirtualAvatarHead";
+import ProfileImage from "../components/ProfileImage";
 import "../styles/JoinQuiz.css";
 
 function JoinQuiz() {
@@ -403,8 +403,8 @@ function JoinQuiz() {
                         key={record.record_id}
                       >
                         <span>{index + 1}</span>
-                        <VirtualAvatarHead
-                          config={user?.avatar_config}
+                        <ProfileImage
+                          user={user}
                           className="waiting-player-head"
                         />
                         <strong>{user?.name || "未知玩家"}</strong>

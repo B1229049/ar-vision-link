@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import VirtualAvatarHead from "../components/VirtualAvatarHead";
+import ProfileImage from "../components/ProfileImage";
 import "../styles/Leaderboard.css";
 
 function Leaderboard() {
@@ -110,10 +110,7 @@ function Leaderboard() {
                   </div>
 
                   <div className="leader-avatar">
-                    <VirtualAvatarHead
-                      config={user?.avatar_config}
-                      className="leader-avatar-head"
-                    />
+                    <ProfileImage user={user} className="leader-avatar-head" />
                   </div>
 
                   <div className="leader-info">

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
 import AvatarRenderer from "../components/AvatarRenderer";
-import VirtualAvatarHead from "../components/VirtualAvatarHead";
+import ProfileImage from "../components/ProfileImage";
 import "../styles/HostLobby.css";
 
 function HostLobby() {
@@ -512,8 +512,8 @@ function HostLobby() {
                             {index + 1}
                           </span>
 
-                          <VirtualAvatarHead
-                            config={user?.avatar_config}
+                          <ProfileImage
+                            user={user}
                             className="host-player-avatar-head"
                           />
 
