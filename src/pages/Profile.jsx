@@ -72,7 +72,9 @@ function Profile() {
               @{currentUser.nickname || "unknown"}
             </p>
 
-            <div className="profile-face-pill">Face ID　已註冊</div>
+            {currentUser.description?.trim() && (
+              <p className="profile-bio">{currentUser.description}</p>
+            )}
           </div>
 
           <div className="profile-avatar-stage">
@@ -84,31 +86,14 @@ function Profile() {
           </div>
         </div>
 
-        <div className="profile-section">
-          <h3>自我介紹</h3>
-          <p>{currentUser.description || "尚無自我介紹"}</p>
-        </div>
-
-        <div className="profile-section">
-          <h3>額外資訊</h3>
-          <p>{currentUser.extra_info || "尚無額外資訊"}</p>
-        </div>
-
         <div className="profile-media-section">
           <div className="profile-section-heading">
-            <h3>個人 AR 影音</h3>
-            <span>0 個項目</span>
+            <h3>動態牆</h3>
           </div>
 
           <div className="profile-media-grid empty">
-            {Array.from({ length: 6 }).map((_, index) => (
-              <div className="profile-media-tile" key={index}>
-                {index === 0 && (
-                  <div className="profile-media-empty-text">
-                    尚無 AR 影音
-                  </div>
-                )}
-              </div>
+            {Array.from({ length: 9 }).map((_, index) => (
+              <div className="profile-media-tile" key={index} />
             ))}
           </div>
         </div>
