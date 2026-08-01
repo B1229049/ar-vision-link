@@ -126,7 +126,7 @@ function Profile() {
           </div>
 
           <div className="profile-media-grid empty">
-            {Array.from({ length: 9 }).map((_, index) => (
+            {Array.from({ length: 3 }).map((_, index) => (
               <div className="profile-media-tile" key={index}>
                 {selfies[index] && (
                   <>

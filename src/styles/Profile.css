@@ -209,8 +209,7 @@
 
 .profile-media-tile {
   position: relative;
-  position: relative;
-  aspect-ratio: 1 / 1;
+  aspect-ratio: 4 / 5;
   overflow: hidden;
   border: 0;
   border-radius: 0;
@@ -345,30 +344,36 @@
 
 @media (max-width: 640px) {
   .profile-page {
-    padding: calc(var(--navbar-height) + 16px) 0 24px;
+    padding: calc(var(--navbar-height) + 12px) 0 calc(var(--mobile-bottom-nav-height) + 20px);
+    background: linear-gradient(180deg, #130a28 0%, #0b1020 36%, #050816 100%);
   }
 
   .profile-card {
     width: 100%;
     border-radius: 0;
     border-inline: 0;
-    padding: 22px 16px;
+    padding: 24px 16px 8px;
+    background: transparent;
+    box-shadow: none;
   }
 
   .profile-hero {
-    grid-template-columns: minmax(0, 0.95fr) minmax(118px, 0.75fr);
-    gap: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
     align-items: center;
+    margin-bottom: 22px;
   }
 
   .profile-identity {
-    text-align: left;
-    align-items: flex-start;
+    text-align: center;
+    align-items: center;
+    order: 1;
   }
 
   .profile-card h2 {
-    font-size: 26px;
-    text-align: left;
+    font-size: 25px;
+    text-align: center;
   }
 
   .avatar-circle {
@@ -377,12 +382,19 @@
 
     font-size: 30px;
 
-    margin: 0 0 14px 0;
+    margin: 0 0 12px;
+    border: 3px solid rgba(226, 188, 255, 0.9);
+    box-shadow: 0 8px 24px rgba(168, 85, 247, 0.32);
   }
 
   .profile-avatar-stage {
-    min-height: 178px;
-    border-radius: 16px;
+    order: 2;
+    width: min(100%, 330px);
+    min-height: 166px;
+    border-radius: 20px;
+    background:
+      radial-gradient(circle at 50% 40%, rgba(214, 169, 255, 0.25), transparent 42%),
+      linear-gradient(145deg, rgba(255, 255, 255, 0.13), rgba(255, 255, 255, 0.025));
   }
 
   .profile-avatar-renderer {
@@ -391,11 +403,14 @@
 
   .profile-nickname {
     font-size: 14px;
+    margin: 0;
   }
 
   .profile-bio {
     margin-top: 10px;
     font-size: 14px;
+    text-align: center;
+    max-width: 320px;
   }
 
   .profile-btn {
@@ -444,7 +459,22 @@
   }
 
   .profile-media-grid {
-    gap: 2px;
-    border-radius: 0;
+    gap: 7px;
+    border-radius: 14px;
+    background: transparent;
+  }
+
+  .profile-media-tile {
+    aspect-ratio: 4 / 5;
+    border-radius: 10px;
+  }
+
+  .profile-section-heading {
+    margin-top: 6px;
+  }
+
+  .profile-section-heading h3 {
+    color: #fff;
+    font-size: 17px;
   }
 }

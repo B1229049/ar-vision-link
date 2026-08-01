@@ -1,5 +1,6 @@
 :root {
   --navbar-height: 64px;
+  --mobile-bottom-nav-height: 0px;
 }
 
 .navbar {
@@ -74,8 +75,16 @@
   background: rgba(239, 68, 68, 0.36);
 }
 
+.mobile-bottom-nav {
+  display: none;
+}
+
 /* 手機版 */
 @media (max-width: 768px) {
+  :root {
+    --mobile-bottom-nav-height: calc(64px + env(safe-area-inset-bottom));
+  }
+
   .navbar {
     height: 64px;
     min-height: 64px;
@@ -128,5 +137,44 @@
 
   .nav-links button:hover {
     background: rgba(59, 130, 246, 0.25);
+  }
+
+  .mobile-bottom-nav {
+    position: fixed;
+    z-index: 10000;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: var(--mobile-bottom-nav-height);
+    padding: 8px 18px calc(8px + env(safe-area-inset-bottom));
+    box-sizing: border-box;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    align-items: center;
+    background: rgba(8, 13, 31, 0.96);
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.24);
+    backdrop-filter: blur(18px);
+  }
+
+  .mobile-bottom-nav button {
+    min-height: 42px;
+    display: grid;
+    place-items: center;
+    border: 0;
+    border-radius: 14px;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.58);
+    cursor: pointer;
+    transition: color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+  }
+
+  .mobile-bottom-nav button.active {
+    color: #e9c7ff;
+    background: rgba(190, 118, 255, 0.14);
+  }
+
+  .mobile-bottom-nav button:active {
+    transform: scale(0.93);
   }
 }
