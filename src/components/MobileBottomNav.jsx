@@ -4,6 +4,7 @@ import "../styles/MobileBottomNav.css";
 const items = [
   { label: "首頁", path: "/", icon: "home" },
   { label: "Quiz Center", path: "/quiz", icon: "quiz" },
+  { label: "AR Camera", path: "/camera", icon: "camera" },
   { label: "信件", icon: "mail" },
   { label: "個人頁面", path: "/profile", icon: "profile" },
 ];
@@ -16,7 +17,8 @@ function Icon({ name }) {
   };
 
   if (name === "home") return <svg {...shared}><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1Z" /><path d="M9 21v-7h6v7" /></svg>;
-  if (name === "quiz") return <svg {...shared}><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M8 9h.01M16 9h.01M8 15h.01M16 15h.01" /></svg>;
+  if (name === "quiz") return <svg {...shared}><rect x="5" y="3" width="14" height="18" rx="2" /><path d="M9 3v3M15 3v3M9 11l2 2 4-4M9 17h6" /></svg>;
+  if (name === "camera") return <svg {...shared}><path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z" /><circle cx="12" cy="14" r="3.5" /></svg>;
   if (name === "mail") return <svg {...shared}><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m3 7 9 6 9-6" /></svg>;
   return <svg {...shared}><circle cx="12" cy="8" r="4" /><path d="M4.5 21a7.5 7.5 0 0 1 15 0" /></svg>;
 }

@@ -34,7 +34,7 @@ function Navbar() {
       </button>
 
       <div className={`nav-links ${menuOpen ? "active" : ""}`}>
-        <button onClick={() => go("/")}>首頁</button>
+        <button className="nav-home" onClick={() => go("/")}>首頁</button>
 
         {!currentUser && (
           <>
@@ -45,18 +45,18 @@ function Navbar() {
 
         {currentUser && (
           <>
-            <button onClick={() => go("/profile")}>個人頁面</button>
+            <button className="nav-profile" onClick={() => go("/profile")}>個人頁面</button>
 
-            <button onClick={() => go("/camera")}>
+            <button className="nav-camera" onClick={() => go("/camera")}>
               AR Camera
             </button>
 
-            <button onClick={() => go("/quiz")}>
+            <button className="nav-quiz" onClick={() => go("/quiz")}>
               Quiz
             </button>
 
             <button
-              className="logout"
+              className="logout nav-logout"
               onClick={logout}
             >
               登出

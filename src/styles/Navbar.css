@@ -130,4 +130,10 @@
     background: rgba(59, 130, 246, 0.25);
   }
 
+  .nav-links .nav-home { order: 1; }
+  .nav-links .nav-quiz { order: 2; }
+  .nav-links .nav-camera { order: 3; }
+  .nav-links .nav-profile { order: 4; }
+  .nav-links .nav-logout { order: 5; }
+
 }
