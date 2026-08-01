@@ -22,19 +22,18 @@
 .ar-selfie-canvas { pointer-events: none; }
 .ar-selfie-back {
   position: absolute;
-  z-index: 2;
-  right: 16px;
-  bottom: 14px;
-  width: 40px;
-  height: 40px;
-  border: 0;
-  border-radius: 50%;
-  background: rgba(0,0,0,.48);
-  color: #fff;
-  font-size: 26px;
+  right: 4px;
+  bottom: 1px;
+  min-width: 52px;
+  padding: 7px 8px;
+  border: 1px solid rgba(255,255,255,.28);
+  border-radius: 8px;
+  background: rgba(255,255,255,.08);
+  color: rgba(255,255,255,.9);
+  font-size: 13px;
   cursor: pointer;
 }
-.ar-selfie-status { position: absolute; z-index: 2; left: 16px; right: 66px; bottom: 22px; margin: 0; text-align: left; color: rgba(255,255,255,.88); font-size: 12px; line-height: 1.4; text-shadow: 0 1px 4px #000; }
+.ar-selfie-status { position: absolute; z-index: 2; left: 16px; right: 16px; bottom: 18px; margin: 0; text-align: center; color: rgba(255,255,255,.88); font-size: 12px; line-height: 1.4; text-shadow: 0 1px 4px #000; }
 .ar-selfie-controls { flex: 0 0 auto; background: #171b23; padding: 10px 12px 14px; display: grid; gap: 8px; justify-items: center; }
 .ar-selfie-control-row { width: min(100%, 520px); display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
 .ar-selfie-control-row button { min-width: 0; padding: 7px 4px; border: 1px solid rgba(255,255,255,.18); border-radius: 999px; background: transparent; color: rgba(255,255,255,.72); font-size: clamp(12px, 3.4vw, 14px); cursor: pointer; }
@@ -43,6 +42,7 @@
 .ar-selfie-shutter span { display: block; width: 100%; height: 100%; border-radius: 50%; background: #fff; }
 .ar-selfie-shutter:active { transform: scale(.93); }
 .ar-selfie-shutter:disabled { opacity: .55; cursor: wait; }
+.ar-selfie-capture-actions { position: relative; width: min(100%, 520px); height: 56px; display: grid; place-items: center; }
 
 @media (min-width: 768px) {
   .ar-selfie-viewfinder { max-width: 780px; width: 100%; align-self: center; }
@@ -53,6 +53,7 @@
   .ar-selfie-control-row { gap: 4px; }
   .ar-selfie-control-row button { padding-top: 5px; padding-bottom: 5px; }
   .ar-selfie-shutter { width: 48px; height: 48px; }
-  .ar-selfie-status { font-size: 11px; bottom: 16px; }
-  .ar-selfie-back { width: 36px; height: 36px; bottom: 10px; }
+  .ar-selfie-status { font-size: 11px; bottom: 12px; }
+  .ar-selfie-capture-actions { height: 48px; }
+  .ar-selfie-back { right: 2px; min-width: 46px; padding: 6px; font-size: 12px; }
 }

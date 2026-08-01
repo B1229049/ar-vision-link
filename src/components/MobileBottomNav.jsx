@@ -25,6 +25,10 @@ function MobileBottomNav() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  if (location.pathname === "/ar-selfie") {
+    return null;
+  }
+
   return (
     <nav className="mobile-bottom-nav" aria-label="手機版主要導覽">
       {items.map((item) => {

@@ -209,7 +209,6 @@ function ARSelfie() {
       <section className="ar-selfie-viewfinder" aria-label="AR 自拍預覽">
         <video ref={videoRef} className="ar-selfie-video" autoPlay playsInline muted />
         <canvas ref={canvasRef} className="ar-selfie-canvas" />
-        <button className="ar-selfie-back" type="button" onClick={() => navigate("/profile")} aria-label="回到個人頁">←</button>
         <p className="ar-selfie-status">{status}</p>
       </section>
 
@@ -224,7 +223,10 @@ function ARSelfie() {
             <button key={effect.id} type="button" className={effectId === effect.id ? "is-selected" : ""} onClick={() => selectEffect(effect)}>{effect.label}</button>
           ))}
         </div>
-        <button className="ar-selfie-shutter" type="button" onClick={saveSelfie} disabled={saving} aria-label="拍攝並儲存到動態牆"><span /></button>
+        <div className="ar-selfie-capture-actions">
+          <button className="ar-selfie-shutter" type="button" onClick={saveSelfie} disabled={saving} aria-label="拍攝並儲存到動態牆"><span /></button>
+          <button className="ar-selfie-back" type="button" onClick={() => navigate("/profile")}>返回</button>
+        </div>
       </section>
     </main>
   );
