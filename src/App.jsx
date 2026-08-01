@@ -24,6 +24,7 @@ import ARSelfie from "./pages/ARSelfie";
 
 
 import Navbar from "./components/Navbar";
+import MobileBottomNav from "./components/MobileBottomNav";
 import ProtectedRoute from "./components/ProtectedRoute";
 import "./styles/GlobalPageTheme.css";
 
@@ -32,6 +33,7 @@ function App() {
     
     <BrowserRouter basename="/ar-vision-link">
       <Navbar />
+      <MobileBottomNav />
 
       <Routes>
         <Route path="/" element={<Home />} />

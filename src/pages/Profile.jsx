@@ -125,7 +125,7 @@ function Profile() {
             <h3>動態牆</h3>
           </div>
 
-          <div className="profile-media-grid empty">
+          <div className="profile-media-grid">
             {Array.from({ length: 3 }).map((_, index) => (
               <div className="profile-media-tile" key={index}>
                 {selfies[index] && (
