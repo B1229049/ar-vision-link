@@ -46,6 +46,10 @@ const upload = multer({
   },
 });
 
+const AR_SELFIE_BUCKET = "ar-selfies";
+const MAX_AR_SELFIES_PER_USER = 3;
+const MAX_AR_SELFIE_BYTES = 2 * 1024 * 1024;
+
 const USER_PUBLIC_SELECT = `
   id,
   name,
@@ -653,6 +657,120 @@ app.put("/api/users/:id/avatar", async (req, res) => {
       success: false,
       error: err.message,
     });
+  }
+});
+
+app.get("/api/users/:id/ar-selfies", async (req, res) => {
+  try {
+    const userId = Number(req.params.id);
+    if (!Number.isInteger(userId)) {
+      return res.status(400).json({ success: false, error: "無效的使用者 ID" });
+    }
+
+    const { data: selfies, error } = await supabase
+      .from("ar_selfies")
+      .select("id, storage_path, created_at")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(MAX_AR_SELFIES_PER_USER);
+
+    if (error) throw error;
+
+    const photos = await Promise.all(
+      selfies.map(async (selfie) => {
+        const { data, error: signedUrlError } = await supabase.storage
+          .from(AR_SELFIE_BUCKET)
+          .createSignedUrl(selfie.storage_path, 60 * 10);
+        if (signedUrlError) throw signedUrlError;
+        return { id: selfie.id, url: data.signedUrl, created_at: selfie.created_at };
+      })
+    );
+
+    res.json({ success: true, photos });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.post("/api/users/:id/ar-selfies", async (req, res) => {
+  try {
+    const userId = Number(req.params.id);
+    const photo = req.body?.photo;
+    if (!Number.isInteger(userId) || typeof photo !== "string") {
+      return res.status(400).json({ success: false, error: "照片資料或使用者 ID 無效" });
+    }
+
+    const match = photo.match(/^data:image\/jpeg;base64,(.+)$/);
+    if (!match) {
+      return res.status(400).json({ success: false, error: "只支援 JPEG 照片" });
+    }
+
+    const buffer = Buffer.from(match[1], "base64");
+    if (!buffer.length || buffer.length > MAX_AR_SELFIE_BYTES) {
+      return res.status(400).json({ success: false, error: "照片必須小於 2MB" });
+    }
+
+    const { count, error: countError } = await supabase
+      .from("ar_selfies")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId);
+    if (countError) throw countError;
+    if (count >= MAX_AR_SELFIES_PER_USER) {
+      return res.status(409).json({ success: false, error: "每位使用者最多只能保留 3 張 AR 自拍" });
+    }
+
+    const storagePath = `${userId}/${crypto.randomUUID()}.jpg`;
+    const { error: uploadError } = await supabase.storage
+      .from(AR_SELFIE_BUCKET)
+      .upload(storagePath, buffer, { contentType: "image/jpeg", upsert: false });
+    if (uploadError) throw uploadError;
+
+    const { data: selfie, error: insertError } = await supabase
+      .from("ar_selfies")
+      .insert({ user_id: userId, storage_path: storagePath })
+      .select("id, created_at")
+      .single();
+    if (insertError) {
+      await supabase.storage.from(AR_SELFIE_BUCKET).remove([storagePath]);
+      throw insertError;
+    }
+
+    res.status(201).json({ success: true, selfie });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.delete("/api/users/:userId/ar-selfies/:selfieId", async (req, res) => {
+  try {
+    const userId = Number(req.params.userId);
+    const selfieId = Number(req.params.selfieId);
+    if (!Number.isInteger(userId) || !Number.isInteger(selfieId)) {
+      return res.status(400).json({ success: false, error: "無效的照片或使用者 ID" });
+    }
+
+    const { data: selfie, error: findError } = await supabase
+      .from("ar_selfies")
+      .select("id, storage_path")
+      .eq("id", selfieId)
+      .eq("user_id", userId)
+      .single();
+    if (findError) throw findError;
+
+    const { error: storageError } = await supabase.storage
+      .from(AR_SELFIE_BUCKET)
+      .remove([selfie.storage_path]);
+    if (storageError) throw storageError;
+
+    const { error: deleteError } = await supabase
+      .from("ar_selfies")
+      .delete()
+      .eq("id", selfie.id);
+    if (deleteError) throw deleteError;
+
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 

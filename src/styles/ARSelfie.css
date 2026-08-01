@@ -1,0 +1,15 @@
+.ar-selfie-page { min-height: 100vh; background: #101319; color: #fff; padding-top: var(--navbar-height); display: flex; flex-direction: column; }
+.ar-selfie-viewfinder { position: relative; flex: 1; min-height: 0; background: #050607; overflow: hidden; }
+.ar-selfie-video, .ar-selfie-canvas { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.ar-selfie-video { opacity: 0; }
+.ar-selfie-canvas { pointer-events: none; }
+.ar-selfie-back { position: absolute; z-index: 2; top: 18px; left: 18px; width: 42px; height: 42px; border: 0; border-radius: 50%; background: rgba(0,0,0,.38); color: #fff; font-size: 28px; cursor: pointer; }
+.ar-selfie-status { position: absolute; z-index: 2; left: 16px; right: 16px; bottom: 14px; margin: 0; text-align: center; color: rgba(255,255,255,.88); font-size: 13px; text-shadow: 0 1px 4px #000; }
+.ar-selfie-controls { background: #171b23; padding: 12px 16px 20px; display: grid; gap: 10px; justify-items: center; }
+.ar-selfie-control-row { width: min(100%, 480px); display: flex; justify-content: center; gap: 8px; overflow-x: auto; scrollbar-width: none; }
+.ar-selfie-control-row button { white-space: nowrap; padding: 7px 12px; border: 1px solid rgba(255,255,255,.18); border-radius: 999px; background: transparent; color: rgba(255,255,255,.72); font-size: 14px; cursor: pointer; }
+.ar-selfie-control-row button.is-selected { color: #111; border-color: #f6d46d; background: #f6d46d; }
+.ar-selfie-shutter { width: 62px; height: 62px; padding: 4px; border: 3px solid #fff; border-radius: 50%; background: transparent; cursor: pointer; }
+.ar-selfie-shutter span { display: block; width: 100%; height: 100%; border-radius: 50%; background: #fff; }
+.ar-selfie-shutter:active { transform: scale(.93); }
+@media (min-width: 768px) { .ar-selfie-viewfinder { max-width: 780px; width: 100%; align-self: center; } }

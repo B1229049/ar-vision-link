@@ -3,9 +3,12 @@ import { useNavigate } from "react-router-dom";
 import AvatarRenderer from "../components/AvatarRenderer";
 import "../styles/Profile.css";
 
+const BACKEND_URL = "https://ar-vision-link.onrender.com";
+
 function Profile() {
   const navigate = useNavigate();
   const [currentUser, setCurrentUser] = useState(null);
+  const [selfies, setSelfies] = useState([]);
 
   useEffect(() => {
     const savedUser = localStorage.getItem("currentUser");
@@ -18,9 +21,40 @@ function Profile() {
     setCurrentUser(JSON.parse(savedUser));
   }, [navigate]);
 
+  useEffect(() => {
+    if (!currentUser?.id) return;
+
+    async function loadSelfies() {
+      try {
+        const response = await fetch(`${BACKEND_URL}/api/users/${currentUser.id}/ar-selfies`);
+        const result = await response.json();
+        if (response.ok && result.success) setSelfies(result.photos || []);
+      } catch (error) {
+        console.error("AR 自拍載入失敗", error);
+      }
+    }
+
+    loadSelfies();
+  }, [currentUser?.id]);
+
   function logout() {
     localStorage.removeItem("currentUser");
     navigate("/");
+  }
+
+  async function deleteSelfie(selfieId) {
+    if (!currentUser?.id) return;
+    try {
+      const response = await fetch(
+        `${BACKEND_URL}/api/users/${currentUser.id}/ar-selfies/${selfieId}`,
+        { method: "DELETE" }
+      );
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.error || "照片刪除失敗");
+      setSelfies((previous) => previous.filter((selfie) => selfie.id !== selfieId));
+    } catch (error) {
+      alert(error.message || "照片刪除失敗");
+    }
   }
 
   function formatDate(dateString) {
@@ -93,7 +127,21 @@ function Profile() {
 
           <div className="profile-media-grid empty">
             {Array.from({ length: 9 }).map((_, index) => (
-              <div className="profile-media-tile" key={index} />
+              <div className="profile-media-tile" key={index}>
+                {selfies[index] && (
+                  <>
+                    <img src={selfies[index].url} alt={`AR 自拍 ${index + 1}`} />
+                    <button
+                      type="button"
+                      className="profile-media-delete"
+                      onClick={() => deleteSelfie(selfies[index].id)}
+                      aria-label={`刪除 AR 自拍 ${index + 1}`}
+                    >
+                      ×
+                    </button>
+                  </>
+                )}
+              </div>
             ))}
           </div>
         </div>
@@ -142,6 +190,13 @@ function Profile() {
             onClick={() => navigate("/avatar-dressup")}
           >
             修改虛擬替身
+          </button>
+
+          <button
+            className="profile-btn secondary"
+            onClick={() => navigate("/ar-selfie")}
+          >
+            AR 濾鏡自拍
           </button>
         </div>
 

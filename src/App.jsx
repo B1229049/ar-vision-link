@@ -20,6 +20,7 @@ import QuizHistory from "./pages/QuizHistory";
 import ARQuizGame from "./pages/ARQuizGame";
 import AvatarDressup from "./pages/AvatarDressup";
 import AvatarAdmin from "./pages/AvatarAdmin";
+import ARSelfie from "./pages/ARSelfie";
 
 
 import Navbar from "./components/Navbar";
@@ -51,6 +52,15 @@ function App() {
           element={
             <ProtectedRoute>
               <Camera />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/ar-selfie"
+          element={
+            <ProtectedRoute>
+              <ARSelfie />
             </ProtectedRoute>
           }
         />
