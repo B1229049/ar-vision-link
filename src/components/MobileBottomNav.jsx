@@ -26,8 +26,9 @@ function Icon({ name }) {
 function MobileBottomNav() {
   const navigate = useNavigate();
   const location = useLocation();
+  const currentUser = localStorage.getItem("currentUser");
 
-  if (location.pathname === "/ar-selfie") {
+  if (!currentUser || location.pathname === "/ar-selfie") {
     return null;
   }
 
