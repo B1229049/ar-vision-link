@@ -49,6 +49,16 @@ function drawStar(ctx, x, y, radius, color) {
   ctx.restore();
 }
 
+function createThumbnail(canvas) {
+  const maximumSide = 360;
+  const scale = Math.min(1, maximumSide / Math.max(canvas.width, canvas.height));
+  const thumbnail = document.createElement("canvas");
+  thumbnail.width = Math.round(canvas.width * scale);
+  thumbnail.height = Math.round(canvas.height * scale);
+  thumbnail.getContext("2d").drawImage(canvas, 0, 0, thumbnail.width, thumbnail.height);
+  return thumbnail.toDataURL("image/jpeg", 0.72);
+}
+
 function ARSelfie() {
   const navigate = useNavigate();
   const videoRef = useRef(null);
@@ -193,7 +203,10 @@ function ARSelfie() {
       const response = await fetch(`${BACKEND_URL}/api/users/${user.id}/ar-selfies`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ photo: canvas.toDataURL("image/jpeg", 0.82) }),
+        body: JSON.stringify({
+          photo: canvas.toDataURL("image/jpeg", 0.82),
+          thumbnail: createThumbnail(canvas),
+        }),
       });
       const result = await response.json();
       if (!response.ok || !result.success) throw new Error(result.error || "照片儲存失敗");

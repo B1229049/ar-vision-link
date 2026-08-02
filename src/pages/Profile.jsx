@@ -9,6 +9,7 @@ function Profile() {
   const navigate = useNavigate();
   const [currentUser, setCurrentUser] = useState(null);
   const [selfies, setSelfies] = useState([]);
+  const [openedSelfieUrl, setOpenedSelfieUrl] = useState(null);
 
   useEffect(() => {
     const savedUser = localStorage.getItem("currentUser");
@@ -54,6 +55,20 @@ function Profile() {
       setSelfies((previous) => previous.filter((selfie) => selfie.id !== selfieId));
     } catch (error) {
       alert(error.message || "照片刪除失敗");
+    }
+  }
+
+  async function openSelfie(selfieId) {
+    if (!currentUser?.id) return;
+    try {
+      const response = await fetch(
+        `${BACKEND_URL}/api/users/${currentUser.id}/ar-selfies/${selfieId}/image`
+      );
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.error || "照片載入失敗");
+      setOpenedSelfieUrl(result.url);
+    } catch (error) {
+      alert(error.message || "照片載入失敗");
     }
   }
 
@@ -130,7 +145,14 @@ function Profile() {
               <div className="profile-media-tile" key={index}>
                 {selfies[index] && (
                   <>
-                    <img src={selfies[index].url} alt={`AR 自拍 ${index + 1}`} />
+                    <button
+                      type="button"
+                      className="profile-media-open"
+                      onClick={() => openSelfie(selfies[index].id)}
+                      aria-label={`查看 AR 自拍 ${index + 1}`}
+                    >
+                      <img src={selfies[index].thumbnail_url} alt={`AR 自拍縮圖 ${index + 1}`} />
+                    </button>
                     <button
                       type="button"
                       className="profile-media-delete"
@@ -145,6 +167,16 @@ function Profile() {
             ))}
           </div>
         </div>
+
+        {openedSelfieUrl && (
+          <div className="profile-selfie-dialog" role="dialog" aria-modal="true" aria-label="AR 自拍照">
+            <button type="button" className="profile-selfie-backdrop" onClick={() => setOpenedSelfieUrl(null)} aria-label="關閉照片" />
+            <div className="profile-selfie-preview">
+              <img src={openedSelfieUrl} alt="AR 自拍照" />
+              <button type="button" onClick={() => setOpenedSelfieUrl(null)}>關閉</button>
+            </div>
+          </div>
+        )}
 
         <div className="profile-info-list">
           <div className="info-row">

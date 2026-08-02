@@ -218,12 +218,27 @@
     radial-gradient(circle at 52% 42%, rgba(147, 197, 253, 0.16), transparent 42%);
 }
 
+.profile-media-open {
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
 .profile-media-tile img {
   width: 100%;
   height: 100%;
   display: block;
   object-fit: cover;
 }
+
+.profile-selfie-dialog { position: fixed; z-index: 11000; inset: 0; display: grid; place-items: center; padding: 24px; }
+.profile-selfie-backdrop { position: absolute; inset: 0; border: 0; background: rgba(0, 0, 0, .78); }
+.profile-selfie-preview { position: relative; z-index: 1; width: min(100%, 680px); display: grid; gap: 12px; justify-items: end; }
+.profile-selfie-preview img { display: block; width: 100%; max-height: 78dvh; object-fit: contain; background: #080a10; }
+.profile-selfie-preview button { border: 0; border-radius: 6px; padding: 8px 14px; background: #fff; color: #141820; cursor: pointer; }
 
 .profile-media-delete {
   position: absolute;

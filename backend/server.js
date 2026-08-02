@@ -49,6 +49,7 @@ const upload = multer({
 const AR_SELFIE_BUCKET = "ar-selfies";
 const MAX_AR_SELFIES_PER_USER = 3;
 const MAX_AR_SELFIE_BYTES = 2 * 1024 * 1024;
+const MAX_AR_SELFIE_THUMBNAIL_BYTES = 160 * 1024;
 
 const USER_PUBLIC_SELECT = `
   id,
@@ -669,7 +670,7 @@ app.get("/api/users/:id/ar-selfies", async (req, res) => {
 
     const { data: selfies, error } = await supabase
       .from("ar_selfies")
-      .select("id, storage_path, created_at")
+      .select("id, thumbnail_path, created_at")
       .eq("user_id", userId)
       .order("created_at", { ascending: false })
       .limit(MAX_AR_SELFIES_PER_USER);
@@ -680,9 +681,9 @@ app.get("/api/users/:id/ar-selfies", async (req, res) => {
       selfies.map(async (selfie) => {
         const { data, error: signedUrlError } = await supabase.storage
           .from(AR_SELFIE_BUCKET)
-          .createSignedUrl(selfie.storage_path, 60 * 10);
+          .createSignedUrl(selfie.thumbnail_path, 60 * 10);
         if (signedUrlError) throw signedUrlError;
-        return { id: selfie.id, url: data.signedUrl, created_at: selfie.created_at };
+        return { id: selfie.id, thumbnail_url: data.signedUrl, created_at: selfie.created_at };
       })
     );
 
@@ -692,11 +693,39 @@ app.get("/api/users/:id/ar-selfies", async (req, res) => {
   }
 });
 
+app.get("/api/users/:userId/ar-selfies/:selfieId/image", async (req, res) => {
+  try {
+    const userId = Number(req.params.userId);
+    const selfieId = Number(req.params.selfieId);
+    if (!Number.isInteger(userId) || !Number.isInteger(selfieId)) {
+      return res.status(400).json({ success: false, error: "無效的照片或使用者 ID" });
+    }
+
+    const { data: selfie, error } = await supabase
+      .from("ar_selfies")
+      .select("storage_path")
+      .eq("id", selfieId)
+      .eq("user_id", userId)
+      .single();
+    if (error) throw error;
+
+    const { data, error: signedUrlError } = await supabase.storage
+      .from(AR_SELFIE_BUCKET)
+      .createSignedUrl(selfie.storage_path, 60 * 5);
+    if (signedUrlError) throw signedUrlError;
+
+    res.json({ success: true, url: data.signedUrl });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 app.post("/api/users/:id/ar-selfies", async (req, res) => {
   try {
     const userId = Number(req.params.id);
     const photo = req.body?.photo;
-    if (!Number.isInteger(userId) || typeof photo !== "string") {
+    const thumbnail = req.body?.thumbnail;
+    if (!Number.isInteger(userId) || typeof photo !== "string" || typeof thumbnail !== "string") {
       return res.status(400).json({ success: false, error: "照片資料或使用者 ID 無效" });
     }
 
@@ -710,6 +739,12 @@ app.post("/api/users/:id/ar-selfies", async (req, res) => {
       return res.status(400).json({ success: false, error: "照片必須小於 2MB" });
     }
 
+    const thumbnailMatch = thumbnail.match(/^data:image\/jpeg;base64,(.+)$/);
+    const thumbnailBuffer = thumbnailMatch && Buffer.from(thumbnailMatch[1], "base64");
+    if (!thumbnailBuffer?.length || thumbnailBuffer.length > MAX_AR_SELFIE_THUMBNAIL_BYTES) {
+      return res.status(400).json({ success: false, error: "縮圖必須是小於 160KB 的 JPEG" });
+    }
+
     const { count, error: countError } = await supabase
       .from("ar_selfies")
       .select("id", { count: "exact", head: true })
@@ -719,19 +754,29 @@ app.post("/api/users/:id/ar-selfies", async (req, res) => {
       return res.status(409).json({ success: false, error: "每位使用者最多只能保留 3 張 AR 自拍" });
     }
 
-    const storagePath = `${userId}/${crypto.randomUUID()}.jpg`;
+    const fileId = crypto.randomUUID();
+    const storagePath = `${userId}/${fileId}.jpg`;
+    const thumbnailPath = `${userId}/thumbnails/${fileId}.jpg`;
     const { error: uploadError } = await supabase.storage
       .from(AR_SELFIE_BUCKET)
       .upload(storagePath, buffer, { contentType: "image/jpeg", upsert: false });
     if (uploadError) throw uploadError;
 
+    const { error: thumbnailUploadError } = await supabase.storage
+      .from(AR_SELFIE_BUCKET)
+      .upload(thumbnailPath, thumbnailBuffer, { contentType: "image/jpeg", upsert: false });
+    if (thumbnailUploadError) {
+      await supabase.storage.from(AR_SELFIE_BUCKET).remove([storagePath]);
+      throw thumbnailUploadError;
+    }
+
     const { data: selfie, error: insertError } = await supabase
       .from("ar_selfies")
-      .insert({ user_id: userId, storage_path: storagePath })
+      .insert({ user_id: userId, storage_path: storagePath, thumbnail_path: thumbnailPath })
       .select("id, created_at")
       .single();
     if (insertError) {
-      await supabase.storage.from(AR_SELFIE_BUCKET).remove([storagePath]);
+      await supabase.storage.from(AR_SELFIE_BUCKET).remove([storagePath, thumbnailPath]);
       throw insertError;
     }
 
@@ -751,7 +796,7 @@ app.delete("/api/users/:userId/ar-selfies/:selfieId", async (req, res) => {
 
     const { data: selfie, error: findError } = await supabase
       .from("ar_selfies")
-      .select("id, storage_path")
+      .select("id, storage_path, thumbnail_path")
       .eq("id", selfieId)
       .eq("user_id", userId)
       .single();
@@ -759,7 +804,7 @@ app.delete("/api/users/:userId/ar-selfies/:selfieId", async (req, res) => {
 
     const { error: storageError } = await supabase.storage
       .from(AR_SELFIE_BUCKET)
-      .remove([selfie.storage_path]);
+      .remove([selfie.storage_path, selfie.thumbnail_path].filter(Boolean));
     if (storageError) throw storageError;
 
     const { error: deleteError } = await supabase
