@@ -43,7 +43,11 @@
 
   .mobile-bottom-nav button.active {
     color: #e9c7ff;
-    background: rgba(190, 118, 255, 0.14);
+    background: transparent;
+  }
+
+  .mobile-bottom-nav button.active svg {
+    filter: drop-shadow(0 0 5px rgba(212, 153, 255, 0.5));
   }
 
   .mobile-bottom-nav button:active {
