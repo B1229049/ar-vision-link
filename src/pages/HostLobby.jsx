@@ -28,6 +28,7 @@ function HostLobby() {
   const [creating, setCreating] = useState(false);
   const [starting, setStarting] = useState(false);
   const [playerPanelOpen, setPlayerPanelOpen] = useState(false);
+  const [profileUser, setProfileUser] = useState(null);
 
   useEffect(() => {
     const savedUser = localStorage.getItem("currentUser");
@@ -47,6 +48,17 @@ function HostLobby() {
       socketRef.current?.disconnect();
     };
   }, []);
+
+  useEffect(() => {
+    if (!profileUser) return undefined;
+
+    function handleKeyDown(event) {
+      if (event.key === "Escape") setProfileUser(null);
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [profileUser]);
 
   async function loadMyQuizzes(userId) {
     try {
@@ -240,6 +252,11 @@ function HostLobby() {
 
     navigator.clipboard.writeText(session.room_code);
     alert("房號已複製！");
+  }
+
+  function openPlayerProfile(user) {
+    if (!user || Number(user.id) === Number(currentUser?.id)) return;
+    setProfileUser(user);
   }
 
   function getJoinUrl() {
@@ -466,16 +483,19 @@ function HostLobby() {
                     const user = record.users;
 
                     return (
-                      <div
+                      <button
+                        type="button"
                         className="lobby-avatar-player"
                         key={record.record_id}
+                        onClick={() => openPlayerProfile(user)}
+                        aria-label={`查看 ${user?.nickname || user?.name || "玩家"} 的個人資料`}
                       >
                         <strong>{user?.name || "未知玩家"}</strong>
                         <AvatarRenderer
                           config={user?.avatar_config}
                           className="lobby-avatar-renderer"
                         />
-                      </div>
+                      </button>
                     );
                   })}
                 </div>
@@ -504,9 +524,12 @@ function HostLobby() {
                       const user = record.users;
 
                       return (
-                        <div
+                        <button
+                          type="button"
                           className="host-player-side-item"
                           key={record.record_id}
+                          onClick={() => openPlayerProfile(user)}
+                          aria-label={`查看 ${user?.nickname || user?.name || "玩家"} 的個人資料`}
                         >
                           <span className="host-player-number">
                             {index + 1}
@@ -518,12 +541,61 @@ function HostLobby() {
                           />
 
                           <strong>{user?.name || "未知玩家"}</strong>
-                        </div>
+                        </button>
                       );
                     })}
                   </div>
                 )}
               </aside>
+            )}
+
+            {profileUser && (
+              <div
+                className="lobby-profile-overlay"
+                onMouseDown={(event) => {
+                  if (event.target === event.currentTarget) setProfileUser(null);
+                }}
+              >
+                <section
+                  className="lobby-profile-modal"
+                  role="dialog"
+                  aria-modal="true"
+                  aria-labelledby="lobby-profile-title"
+                >
+                  <button
+                    type="button"
+                    className="lobby-profile-close"
+                    onClick={() => setProfileUser(null)}
+                    aria-label="關閉個人資料"
+                  >
+                    ×
+                  </button>
+
+                  <header className="lobby-profile-header">
+                    <ProfileImage
+                      user={profileUser}
+                      className="lobby-profile-image"
+                    />
+                    <div>
+                      <span>玩家個人資料</span>
+                      <h2 id="lobby-profile-title">
+                        {profileUser.nickname || profileUser.name || "未設定暱稱"}
+                      </h2>
+                    </div>
+                  </header>
+
+                  <p className="lobby-profile-bio">
+                    {profileUser.description?.trim() || "這位玩家尚未填寫自我介紹。"}
+                  </p>
+
+                  <div className="lobby-profile-avatar-wrap">
+                    <AvatarRenderer
+                      config={profileUser.avatar_config}
+                      className="lobby-profile-avatar"
+                    />
+                  </div>
+                </section>
+              </div>
             )}
           </div>
         )}

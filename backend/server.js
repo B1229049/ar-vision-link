@@ -213,6 +213,7 @@ async function getLeaderboard(sessionId) {
         id,
         name,
         nickname,
+        description,
         profile_url,
         avatar_config
       )
