@@ -678,16 +678,26 @@
 
 .join-copy strong {
   color: white;
-  font-size: clamp(24px, 3.2vw, 42px);
   line-height: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+.join-copy .join-url {
+  min-width: 0;
+  font-size: clamp(14px, 1.25vw, 18px);
+  line-height: 1.35;
+  overflow: visible;
+  overflow-wrap: anywhere;
+  text-overflow: clip;
+  white-space: normal;
+}
+
 .join-copy .join-code {
-  font-size: clamp(42px, 7vw, 82px);
-  letter-spacing: 16px;
+  min-width: 0;
+  font-size: clamp(36px, 4.5vw, 56px);
+  letter-spacing: clamp(4px, 0.8vw, 10px);
 }
 
 .join-copy-btn {
@@ -900,7 +910,8 @@
   }
 
   .join-copy .join-code {
-    letter-spacing: 8px;
+    font-size: clamp(28px, 10vw, 42px);
+    letter-spacing: 4px;
   }
 
   .join-board-meta {

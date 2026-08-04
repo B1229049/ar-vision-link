@@ -405,8 +405,8 @@ function HostLobby() {
                 <div className="join-board-row">
                   <div className="join-step">1</div>
                   <div className="join-copy">
-                    <span>Join using any device</span>
-                    <strong>{getJoinUrl()}</strong>
+                    <span>房間連結</span>
+                    <strong className="join-url">{getJoinUrl()}</strong>
                   </div>
                   <button
                     type="button"
@@ -421,7 +421,7 @@ function HostLobby() {
                 <div className="join-board-row">
                   <div className="join-step">2</div>
                   <div className="join-copy">
-                    <span>Enter the join code</span>
+                    <span>房間 PIN 碼</span>
                     <strong className="join-code">{session.room_code}</strong>
                   </div>
                   <button
