@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import * as faceapi from "@vladmandic/face-api";
+import { createPersistentProfileImage } from "../utils/profileImage";
 import "../styles/ReRegisterFace.css";
 
 const MODEL_URL = "https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model";
@@ -150,7 +151,7 @@ function ReRegisterFace() {
     const ctx = canvas.getContext("2d");
     ctx.drawImage(video, 0, 0, 640, 480);
 
-    const imageData = canvas.toDataURL("image/png");
+    const imageData = canvas.toDataURL("image/jpeg", 0.85);
 
     setCapturedImage(imageData);
     setMode("captured");
@@ -168,17 +169,23 @@ function ReRegisterFace() {
     }
   }
 
-  function handleUploadPhoto(e) {
+  async function handleUploadPhoto(e) {
     const file = e.target.files[0];
 
     if (!file) return;
 
     stopCamera();
 
-    const imageUrl = URL.createObjectURL(file);
-
-    setCapturedImage(imageUrl);
-    setMode("captured");
+    try {
+      const imageData = await createPersistentProfileImage(file);
+      setCapturedImage(imageData);
+      setMode("captured");
+    } catch (err) {
+      console.error(err);
+      alert(err.message || "讀取照片失敗");
+      setCapturedImage(null);
+      setMode("idle");
+    }
   }
 
   async function handleUpdateFace() {
@@ -226,6 +233,8 @@ function ReRegisterFace() {
       }
 
       const embedding = Array.from(detection.descriptor).map(Number);
+      const needsProfileImageRepair =
+        !currentUser.profile_url || currentUser.profile_url.startsWith("blob:");
 
       const response = await fetch(`${BACKEND_URL}/api/users/${currentUser.id}/face`, {
         method: "PUT",
@@ -234,7 +243,7 @@ function ReRegisterFace() {
         },
         body: JSON.stringify({
           face_embedding: embedding,
-          profile_url: capturedImage,
+          ...(needsProfileImageRepair ? { profile_url: capturedImage } : {}),
         }),
       });
 
@@ -295,6 +304,12 @@ function ReRegisterFace() {
         <p className="re-face-subtitle">
           目前使用者：{currentUser.name || "未命名"}
         </p>
+
+        {(!currentUser.profile_url || currentUser.profile_url.startsWith("blob:")) && (
+          <p className="re-face-repair-note">
+            舊的註冊頭像已失效，請上傳當初註冊使用的照片；本次完成後會一併修復頭像。
+          </p>
+        )}
 
         <div className="re-face-preview">
           {mode === "idle" && (

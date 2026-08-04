@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import * as faceapi from "@vladmandic/face-api";
+import { createPersistentProfileImage } from "../utils/profileImage";
 import "../styles/Register.css";
 
 const MODEL_URL = "https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model";
@@ -154,7 +155,7 @@ function Register() {
     const ctx = canvas.getContext("2d");
     ctx.drawImage(video, 0, 0, 640, 480);
 
-    const imageData = canvas.toDataURL("image/png");
+    const imageData = canvas.toDataURL("image/jpeg", 0.85);
 
     setCapturedImage(imageData);
     setMode("captured");
@@ -162,16 +163,22 @@ function Register() {
     stopCamera();
   }
 
-  function handleUploadPhoto(e) {
+  async function handleUploadPhoto(e) {
     const file = e.target.files[0];
     if (!file) return;
 
     stopCamera();
 
-    const imageUrl = URL.createObjectURL(file);
-
-    setCapturedImage(imageUrl);
-    setMode("captured");
+    try {
+      const imageData = await createPersistentProfileImage(file);
+      setCapturedImage(imageData);
+      setMode("captured");
+    } catch (err) {
+      console.error(err);
+      alert(err.message || "讀取照片失敗");
+      setCapturedImage(null);
+      setMode("idle");
+    }
   }
 
   function handleCameraButton() {

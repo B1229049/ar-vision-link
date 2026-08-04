@@ -912,8 +912,8 @@
 
 .lobby-profile-modal {
   position: relative;
-  width: min(420px, 100%);
-  max-height: min(720px, calc(100dvh - 40px));
+  width: min(680px, 100%);
+  max-height: min(560px, calc(100dvh - 40px));
   overflow: auto;
   padding: 24px;
   border: 1px solid rgba(255, 255, 255, 0.14);
@@ -939,38 +939,50 @@
   line-height: 1;
 }
 
-.lobby-profile-header {
-  display: flex;
+.lobby-profile-label {
+  margin: 0;
+  padding-right: 48px;
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 15px;
+  font-weight: 900;
+  text-align: left;
+}
+
+.lobby-profile-content {
+  display: grid;
+  grid-template-columns: minmax(160px, 0.82fr) minmax(220px, 1.18fr);
+  gap: 24px;
   align-items: center;
-  gap: 14px;
-  padding-right: 42px;
+  min-height: 380px;
+  margin-top: 14px;
+}
+
+.lobby-profile-info {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
   text-align: left;
 }
 
 .lobby-profile-image {
-  width: 70px;
-  border-radius: 22px;
-  font-size: 42px;
+  width: clamp(88px, 14vw, 118px);
+  border-radius: 30px;
+  font-size: 58px;
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
 }
 
-.lobby-profile-header span {
-  display: block;
-  margin-bottom: 4px;
-  color: rgba(255, 255, 255, 0.58);
-  font-size: 12px;
-  font-weight: 800;
-}
-
-.lobby-profile-header h2 {
-  margin: 0;
+.lobby-profile-info h3 {
+  margin: 16px 0 0;
   font-size: clamp(22px, 6vw, 30px);
   line-height: 1.15;
   overflow-wrap: anywhere;
 }
 
 .lobby-profile-bio {
-  margin: 18px 0 0;
+  width: 100%;
+  margin: 14px 0 0;
   padding: 14px 16px;
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.08);
@@ -983,16 +995,50 @@
 
 .lobby-profile-avatar-wrap {
   display: flex;
+  align-self: stretch;
+  align-items: flex-end;
   justify-content: center;
   min-height: 0;
-  margin-top: 12px;
   overflow: hidden;
   border-radius: 20px;
   background: radial-gradient(circle at 50% 72%, rgba(139, 92, 246, 0.3), transparent 58%);
 }
 
 .lobby-profile-avatar {
-  width: min(230px, 70vw);
+  width: min(260px, 100%);
+}
+
+@media (max-width: 520px) {
+  .lobby-profile-overlay {
+    padding: 12px;
+  }
+
+  .lobby-profile-modal {
+    padding: 18px;
+    border-radius: 22px;
+  }
+
+  .lobby-profile-content {
+    grid-template-columns: minmax(112px, 0.85fr) minmax(148px, 1.15fr);
+    gap: 12px;
+    min-height: 310px;
+  }
+
+  .lobby-profile-image {
+    width: 82px;
+    border-radius: 22px;
+    font-size: 42px;
+  }
+
+  .lobby-profile-info h3 {
+    margin-top: 12px;
+    font-size: 22px;
+  }
+
+  .lobby-profile-bio {
+    padding: 10px;
+    font-size: 13px;
+  }
 }
 
 .host-lobby-page.active-room .lobby-exit {

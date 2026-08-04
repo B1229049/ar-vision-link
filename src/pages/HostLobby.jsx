@@ -571,28 +571,32 @@ function HostLobby() {
                     ×
                   </button>
 
-                  <header className="lobby-profile-header">
-                    <ProfileImage
-                      user={profileUser}
-                      className="lobby-profile-image"
-                    />
-                    <div>
-                      <span>玩家個人資料</span>
-                      <h2 id="lobby-profile-title">
+                  <h2 id="lobby-profile-title" className="lobby-profile-label">
+                    玩家資料
+                  </h2>
+
+                  <div className="lobby-profile-content">
+                    <div className="lobby-profile-info">
+                      <ProfileImage
+                        user={profileUser}
+                        className="lobby-profile-image"
+                      />
+
+                      <h3>
                         {profileUser.nickname || profileUser.name || "未設定暱稱"}
-                      </h2>
+                      </h3>
+
+                      <p className="lobby-profile-bio">
+                        {profileUser.description?.trim() || "這位玩家尚未填寫自我介紹。"}
+                      </p>
                     </div>
-                  </header>
 
-                  <p className="lobby-profile-bio">
-                    {profileUser.description?.trim() || "這位玩家尚未填寫自我介紹。"}
-                  </p>
-
-                  <div className="lobby-profile-avatar-wrap">
-                    <AvatarRenderer
-                      config={profileUser.avatar_config}
-                      className="lobby-profile-avatar"
-                    />
+                    <div className="lobby-profile-avatar-wrap">
+                      <AvatarRenderer
+                        config={profileUser.avatar_config}
+                        className="lobby-profile-avatar"
+                      />
+                    </div>
                   </div>
                 </section>
               </div>

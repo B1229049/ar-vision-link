@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import AvatarRenderer from "../components/AvatarRenderer";
+import ProfileImage from "../components/ProfileImage";
 import "../styles/Profile.css";
 
 const BACKEND_URL = "https://ar-vision-link.onrender.com";
@@ -103,17 +103,7 @@ function Profile() {
       <div className="profile-card">
         <div className="profile-hero">
           <div className="profile-identity">
-            <div className="avatar-circle">
-              {currentUser.profile_url ? (
-                <img
-                  src={currentUser.profile_url}
-                  alt="profile"
-                  className="profile-avatar-img"
-                />
-              ) : (
-                currentUser.name?.charAt(0)?.toUpperCase() || "U"
-              )}
-            </div>
+            <ProfileImage user={currentUser} className="avatar-circle" />
 
             <h2 className="profile-name">{currentUser.name || "未命名使用者"}</h2>
 
@@ -126,13 +116,6 @@ function Profile() {
             )}
           </div>
 
-          <div className="profile-avatar-stage">
-            <div className="profile-avatar-glow" />
-            <AvatarRenderer
-              config={currentUser.avatar_config}
-              className="profile-avatar-renderer"
-            />
-          </div>
         </div>
 
         <div className="profile-media-section">

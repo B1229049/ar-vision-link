@@ -45,10 +45,7 @@
 }
 
 .profile-hero {
-  display: grid;
-  grid-template-columns: minmax(220px, 0.9fr) minmax(220px, 0.8fr);
-  gap: 28px;
-  align-items: center;
+  display: block;
   margin-bottom: 26px;
 }
 
@@ -373,10 +370,7 @@
   }
 
   .profile-hero {
-    display: grid;
-    grid-template-columns: minmax(0, 0.95fr) minmax(118px, 0.75fr);
-    gap: 14px;
-    align-items: center;
+    display: block;
     margin-bottom: 26px;
   }
 

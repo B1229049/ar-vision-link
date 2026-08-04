@@ -417,6 +417,13 @@ app.post("/api/users/register", async (req, res) => {
       });
     }
 
+    if (typeof profile_url !== "string" || !profile_url.startsWith("data:image/")) {
+      return res.status(400).json({
+        success: false,
+        error: "註冊頭像必須是有效且可持久保存的圖片",
+      });
+    }
+
     const cleanEmbedding = face_embedding.map(Number);
 
     const { data, error } = await supabase
@@ -459,7 +466,6 @@ app.put("/api/users/:id", async (req, res) => {
       nickname,
       description,
       extra_info,
-      profile_url,
       is_active,
     } = req.body;
 
@@ -471,7 +477,6 @@ app.put("/api/users/:id", async (req, res) => {
     if (nickname !== undefined) updateData.nickname = nickname;
     if (description !== undefined) updateData.description = description;
     if (extra_info !== undefined) updateData.extra_info = extra_info;
-    if (profile_url !== undefined) updateData.profile_url = profile_url;
     if (is_active !== undefined) updateData.is_active = is_active;
 
     const { data, error } = await supabase
@@ -593,13 +598,38 @@ app.put("/api/users/:id/face", async (req, res) => {
       });
     }
 
+    const { data: existingUser, error: existingUserError } = await supabase
+      .from("users")
+      .select("profile_url")
+      .eq("id", id)
+      .single();
+
+    if (existingUserError) {
+      return res.status(500).json({
+        success: false,
+        error: existingUserError.message,
+      });
+    }
+
+    const updateData = {
+      face_embedding: face_embedding.map(Number),
+      updated_at: new Date().toISOString(),
+    };
+    const existingProfileUrl = existingUser?.profile_url || "";
+    const mayRepairProfileImage =
+      !existingProfileUrl || existingProfileUrl.startsWith("blob:");
+
+    if (
+      mayRepairProfileImage &&
+      typeof profile_url === "string" &&
+      profile_url.startsWith("data:image/")
+    ) {
+      updateData.profile_url = profile_url;
+    }
+
     const { data, error } = await supabase
       .from("users")
-      .update({
-        face_embedding: face_embedding.map(Number),
-        profile_url,
-        updated_at: new Date().toISOString(),
-      })
+      .update(updateData)
       .eq("id", id)
       .select(USER_PUBLIC_SELECT)
       .single();
