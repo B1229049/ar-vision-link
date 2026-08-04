@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import AvatarRenderer from "../components/AvatarRenderer";
 import ProfileImage from "../components/ProfileImage";
 import "../styles/Profile.css";
 
@@ -116,6 +117,13 @@ function Profile() {
             )}
           </div>
 
+          <div className="profile-avatar-stage">
+            <div className="profile-avatar-glow" />
+            <AvatarRenderer
+              config={currentUser.avatar_config}
+              className="profile-avatar-renderer"
+            />
+          </div>
         </div>
 
         <div className="profile-media-section">
