@@ -466,6 +466,7 @@ app.put("/api/users/:id", async (req, res) => {
       nickname,
       description,
       extra_info,
+      profile_url,
       is_active,
     } = req.body;
 
@@ -477,6 +478,16 @@ app.put("/api/users/:id", async (req, res) => {
     if (nickname !== undefined) updateData.nickname = nickname;
     if (description !== undefined) updateData.description = description;
     if (extra_info !== undefined) updateData.extra_info = extra_info;
+    if (profile_url !== undefined) {
+      if (typeof profile_url !== "string" || !profile_url.startsWith("data:image/")) {
+        return res.status(400).json({
+          success: false,
+          error: "個人頭像必須是有效的圖片",
+        });
+      }
+
+      updateData.profile_url = profile_url;
+    }
     if (is_active !== undefined) updateData.is_active = is_active;
 
     const { data, error } = await supabase
