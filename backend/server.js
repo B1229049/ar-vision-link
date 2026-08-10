@@ -33,6 +33,9 @@ const io = new Server(server, {
     origin: CLIENT_URL === "*" ? "*" : CLIENT_URL,
     methods: ["GET", "POST", "PUT", "DELETE"],
   },
+  // Faster stale-connection detection keeps closed tabs from lingering in a lobby.
+  pingInterval: 5000,
+  pingTimeout: 10000,
 });
 
 const gemini = new GoogleGenAI({
@@ -224,6 +227,99 @@ async function getLeaderboard(sessionId) {
   if (error) throw new Error(error.message);
 
   return data || [];
+}
+
+const lobbyPlayerSockets = new Map();
+const pendingLobbyCleanup = new Map();
+const LOBBY_RECONNECT_GRACE_MS = 3000;
+
+function getLobbyPlayerKey(sessionId, userId) {
+  return `${Number(sessionId)}:${Number(userId)}`;
+}
+
+function trackLobbyPlayerSocket(socket) {
+  if (socket.data.role !== "player" || !socket.data.sessionId || !socket.data.userId) {
+    return;
+  }
+
+  const key = getLobbyPlayerKey(socket.data.sessionId, socket.data.userId);
+  const socketIds = lobbyPlayerSockets.get(key) || new Set();
+  socketIds.add(socket.id);
+  lobbyPlayerSockets.set(key, socketIds);
+
+  const pendingCleanup = pendingLobbyCleanup.get(key);
+  if (pendingCleanup) {
+    clearTimeout(pendingCleanup);
+    pendingLobbyCleanup.delete(key);
+  }
+}
+
+function untrackLobbyPlayerSocket(socket) {
+  if (socket.data.role !== "player" || !socket.data.sessionId || !socket.data.userId) {
+    return null;
+  }
+
+  const key = getLobbyPlayerKey(socket.data.sessionId, socket.data.userId);
+  const socketIds = lobbyPlayerSockets.get(key);
+
+  if (socketIds) {
+    socketIds.delete(socket.id);
+    if (socketIds.size > 0) return null;
+  }
+
+  lobbyPlayerSockets.delete(key);
+  return key;
+}
+
+async function removeLobbyPlayer(sessionId, userId) {
+  const normalizedSessionId = Number(sessionId);
+  const normalizedUserId = Number(userId);
+  const key = getLobbyPlayerKey(normalizedSessionId, normalizedUserId);
+
+  if (lobbyPlayerSockets.get(key)?.size) return;
+
+  const { data: session, error: sessionError } = await supabase
+    .from("game_sessions")
+    .select("session_id, started_at, game_finished")
+    .eq("session_id", normalizedSessionId)
+    .maybeSingle();
+
+  if (sessionError) throw new Error(sessionError.message);
+  if (!session || session.started_at || session.game_finished) return;
+
+  const { error: deleteError } = await supabase
+    .from("player_records")
+    .delete()
+    .eq("session_id", normalizedSessionId)
+    .eq("user_id", normalizedUserId);
+
+  if (deleteError) throw new Error(deleteError.message);
+
+  const leaderboard = await getLeaderboard(normalizedSessionId);
+  io.to(`session:${normalizedSessionId}`).emit("player-left", {
+    userId: normalizedUserId,
+  });
+  io.to(`session:${normalizedSessionId}`).emit("leaderboard-updated", {
+    leaderboard,
+  });
+}
+
+function scheduleLobbyPlayerCleanup(socket) {
+  const key = untrackLobbyPlayerSocket(socket);
+  if (!key) return;
+
+  const { sessionId, userId } = socket.data;
+  const cleanupTimer = setTimeout(async () => {
+    pendingLobbyCleanup.delete(key);
+
+    try {
+      await removeLobbyPlayer(sessionId, userId);
+    } catch (err) {
+      console.error("Failed to remove disconnected lobby player:", err);
+    }
+  }, LOBBY_RECONNECT_GRACE_MS);
+
+  pendingLobbyCleanup.set(key, cleanupTimer);
 }
 
 function calculateScore(isCorrect, timeLeft = 0) {
@@ -2399,6 +2495,7 @@ io.on("connection", (socket) => {
       socket.data.sessionId = Number(sessionId);
       socket.data.userId = userId ? Number(userId) : null;
       socket.data.role = role || "player";
+      trackLobbyPlayerSocket(socket);
 
       const fullData = await getSessionFullData(Number(sessionId));
       const leaderboard = await getLeaderboard(Number(sessionId));
@@ -2415,6 +2512,29 @@ io.on("connection", (socket) => {
       });
     } catch (err) {
       socket.emit("socket-error", { error: err.message });
+    }
+  });
+
+  socket.on("leave-session", async (_, acknowledge) => {
+    const sessionId = socket.data.sessionId;
+    const userId = socket.data.userId;
+    const role = socket.data.role;
+
+    try {
+      const key = untrackLobbyPlayerSocket(socket);
+
+      if (key && role === "player") {
+        await removeLobbyPlayer(sessionId, userId);
+      }
+
+      socket.data.leftSession = true;
+      if (typeof acknowledge === "function") acknowledge({ success: true });
+    } catch (err) {
+      socket.data.leftSession = false;
+      console.error("Failed to leave lobby:", err);
+      if (typeof acknowledge === "function") {
+        acknowledge({ success: false, error: err.message });
+      }
     }
   });
 
@@ -2563,6 +2683,10 @@ io.on("connection", (socket) => {
         userId,
         role,
       });
+    }
+
+    if (!socket.data.leftSession) {
+      scheduleLobbyPlayerCleanup(socket);
     }
 
     console.log("Socket disconnected:", socket.id);

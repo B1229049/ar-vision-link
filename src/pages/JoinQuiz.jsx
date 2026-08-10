@@ -50,6 +50,17 @@ function JoinQuiz() {
     };
   }, [navigate, searchParams]);
 
+  useEffect(() => {
+    if (!joined || !session?.session_id) return undefined;
+
+    function handlePageHide() {
+      socketRef.current?.emit("leave-session");
+    }
+
+    window.addEventListener("pagehide", handlePageHide);
+    return () => window.removeEventListener("pagehide", handlePageHide);
+  }, [joined, session?.session_id]);
+
   function getFinalPlayMode(targetSession = session) {
     const gameMode = targetSession?.game_mode || "choice";
 
@@ -246,7 +257,22 @@ function JoinQuiz() {
   }
 
   function leaveRoom() {
-    socketRef.current?.disconnect();
+    const socket = socketRef.current;
+
+    if (socket?.connected) {
+      let disconnected = false;
+      const disconnect = () => {
+        if (disconnected) return;
+        disconnected = true;
+        socket.disconnect();
+      };
+
+      socket.timeout(1000).emit("leave-session", {}, disconnect);
+      window.setTimeout(disconnect, 1100);
+    } else {
+      socket?.disconnect();
+    }
+
     socketRef.current = null;
 
     setJoined(false);
