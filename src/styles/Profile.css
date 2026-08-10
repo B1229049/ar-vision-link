@@ -83,8 +83,8 @@
 
   color: white;
 
-  box-shadow:
-    0 10px 24px rgba(126, 34, 206, 0.42);
+  border: none;
+  box-shadow: none;
 }
 
 .profile-card h2,
@@ -397,8 +397,8 @@
     font-size: 30px;
 
     margin: 0 0 12px;
-    border: 3px solid rgba(226, 188, 255, 0.9);
-    box-shadow: 0 8px 24px rgba(168, 85, 247, 0.32);
+    border: none;
+    box-shadow: none;
   }
 
   .profile-avatar-stage {
