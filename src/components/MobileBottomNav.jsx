@@ -2,10 +2,10 @@ import { useLocation, useNavigate } from "react-router-dom";
 import "../styles/MobileBottomNav.css";
 
 const items = [
-  { label: "主頁", path: "/", icon: "home" },
+  { label: "Home", path: "/", icon: "home" },
   { label: "Quiz", path: "/quiz", icon: "quiz" },
   { label: "ARcamera", path: "/camera", icon: "camera" },
-  { label: "我", path: "/profile", icon: "profile" },
+  { label: "Me", path: "/profile", icon: "profile" },
 ];
 
 function Icon({ name }) {
