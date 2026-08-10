@@ -2,10 +2,10 @@ import { useLocation, useNavigate } from "react-router-dom";
 import "../styles/MobileBottomNav.css";
 
 const items = [
-  { label: "首頁", path: "/", icon: "home" },
-  { label: "Quiz Center", path: "/quiz", icon: "quiz" },
-  { label: "AR Camera", path: "/camera", icon: "camera" },
-  { label: "個人頁面", path: "/profile", icon: "profile" },
+  { label: "主頁", path: "/", icon: "home" },
+  { label: "Quiz", path: "/quiz", icon: "quiz" },
+  { label: "ARcamera", path: "/camera", icon: "camera" },
+  { label: "我", path: "/profile", icon: "profile" },
 ];
 
 function Icon({ name }) {
@@ -40,6 +40,7 @@ function MobileBottomNav() {
         return (
           <button key={item.label} type="button" className={isActive ? "active" : ""} onClick={() => item.path && navigate(item.path)} aria-label={item.label} aria-current={isActive ? "page" : undefined}>
             <Icon name={item.icon} />
+            <span className="mobile-bottom-nav-label">{item.label}</span>
           </button>
         );
       })}
