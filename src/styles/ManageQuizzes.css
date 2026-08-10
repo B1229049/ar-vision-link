@@ -8,6 +8,8 @@
 .manage-quizzes-container {
   max-width: 1400px;
   margin: 0 auto;
+  padding: 28px;
+  box-sizing: border-box;
 }
 
 .manage-quizzes-header {
@@ -64,8 +66,8 @@
 }
 
 .quiz-item.active {
-  border-color: #38bdf8;
-  background: rgba(56, 189, 248, 0.15);
+  border-color: #a855f7;
+  background: rgba(126, 34, 206, 0.2);
 }
 
 .quiz-item-title {
@@ -214,12 +216,12 @@
 }
 
 .manage-btn.primary {
-  background: #38bdf8;
+  background: linear-gradient(135deg, #6d28d9, #a855f7);
   color: white;
 }
 
 .manage-btn.primary:hover {
-  background: #0ea5e9;
+  background: linear-gradient(135deg, #7e22ce, #c084fc);
 }
 
 .manage-btn.secondary {
@@ -278,7 +280,17 @@
 
 @media (max-width: 700px) {
   .manage-quizzes-page {
-    padding: 18px;
+    padding: calc(var(--navbar-height) + 18px) 12px calc(var(--mobile-bottom-nav-height) + 28px);
+  }
+
+  .manage-quizzes-container {
+    padding: 20px 14px;
+    border-radius: 20px;
+  }
+
+  .manage-quizzes-header h1 {
+    font-size: 30px;
+    line-height: 1.2;
   }
 
   .options-grid,
@@ -331,7 +343,7 @@
   border: none;
   border-radius: 18px;
   padding: 18px 20px;
-  background: linear-gradient(135deg, #2563eb, #3b82f6);
+  background: linear-gradient(135deg, #6d28d9, #a855f7);
   color: white;
   font-size: 17px;
   font-weight: 800;

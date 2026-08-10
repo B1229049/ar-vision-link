@@ -395,7 +395,7 @@ function ManageQuizzes() {
       <div className="manage-quizzes-container">
         <div className="manage-quizzes-header">
           <div>
-            <h1>管理 Quiz</h1>
+            <h1>編輯題目</h1>
             <p>選擇測驗後，可以編輯題目、刪除題目，或用 AI 新增題目。</p>
           </div>
 
@@ -442,7 +442,7 @@ function ManageQuizzes() {
               <>
                 <div className="quiz-editor-top">
                   <div>
-                    <h2>編輯測驗</h2>
+                    <h2>編輯題目</h2>
                     <p>目前共 {questions.length} 題</p>
                   </div>
 

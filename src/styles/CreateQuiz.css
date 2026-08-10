@@ -173,12 +173,12 @@
 
   background: linear-gradient(
     135deg,
-    #2563eb,
-    #3b82f6
+    #6d28d9,
+    #a855f7
   );
 
   box-shadow:
-    0 8px 20px rgba(37, 99, 235, 0.35);
+    0 8px 20px rgba(126, 34, 206, 0.35);
 
   transition: all 0.2s ease;
 }
@@ -316,14 +316,14 @@
 .create-btn.primary {
   background: linear-gradient(
     135deg,
-    #2563eb,
-    #3b82f6
+    #6d28d9,
+    #a855f7
   );
 
   color: white;
 
   box-shadow:
-    0 8px 20px rgba(37, 99, 235, 0.35);
+    0 8px 20px rgba(126, 34, 206, 0.35);
 }
 
 .create-btn.secondary {
@@ -335,7 +335,7 @@
 }
 
 .create-btn.secondary:hover {
-  background: rgba(59, 130, 246, 0.25);
+  background: rgba(168, 85, 247, 0.25);
 }
 
 .create-btn.ghost {
@@ -401,11 +401,11 @@
 
 @media (max-width: 768px) {
   .create-quiz-page {
-    padding: calc(var(--navbar-height) + 24px) 16px 24px;
+    padding: calc(var(--navbar-height) + 20px) 14px calc(var(--mobile-bottom-nav-height) + 26px);
   }
 
   .create-quiz-card {
-    padding: 22px;
+    padding: 20px 16px;
   }
 
   .create-quiz-card h2 {
@@ -428,6 +428,11 @@
   .question-header {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .ai-generate-box,
+  .question-card {
+    padding: 18px 14px;
   }
 
   .remove-question-btn {

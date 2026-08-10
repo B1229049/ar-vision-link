@@ -171,7 +171,6 @@ function QuizHistory() {
       <div className="history-container">
         <header className="history-header">
           <div>
-            <span className="history-badge">Quiz History</span>
             <h1>測驗歷史紀錄</h1>
             <p>
               查看自己參加過的測驗成績，也可以查看自己主持過的場次與玩家答題紀錄。

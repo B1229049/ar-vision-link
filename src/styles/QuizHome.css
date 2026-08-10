@@ -170,8 +170,13 @@
 }
 
 @media (max-width: 640px) {
+  .quiz-home-page {
+    align-items: flex-start;
+    padding: calc(var(--navbar-height) + 18px) 14px calc(var(--mobile-bottom-nav-height) + 26px);
+  }
+
   .quiz-home-card {
-    padding: 24px;
+    padding: 22px 16px;
   }
 
   .quiz-home-card h2 {

@@ -19,6 +19,8 @@
   width: 100%;
   max-width: 1400px;
   margin: 0 auto;
+  padding: 28px;
+  box-sizing: border-box;
 }
 
 .history-header {
@@ -42,23 +44,6 @@
   color: rgba(255, 255, 255, 0.68);
 
   line-height: 1.7;
-}
-
-.history-badge {
-  display: inline-flex;
-
-  padding: 8px 14px;
-
-  border-radius: 999px;
-
-  background: rgba(59, 130, 246, 0.18);
-
-  color: #bfdbfe;
-
-  border: 1px solid rgba(96, 165, 250, 0.22);
-
-  font-size: 14px;
-  font-weight: 800;
 }
 
 .history-tabs {
@@ -404,16 +389,50 @@
 
 @media (max-width: 700px) {
   .quiz-history-page {
-    padding: calc(var(--navbar-height) + 24px) 16px 24px;
+    padding: calc(var(--navbar-height) + 18px) 12px calc(var(--mobile-bottom-nav-height) + 28px);
+  }
+
+  .history-container {
+    padding: 20px 16px;
+    border-radius: 20px;
   }
 
   .history-header {
     flex-direction: column;
     align-items: stretch;
+    gap: 16px;
+    margin-bottom: 26px;
+  }
+
+  .history-header h1 {
+    margin: 0 0 12px;
+    font-size: 30px;
+    line-height: 1.2;
+  }
+
+  .history-header p {
+    font-size: 15px;
+    line-height: 1.8;
   }
 
   .history-tabs {
     flex-direction: column;
+    gap: 10px;
+    margin-bottom: 26px;
+  }
+
+  .history-layout {
+    gap: 20px;
+  }
+
+  .history-sidebar,
+  .history-detail {
+    padding: 18px;
+    border-radius: 20px;
+  }
+
+  .history-sidebar h2 {
+    font-size: 22px;
   }
 
   .history-summary {
