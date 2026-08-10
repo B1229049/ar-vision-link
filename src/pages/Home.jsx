@@ -182,7 +182,7 @@ function Home() {
         </h2>
 
         <p>
-          從 AI 建立題目、主持遊戲到 AR 互動辨識，AR Vision Link
+          從 AI 建立題目、創建答題房間到 AR 互動辨識，AR Vision Link
           將測驗流程整合成一個完整平台。
         </p>
 

@@ -312,7 +312,7 @@ function HostLobby() {
       <div className="host-lobby-card">
         {!session && (
           <>
-            <h2>主持遊戲</h2>
+            <h2>創建答題房間</h2>
 
             <p className="host-subtitle">
               選擇你建立的測驗，設定答題模式，產生房號讓玩家加入。

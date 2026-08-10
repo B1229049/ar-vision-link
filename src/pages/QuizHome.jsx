@@ -49,7 +49,7 @@ function QuizHome() {
             className="quiz-btn primary"
             onClick={() => navigate("/quiz/host")}
           >
-            主持遊戲
+            創建答題房間
           </button>
           
           <button
@@ -60,7 +60,7 @@ function QuizHome() {
           </button>
 
           <button className="quiz-btn secondary" onClick={() => navigate("/quiz/manage")}>
-            編輯 Quiz
+            編輯題目
           </button>
 
           <button
