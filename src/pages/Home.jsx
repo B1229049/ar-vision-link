@@ -17,11 +17,6 @@ function Home() {
     }
   }, []);
 
-  function logout() {
-    localStorage.removeItem("currentUser");
-    setCurrentUser(null);
-  }
-
   return (
     <div className="home-page">
       <section className="home-hero">
@@ -33,26 +28,8 @@ function Home() {
             自動出題，讓課堂、展示與活動互動更加有趣的平台。
           </p>
 
-          <div className="hero-actions">
-            {currentUser ? (
-              <>
-                <Link to="/quiz/create" className="home-btn primary">
-                  建立 AI 測驗
-                </Link>
-
-                <Link to="/camera" className="home-btn secondary">
-                  開啟 AR Camera
-                </Link>
-
-                <Link to="/profile" className="home-btn secondary">
-                  個人資料
-                </Link>
-
-                <button className="home-btn danger" onClick={logout}>
-                  登出
-                </button>
-              </>
-            ) : (
+          {!currentUser && (
+            <div className="hero-actions">
               <>
                 <Link to="/face-login" className="home-btn primary">
                   Face ID 登入
@@ -62,8 +39,8 @@ function Home() {
                   建立帳號
                 </Link>
               </>
-            )}
-          </div>
+            </div>
+          )}
 
           <div className="hero-proof">
             <div className="proof-card online">
