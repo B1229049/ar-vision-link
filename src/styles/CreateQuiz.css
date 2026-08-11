@@ -147,9 +147,9 @@
 }
 
 .quiz-option-field.option-d {
-  --option-bg: rgba(22, 163, 74, 0.24);
-  --option-border: rgba(74, 222, 128, 0.46);
-  --option-label: #bbf7d0;
+  --option-bg: rgba(126, 34, 206, 0.24);
+  --option-border: rgba(192, 132, 252, 0.46);
+  --option-label: #e9d5ff;
 }
 
 .ai-wrapper {

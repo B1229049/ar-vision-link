@@ -593,8 +593,6 @@ function ARQuizGame() {
       answeredRef.current = true;
       submittingRef.current = true;
 
-      clearTimer();
-
       const res = await fetch(`${BACKEND_URL}/api/player-answers/submit`, {
         method: "POST",
         headers: {
@@ -645,23 +643,18 @@ function ARQuizGame() {
   }
 
   function getOptionClass(letter) {
-    if (pointingTarget === letter && !answered) {
+    if (timeLeft > 0 && pointingTarget === letter && !answered) {
       return "pointing";
     }
 
-    if (!answered) return "";
-
-    if (submitting || !result) {
+    if (timeLeft > 0) {
+      if (!answered) return "";
       if (selectedAnswer === letter) return "waiting";
-      return "disabled";
+      return "";
     }
 
-    if (selectedAnswer === letter && result?.is_correct) {
+    if (letter === currentQuestion?.correct_answer) {
       return "correct";
-    }
-
-    if (selectedAnswer === letter && !result?.is_correct) {
-      return "wrong";
     }
 
     return "disabled";
@@ -754,6 +747,12 @@ function ARQuizGame() {
 
           {getOptionText(letter)}
 
+          {timeLeft <= 0 && letter === currentQuestion.correct_answer && (
+            <span className="option-correct-check" aria-label="正確答案">
+              ✓
+            </span>
+          )}
+
           {pointingTarget === letter && !answered && (
             <div className="ar-point-progress">
               <div
@@ -773,7 +772,14 @@ function ARQuizGame() {
         </div>
       )}
 
-      {answered && (
+      {answered && timeLeft > 0 && (
+        <div className="ar-result-card">
+          答案已送出
+          <small>倒數結束後公布正解</small>
+        </div>
+      )}
+
+      {answered && timeLeft <= 0 && (
         <div className="ar-result-card">
           {submitting || !result
             ? "等待判定中..."

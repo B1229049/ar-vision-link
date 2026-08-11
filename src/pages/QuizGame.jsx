@@ -268,17 +268,19 @@ function QuizGame() {
   }, [loading, currentUser, sessionId]);
 
   useEffect(() => {
-    if (loading || !session || session.game_finished || answered) return;
+    if (loading || !session || session.game_finished) return;
 
     if (timeLeft <= 0) {
-      setAnswered(true);
-      setSelectedAnswer("");
-      setAnswerResult({
-        user_id: currentUser?.id,
-        is_correct: false,
-        score_earned: 0,
-        total_score: score,
-      });
+      if (!answered) {
+        setAnswered(true);
+        setSelectedAnswer("");
+        setAnswerResult({
+          user_id: currentUser?.id,
+          is_correct: false,
+          score_earned: 0,
+          total_score: score,
+        });
+      }
       return;
     }
 
@@ -401,12 +403,14 @@ function QuizGame() {
 
     if (!answered) return baseClass;
 
-    if (optionKey === currentQuestion.correct_answer) {
-      return `${baseClass} correct`;
+    if (timeLeft > 0) {
+      return optionKey === selectedAnswer
+        ? `${baseClass} selected`
+        : baseClass;
     }
 
-    if (optionKey === selectedAnswer) {
-      return `${baseClass} wrong`;
+    if (optionKey === currentQuestion.correct_answer) {
+      return `${baseClass} correct`;
     }
 
     return `${baseClass} disabled`;
@@ -509,11 +513,20 @@ function QuizGame() {
             >
               <span className="option-key">{key}</span>
               <span>{options[key]}</span>
+              {timeLeft <= 0 && key === currentQuestion.correct_answer && (
+                <span className="option-correct-check" aria-label="正確答案">
+                  ✓
+                </span>
+              )}
             </button>
           ))}
         </div>
 
-        {answered && (
+        {answered && timeLeft > 0 && (
+          <div className="answer-result">答案已送出，倒數結束後公布正解</div>
+        )}
+
+        {timeLeft <= 0 && (
           <div className="answer-result">
             {selectedAnswer === currentQuestion.correct_answer
               ? "答對了！"
