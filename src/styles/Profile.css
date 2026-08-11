@@ -5,10 +5,7 @@
   margin-left: calc(50% - 50vw);
   overflow-x: hidden;
 
-  background:
-    radial-gradient(circle at 20% 12%, rgba(168, 85, 247, 0.22), transparent 30rem),
-    radial-gradient(circle at 86% 22%, rgba(124, 58, 237, 0.2), transparent 28rem),
-    linear-gradient(180deg, #180b32 0%, #10091f 46%, #080511 100%);
+  background: var(--app-page-background);
 
   display: flex;
   justify-content: center;
@@ -23,13 +20,13 @@
   width: 100%;
   max-width: 920px;
 
-  background: rgba(3, 7, 18, 0.68);
+  background: var(--app-glass-surface);
 
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid var(--app-glass-border);
 
-  backdrop-filter: blur(18px);
+  backdrop-filter: blur(14px);
 
-  border-radius: 24px;
+  border-radius: var(--app-glass-radius);
 
   padding: 36px;
 
@@ -39,9 +36,7 @@
 
   text-align: center;
 
-  box-shadow:
-    0 12px 32px rgba(0, 0, 0, 0.35),
-    0 0 40px rgba(139, 92, 246, 0.18);
+  box-shadow: var(--app-glass-shadow);
 }
 
 .profile-hero {
@@ -314,35 +309,30 @@
 }
 
 .profile-btn.primary {
-  background: linear-gradient(
-    135deg,
-    #6d28d9,
-    #a855f7
-  );
+  background: var(--app-primary);
 
   color: white;
 
-  box-shadow:
-    0 8px 20px rgba(126, 34, 206, 0.38);
+  box-shadow: 0 8px 20px rgba(126, 34, 206, 0.22);
 }
 
 .profile-btn.primary:hover {
   transform: translateY(-2px);
 
-  box-shadow:
-    0 12px 24px rgba(126, 34, 206, 0.5);
+  box-shadow: 0 10px 22px rgba(126, 34, 206, 0.3);
 }
 
 .profile-btn.secondary {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--app-glass-subtle);
 
   color: white;
 
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--app-glass-border);
 }
 
 .profile-btn.secondary:hover {
-  background: rgba(255, 255, 255, 0.14);
+  background: rgba(168, 85, 247, 0.16);
+  border-color: rgba(192, 132, 252, 0.28);
 }
 
 .profile-btn.danger {
@@ -359,17 +349,17 @@
 
 @media (max-width: 640px) {
   .profile-page {
-    padding: calc(var(--navbar-height) + 12px) 0 calc(var(--mobile-bottom-nav-height) + 20px);
-    background: linear-gradient(180deg, #130a28 0%, #0b1020 36%, #050816 100%);
+    padding: calc(var(--navbar-height) + 12px) 16px calc(var(--mobile-bottom-nav-height) + 20px);
+    background: var(--app-page-background);
   }
 
   .profile-card {
     width: 100%;
-    border-radius: 0;
-    border-inline: 0;
+    border-radius: 18px;
     padding: 24px 16px 8px;
-    background: transparent;
-    box-shadow: none;
+    background: var(--app-glass-surface);
+    border: 1px solid var(--app-glass-border);
+    box-shadow: var(--app-glass-shadow);
   }
 
   .profile-hero {

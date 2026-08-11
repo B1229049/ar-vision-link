@@ -7,10 +7,7 @@
   padding: 96px 24px 48px;
   box-sizing: border-box;
   color: white;
-  background:
-    radial-gradient(circle at 18% 12%, rgba(168, 85, 247, 0.23), transparent 32rem),
-    radial-gradient(circle at 82% 18%, rgba(14, 165, 233, 0.2), transparent 28rem),
-    linear-gradient(180deg, #150a2e 0%, #111827 46%, #050816 100%);
+  background: var(--app-page-background);
 }
 
 .home-hero,
@@ -139,8 +136,8 @@
   align-items: center;
   gap: 13px;
   border-radius: 16px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--app-glass-surface);
+  border: 1px solid var(--app-glass-border);
 }
 
 .home-welcome-avatar {
@@ -213,8 +210,8 @@
 .proof-card {
   padding: 15px;
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--app-glass-surface);
+  border: 1px solid var(--app-glass-border);
 }
 
 .proof-card span {
@@ -252,8 +249,8 @@
 .home-quick-join {
   padding: 16px 18px;
   border-radius: 16px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--app-glass-surface);
+  border: 1px solid var(--app-glass-border);
 }
 
 .home-quick-join label {
@@ -320,8 +317,8 @@
   display: flex;
   align-items: center;
   border-radius: 16px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--app-glass-surface);
+  border: 1px solid var(--app-glass-border);
 }
 
 .news-badge {
@@ -349,8 +346,8 @@
   text-align: left;
   cursor: pointer;
   font-family: inherit;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.11);
+  background: var(--app-glass-surface);
+  border: 1px solid var(--app-glass-border);
   transition:
     transform 0.2s ease,
     background 0.2s ease,

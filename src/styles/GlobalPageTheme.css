@@ -8,6 +8,19 @@ body,
   background: #050816;
 }
 
+:root {
+  --app-page-background:
+    radial-gradient(circle at 18% 12%, rgba(168, 85, 247, 0.18), transparent 32rem),
+    radial-gradient(circle at 82% 18%, rgba(59, 130, 246, 0.12), transparent 28rem),
+    linear-gradient(180deg, #150a2e 0%, #111827 46%, #050816 100%);
+  --app-glass-surface: rgba(3, 7, 18, 0.72);
+  --app-glass-subtle: rgba(15, 23, 42, 0.62);
+  --app-glass-border: rgba(255, 255, 255, 0.1);
+  --app-glass-radius: 20px;
+  --app-glass-shadow: 0 16px 40px rgba(0, 0, 0, 0.24);
+  --app-primary: linear-gradient(135deg, #6d28d9, #a855f7);
+}
+
 #root {
   max-width: none;
   border-inline: 0;
@@ -29,10 +42,7 @@ body,
   margin-left: calc(50% - 50vw);
   overflow-x: hidden;
   box-sizing: border-box;
-  background:
-    radial-gradient(circle at 18% 12%, rgba(168, 85, 247, 0.23), transparent 32rem),
-    radial-gradient(circle at 82% 18%, rgba(14, 165, 233, 0.2), transparent 28rem),
-    linear-gradient(180deg, #150a2e 0%, #111827 46%, #050816 100%);
+  background: var(--app-page-background);
 }
 
 .camera-page,
@@ -54,14 +64,12 @@ body,
 .avatar-admin-card,
 .manage-quizzes-container,
 .history-container {
-  background: rgba(3, 7, 18, 0.68);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 24px;
+  background: var(--app-glass-surface);
+  border: 1px solid var(--app-glass-border);
+  border-radius: var(--app-glass-radius);
   color: white;
-  box-shadow:
-    0 12px 32px rgba(0, 0, 0, 0.35),
-    0 0 40px rgba(59, 130, 246, 0.12);
-  backdrop-filter: blur(18px);
+  box-shadow: var(--app-glass-shadow);
+  backdrop-filter: blur(14px);
 }
 
 .question-card,
@@ -112,8 +120,8 @@ body,
 .avatar-admin-page input:focus,
 .avatar-admin-page textarea:focus,
 .avatar-admin-page select:focus {
-  border-color: rgba(56, 189, 248, 0.72);
-  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.14);
+  border-color: rgba(192, 132, 252, 0.72);
+  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.14);
 }
 
 @media (max-width: 640px) {

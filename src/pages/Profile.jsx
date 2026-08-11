@@ -217,7 +217,7 @@ function Profile() {
         </div>
 
         <button
-          className="profile-btn secondary"
+          className="profile-btn primary"
           onClick={() => navigate("/edit-profile")}
         >
           編輯資料
