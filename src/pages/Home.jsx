@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "../styles/Home.css";
 
 function ShopIcon() {
@@ -13,7 +13,9 @@ function ShopIcon() {
 }
 
 function Home() {
+  const navigate = useNavigate();
   const [currentUser, setCurrentUser] = useState(null);
+  const [quickRoomCode, setQuickRoomCode] = useState("");
 
   useEffect(() => {
     const savedUser = localStorage.getItem("currentUser");
@@ -26,6 +28,15 @@ function Home() {
       }
     }
   }, []);
+
+  function handleQuickJoin(event) {
+    event.preventDefault();
+
+    const roomCode = quickRoomCode.trim().toUpperCase();
+    if (!roomCode) return;
+
+    navigate(`/quiz/join?room=${encodeURIComponent(roomCode)}`);
+  }
 
   return (
     <div className="home-page">
@@ -52,6 +63,27 @@ function Home() {
             </div>
           )}
 
+          {currentUser && (
+            <section className="home-welcome-bar">
+              <div className="home-welcome-avatar">
+                {currentUser.profile_url ? (
+                  <img src={currentUser.profile_url} alt="" />
+                ) : (
+                  currentUser.name?.charAt(0) || "U"
+                )}
+              </div>
+
+              <div className="home-welcome-copy">
+                <span>歡迎回來</span>
+                <strong>{currentUser.name || "使用者"}</strong>
+              </div>
+
+              <Link to="/avatar-dressup" className="home-avatar-link">
+                編輯 Avatar
+              </Link>
+            </section>
+          )}
+
           <div className="hero-proof">
             <div className="proof-card online">
               <span>ONLINE USERS</span>
@@ -71,11 +103,23 @@ function Home() {
 
           {currentUser && (
             <div className="home-player-hub">
-              <section className="home-news-banner" aria-label="最新消息">
-                <div className="news-badge">
-                  <strong>最新消息</strong>
+              <form className="home-quick-join" onSubmit={handleQuickJoin}>
+                <label htmlFor="quick-room-code">快速加入房間</label>
+                <div className="quick-join-row">
+                  <input
+                    id="quick-room-code"
+                    value={quickRoomCode}
+                    onChange={(event) =>
+                      setQuickRoomCode(event.target.value.toUpperCase())
+                    }
+                    placeholder="輸入房號"
+                    maxLength={12}
+                  />
+                  <button type="submit" disabled={!quickRoomCode.trim()}>
+                    加入
+                  </button>
                 </div>
-              </section>
+              </form>
 
               <button
                 type="button"
@@ -90,6 +134,12 @@ function Home() {
                   <small>探索 Avatar 時裝與限定造型</small>
                 </span>
               </button>
+
+              <section className="home-news-banner" aria-label="最新消息">
+                <div className="news-badge">
+                  <strong>最新消息</strong>
+                </div>
+              </section>
             </div>
           )}
         </div>
