@@ -77,12 +77,6 @@ function QuizHome() {
             歷史紀錄
           </button>
 
-          <button
-            className="quiz-btn ghost"
-            onClick={() => navigate("/profile")}
-          >
-            回個人頁面
-          </button>
         </div>
       </div>
     </div>

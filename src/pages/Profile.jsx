@@ -188,13 +188,6 @@ function Profile() {
 
         <div className="profile-action-grid">
           <button
-            className="profile-btn primary"
-            onClick={() => navigate("/quiz")}
-          >
-            Quiz Center
-          </button>
-
-          <button
             className="profile-btn secondary"
             onClick={() => navigate("/quiz/history")}
           >
@@ -228,13 +221,6 @@ function Profile() {
           onClick={() => navigate("/edit-profile")}
         >
           編輯資料
-        </button>
-
-        <button
-          className="profile-btn ghost"
-          onClick={() => navigate("/")}
-        >
-          回首頁
         </button>
 
         <button className="profile-btn danger" onClick={logout}>
