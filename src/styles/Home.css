@@ -173,191 +173,81 @@
   width: min(760px, 100%);
   margin-top: 22px;
   display: grid;
-  gap: 16px;
+  gap: 12px;
 }
 
 .home-news-banner {
-  position: relative;
-  isolation: isolate;
-  min-height: 104px;
-  padding: 18px 20px;
+  min-height: 70px;
+  padding: 14px 18px;
   box-sizing: border-box;
-  display: grid;
-  grid-template-columns: auto 1fr auto;
+  display: flex;
   align-items: center;
-  gap: 18px;
-  overflow: hidden;
-  border-radius: 20px;
-  background:
-    linear-gradient(100deg, rgba(67, 26, 128, 0.96), rgba(76, 29, 149, 0.88) 52%, rgba(30, 64, 175, 0.82)),
-    #312e81;
-  border: 1px solid rgba(216, 180, 254, 0.48);
-  box-shadow:
-    0 14px 34px rgba(8, 5, 25, 0.42),
-    inset 0 1px rgba(255, 255, 255, 0.17),
-    inset 0 -3px rgba(0, 0, 0, 0.2);
-}
-
-.home-news-banner::before {
-  content: "";
-  position: absolute;
-  z-index: -1;
-  width: 220px;
-  height: 220px;
-  right: 11%;
-  top: -125px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.09);
-  box-shadow: 0 0 70px rgba(96, 165, 250, 0.34);
-}
-
-.home-news-banner::after {
-  content: "";
-  position: absolute;
-  inset: 6px;
-  z-index: -1;
-  pointer-events: none;
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  border-radius: 15px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .news-badge {
-  min-width: 92px;
-  padding: 12px 14px;
-  border-radius: 14px;
-  text-align: center;
-  background: linear-gradient(145deg, #fbbf24, #f97316);
-  color: #311307;
-  border: 1px solid rgba(254, 240, 138, 0.72);
-  box-shadow:
-    0 7px 16px rgba(120, 53, 15, 0.35),
-    inset 0 1px rgba(255, 255, 255, 0.55);
-}
-
-.news-badge span,
-.news-badge strong {
-  display: block;
-}
-
-.news-badge span {
-  font-size: 10px;
-  letter-spacing: 0.18em;
-  font-weight: 950;
-}
-
-.news-badge strong {
-  margin-top: 2px;
-  font-size: 16px;
-}
-
-.news-copy strong,
-.news-copy span {
-  display: block;
-}
-
-.news-copy strong {
-  color: white;
-  font-size: 18px;
-}
-
-.news-copy span {
-  margin-top: 5px;
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 13px;
-  font-weight: 650;
-  line-height: 1.45;
-}
-
-.news-status {
-  padding: 8px 10px;
-  border-radius: 999px;
+  padding: 9px 13px;
+  border-radius: 12px;
   color: #ddd6fe;
-  background: rgba(15, 23, 42, 0.38);
-  border: 1px solid rgba(221, 214, 254, 0.18);
-  font-size: 10px;
-  font-weight: 900;
-  letter-spacing: 0.08em;
-  white-space: nowrap;
+  background: rgba(168, 85, 247, 0.16);
+  border: 1px solid rgba(192, 132, 252, 0.24);
+}
+
+.news-badge strong {
+  font-size: 15px;
 }
 
 .home-shop-button {
-  position: relative;
   width: 100%;
-  min-height: 108px;
-  padding: 16px 20px;
+  min-height: 88px;
+  padding: 14px 18px;
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto 1fr;
   align-items: center;
-  gap: 18px;
-  overflow: hidden;
-  border-radius: 22px;
+  gap: 14px;
+  border-radius: 16px;
   color: white;
   text-align: left;
   cursor: pointer;
   font-family: inherit;
-  background:
-    radial-gradient(circle at 85% 15%, rgba(253, 224, 71, 0.28), transparent 25%),
-    linear-gradient(115deg, #6d28d9, #a21caf 57%, #d97706);
-  border: 1px solid rgba(253, 230, 138, 0.7);
-  box-shadow:
-    0 16px 38px rgba(76, 29, 149, 0.43),
-    inset 0 2px rgba(255, 255, 255, 0.22),
-    inset 0 -5px rgba(59, 7, 100, 0.34);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.11);
   transition:
     transform 0.2s ease,
-    filter 0.2s ease,
-    box-shadow 0.2s ease;
-}
-
-.home-shop-button::after {
-  content: "";
-  position: absolute;
-  width: 150px;
-  height: 280px;
-  top: -95px;
-  left: -190px;
-  transform: rotate(24deg);
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transition: left 0.55s ease;
+    background 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .home-shop-button:hover {
-  transform: translateY(-3px) scale(1.006);
-  filter: saturate(1.1);
-  box-shadow:
-    0 20px 44px rgba(126, 34, 206, 0.5),
-    0 0 28px rgba(251, 191, 36, 0.12),
-    inset 0 2px rgba(255, 255, 255, 0.25),
-    inset 0 -5px rgba(59, 7, 100, 0.34);
-}
-
-.home-shop-button:hover::after {
-  left: calc(100% + 40px);
+  transform: translateY(-2px);
+  background: rgba(168, 85, 247, 0.16);
+  border-color: rgba(192, 132, 252, 0.28);
 }
 
 .home-shop-button:focus-visible {
-  outline: 3px solid rgba(253, 224, 71, 0.85);
+  outline: 2px solid rgba(192, 132, 252, 0.75);
   outline-offset: 3px;
 }
 
 .shop-icon-wrap {
-  width: 68px;
-  height: 68px;
+  width: 56px;
+  height: 56px;
   display: grid;
   place-items: center;
-  border-radius: 20px;
-  color: #fff7c2;
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.24), rgba(76, 29, 149, 0.35));
-  border: 1px solid rgba(255, 255, 255, 0.26);
-  box-shadow: inset 0 1px rgba(255, 255, 255, 0.28);
+  border-radius: 15px;
+  color: #ddd6fe;
+  background: rgba(168, 85, 247, 0.14);
+  border: 1px solid rgba(192, 132, 252, 0.2);
 }
 
 .shop-icon-wrap svg {
-  width: 48px;
-  height: 48px;
-  fill: rgba(251, 191, 36, 0.25);
+  width: 36px;
+  height: 36px;
+  fill: none;
   stroke: currentColor;
-  stroke-width: 3;
+  stroke-width: 2.5;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
@@ -368,28 +258,14 @@
 }
 
 .shop-button-copy strong {
-  font-size: 29px;
-  letter-spacing: 0.05em;
-  text-shadow: 0 3px 10px rgba(59, 7, 100, 0.45);
+  font-size: 21px;
 }
 
 .shop-button-copy small {
   margin-top: 4px;
-  color: rgba(255, 255, 255, 0.78);
+  color: rgba(255, 255, 255, 0.6);
   font-size: 13px;
-  font-weight: 700;
-}
-
-.shop-enter {
-  padding: 10px 16px;
-  border-radius: 999px;
-  color: #422006;
-  background: linear-gradient(180deg, #fef08a, #fbbf24);
-  border: 1px solid rgba(255, 255, 255, 0.56);
-  box-shadow: 0 5px 12px rgba(120, 53, 15, 0.28);
-  font-size: 13px;
-  font-weight: 950;
-  white-space: nowrap;
+  font-weight: 650;
 }
 
 .hero-dashboard {
@@ -739,63 +615,43 @@
   }
 
   .home-news-banner {
-    min-height: 0;
-    padding: 14px;
-    grid-template-columns: auto 1fr;
-    gap: 12px;
-    border-radius: 17px;
+    min-height: 62px;
+    padding: 12px;
+    border-radius: 14px;
   }
 
   .news-badge {
-    min-width: 72px;
-    padding: 10px;
+    padding: 8px 11px;
   }
 
   .news-badge strong {
     font-size: 14px;
   }
 
-  .news-copy strong {
-    font-size: 15px;
-  }
-
-  .news-copy span {
-    font-size: 11px;
-  }
-
-  .news-status {
-    display: none;
-  }
-
   .home-shop-button {
-    min-height: 94px;
-    padding: 13px 14px;
-    grid-template-columns: auto 1fr auto;
+    min-height: 80px;
+    padding: 12px;
+    grid-template-columns: auto 1fr;
     gap: 12px;
-    border-radius: 18px;
+    border-radius: 14px;
   }
 
   .shop-icon-wrap {
-    width: 58px;
-    height: 58px;
-    border-radius: 17px;
+    width: 50px;
+    height: 50px;
+    border-radius: 13px;
   }
 
   .shop-icon-wrap svg {
-    width: 40px;
-    height: 40px;
+    width: 32px;
+    height: 32px;
   }
 
   .shop-button-copy strong {
-    font-size: 24px;
+    font-size: 19px;
   }
 
   .shop-button-copy small {
-    font-size: 11px;
-  }
-
-  .shop-enter {
-    padding: 8px 11px;
     font-size: 11px;
   }
 

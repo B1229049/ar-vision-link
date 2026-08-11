@@ -73,16 +73,8 @@ function Home() {
             <div className="home-player-hub">
               <section className="home-news-banner" aria-label="最新消息">
                 <div className="news-badge">
-                  <span>NEWS</span>
                   <strong>最新消息</strong>
                 </div>
-
-                <div className="news-copy">
-                  <strong>新的冒險即將展開</strong>
-                  <span>活動與更新消息之後會在這裡登場，敬請期待！</span>
-                </div>
-
-                <span className="news-status">COMING SOON</span>
               </section>
 
               <button
@@ -97,7 +89,6 @@ function Home() {
                   <strong>商城</strong>
                   <small>探索 Avatar 時裝與限定造型</small>
                 </span>
-                <span className="shop-enter">進入</span>
               </button>
             </div>
           )}
