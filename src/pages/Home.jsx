@@ -2,6 +2,16 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import "../styles/Home.css";
 
+function ShopIcon() {
+  return (
+    <svg viewBox="0 0 64 64" aria-hidden="true">
+      <path d="M15 25h34l-3 28H18l-3-28Z" />
+      <path d="M23 27v-7a9 9 0 0 1 18 0v7" />
+      <path d="m32 33 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2-4.5-4.4 6.2-.9L32 33Z" />
+    </svg>
+  );
+}
+
 function Home() {
   const [currentUser, setCurrentUser] = useState(null);
 
@@ -58,11 +68,46 @@ function Home() {
               <strong>Ready</strong>
             </div>
           </div>
+
+          {currentUser && (
+            <div className="home-player-hub">
+              <section className="home-news-banner" aria-label="最新消息">
+                <div className="news-badge">
+                  <span>NEWS</span>
+                  <strong>最新消息</strong>
+                </div>
+
+                <div className="news-copy">
+                  <strong>新的冒險即將展開</strong>
+                  <span>活動與更新消息之後會在這裡登場，敬請期待！</span>
+                </div>
+
+                <span className="news-status">COMING SOON</span>
+              </section>
+
+              <button
+                type="button"
+                className="home-shop-button"
+                onClick={() => alert("商城功能即將開放，敬請期待！")}
+              >
+                <span className="shop-icon-wrap">
+                  <ShopIcon />
+                </span>
+                <span className="shop-button-copy">
+                  <strong>商城</strong>
+                  <small>探索 Avatar 時裝與限定造型</small>
+                </span>
+                <span className="shop-enter">進入</span>
+              </button>
+            </div>
+          )}
         </div>
 
       </section>
 
-      <section className="home-section">
+      {!currentUser && (
+        <>
+        <section className="home-section">
         <div className="section-title">
           <span>Core Features</span>
           <h2>核心功能</h2>
@@ -187,6 +232,8 @@ function Home() {
           )}
         </div>
       </section>
+        </>
+      )}
     </div>
   );
 }

@@ -32,6 +32,7 @@
 .hero-left {
   width: min(760px, 100%);
   padding: 24px 0;
+  box-sizing: border-box;
 }
 
 .section-title span,
@@ -166,6 +167,229 @@
   display: block;
   margin-top: 5px;
   font-size: 20px;
+}
+
+.home-player-hub {
+  width: min(760px, 100%);
+  margin-top: 22px;
+  display: grid;
+  gap: 16px;
+}
+
+.home-news-banner {
+  position: relative;
+  isolation: isolate;
+  min-height: 104px;
+  padding: 18px 20px;
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 18px;
+  overflow: hidden;
+  border-radius: 20px;
+  background:
+    linear-gradient(100deg, rgba(67, 26, 128, 0.96), rgba(76, 29, 149, 0.88) 52%, rgba(30, 64, 175, 0.82)),
+    #312e81;
+  border: 1px solid rgba(216, 180, 254, 0.48);
+  box-shadow:
+    0 14px 34px rgba(8, 5, 25, 0.42),
+    inset 0 1px rgba(255, 255, 255, 0.17),
+    inset 0 -3px rgba(0, 0, 0, 0.2);
+}
+
+.home-news-banner::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  width: 220px;
+  height: 220px;
+  right: 11%;
+  top: -125px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.09);
+  box-shadow: 0 0 70px rgba(96, 165, 250, 0.34);
+}
+
+.home-news-banner::after {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  z-index: -1;
+  pointer-events: none;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 15px;
+}
+
+.news-badge {
+  min-width: 92px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  text-align: center;
+  background: linear-gradient(145deg, #fbbf24, #f97316);
+  color: #311307;
+  border: 1px solid rgba(254, 240, 138, 0.72);
+  box-shadow:
+    0 7px 16px rgba(120, 53, 15, 0.35),
+    inset 0 1px rgba(255, 255, 255, 0.55);
+}
+
+.news-badge span,
+.news-badge strong {
+  display: block;
+}
+
+.news-badge span {
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  font-weight: 950;
+}
+
+.news-badge strong {
+  margin-top: 2px;
+  font-size: 16px;
+}
+
+.news-copy strong,
+.news-copy span {
+  display: block;
+}
+
+.news-copy strong {
+  color: white;
+  font-size: 18px;
+}
+
+.news-copy span {
+  margin-top: 5px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 13px;
+  font-weight: 650;
+  line-height: 1.45;
+}
+
+.news-status {
+  padding: 8px 10px;
+  border-radius: 999px;
+  color: #ddd6fe;
+  background: rgba(15, 23, 42, 0.38);
+  border: 1px solid rgba(221, 214, 254, 0.18);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+
+.home-shop-button {
+  position: relative;
+  width: 100%;
+  min-height: 108px;
+  padding: 16px 20px;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 18px;
+  overflow: hidden;
+  border-radius: 22px;
+  color: white;
+  text-align: left;
+  cursor: pointer;
+  font-family: inherit;
+  background:
+    radial-gradient(circle at 85% 15%, rgba(253, 224, 71, 0.28), transparent 25%),
+    linear-gradient(115deg, #6d28d9, #a21caf 57%, #d97706);
+  border: 1px solid rgba(253, 230, 138, 0.7);
+  box-shadow:
+    0 16px 38px rgba(76, 29, 149, 0.43),
+    inset 0 2px rgba(255, 255, 255, 0.22),
+    inset 0 -5px rgba(59, 7, 100, 0.34);
+  transition:
+    transform 0.2s ease,
+    filter 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.home-shop-button::after {
+  content: "";
+  position: absolute;
+  width: 150px;
+  height: 280px;
+  top: -95px;
+  left: -190px;
+  transform: rotate(24deg);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.55s ease;
+}
+
+.home-shop-button:hover {
+  transform: translateY(-3px) scale(1.006);
+  filter: saturate(1.1);
+  box-shadow:
+    0 20px 44px rgba(126, 34, 206, 0.5),
+    0 0 28px rgba(251, 191, 36, 0.12),
+    inset 0 2px rgba(255, 255, 255, 0.25),
+    inset 0 -5px rgba(59, 7, 100, 0.34);
+}
+
+.home-shop-button:hover::after {
+  left: calc(100% + 40px);
+}
+
+.home-shop-button:focus-visible {
+  outline: 3px solid rgba(253, 224, 71, 0.85);
+  outline-offset: 3px;
+}
+
+.shop-icon-wrap {
+  width: 68px;
+  height: 68px;
+  display: grid;
+  place-items: center;
+  border-radius: 20px;
+  color: #fff7c2;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.24), rgba(76, 29, 149, 0.35));
+  border: 1px solid rgba(255, 255, 255, 0.26);
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.28);
+}
+
+.shop-icon-wrap svg {
+  width: 48px;
+  height: 48px;
+  fill: rgba(251, 191, 36, 0.25);
+  stroke: currentColor;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.shop-button-copy strong,
+.shop-button-copy small {
+  display: block;
+}
+
+.shop-button-copy strong {
+  font-size: 29px;
+  letter-spacing: 0.05em;
+  text-shadow: 0 3px 10px rgba(59, 7, 100, 0.45);
+}
+
+.shop-button-copy small {
+  margin-top: 4px;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.shop-enter {
+  padding: 10px 16px;
+  border-radius: 999px;
+  color: #422006;
+  background: linear-gradient(180deg, #fef08a, #fbbf24);
+  border: 1px solid rgba(255, 255, 255, 0.56);
+  box-shadow: 0 5px 12px rgba(120, 53, 15, 0.28);
+  font-size: 13px;
+  font-weight: 950;
+  white-space: nowrap;
 }
 
 .hero-dashboard {
@@ -506,12 +730,105 @@
     font-size: 15px;
   }
 
+  .home-hero {
+    min-height: auto;
+  }
+
+  .home-player-hub {
+    margin-top: 18px;
+  }
+
+  .home-news-banner {
+    min-height: 0;
+    padding: 14px;
+    grid-template-columns: auto 1fr;
+    gap: 12px;
+    border-radius: 17px;
+  }
+
+  .news-badge {
+    min-width: 72px;
+    padding: 10px;
+  }
+
+  .news-badge strong {
+    font-size: 14px;
+  }
+
+  .news-copy strong {
+    font-size: 15px;
+  }
+
+  .news-copy span {
+    font-size: 11px;
+  }
+
+  .news-status {
+    display: none;
+  }
+
+  .home-shop-button {
+    min-height: 94px;
+    padding: 13px 14px;
+    grid-template-columns: auto 1fr auto;
+    gap: 12px;
+    border-radius: 18px;
+  }
+
+  .shop-icon-wrap {
+    width: 58px;
+    height: 58px;
+    border-radius: 17px;
+  }
+
+  .shop-icon-wrap svg {
+    width: 40px;
+    height: 40px;
+  }
+
+  .shop-button-copy strong {
+    font-size: 24px;
+  }
+
+  .shop-button-copy small {
+    font-size: 11px;
+  }
+
+  .shop-enter {
+    padding: 8px 11px;
+    font-size: 11px;
+  }
+
   .hero-actions,
-  .hero-proof,
   .feature-grid,
   .dashboard-grid,
   .start-actions {
     grid-template-columns: 1fr;
+  }
+
+  .hero-proof {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .proof-card {
+    min-width: 0;
+    padding: 10px;
+  }
+
+  .proof-card span {
+    gap: 5px;
+    font-size: 9px;
+    white-space: nowrap;
+  }
+
+  .proof-card.online span::before {
+    width: 6px;
+    height: 6px;
+  }
+
+  .proof-card strong {
+    font-size: 16px;
   }
 
   .feature-card {
