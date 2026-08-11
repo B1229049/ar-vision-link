@@ -63,27 +63,6 @@ function Home() {
             </div>
           )}
 
-          {currentUser && (
-            <section className="home-welcome-bar">
-              <div className="home-welcome-avatar">
-                {currentUser.profile_url ? (
-                  <img src={currentUser.profile_url} alt="" />
-                ) : (
-                  currentUser.name?.charAt(0) || "U"
-                )}
-              </div>
-
-              <div className="home-welcome-copy">
-                <span>歡迎回來</span>
-                <strong>{currentUser.name || "使用者"}</strong>
-              </div>
-
-              <Link to="/avatar-dressup" className="home-avatar-link">
-                編輯 Avatar
-              </Link>
-            </section>
-          )}
-
           <div className="hero-proof">
             <div className="proof-card online">
               <span>ONLINE USERS</span>
