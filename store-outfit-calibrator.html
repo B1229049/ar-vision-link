@@ -6,119 +6,116 @@
     <title>AR Vision Link Store Calibrator</title>
     <style>
       * { box-sizing: border-box; }
-      :root { color-scheme: dark; --line: rgba(255,255,255,.11); --purple: #8b5cf6; }
-      body { margin: 0; min-height: 100vh; color: white; background: #070a16; font-family: "Segoe UI", "Noto Sans TC", sans-serif; }
+      :root { color-scheme: dark; --line: #273136; --panel: #1a2225; --purple: #7c3aed; }
+      body { margin: 0; min-height: 100vh; background: #050a08; color: white; font-family: "Segoe UI", "Noto Sans TC", Arial, sans-serif; }
       button, input, select, textarea { font: inherit; }
-      button { border: 0; color: white; cursor: pointer; font-weight: 800; }
-      .app { display: grid; grid-template-columns: minmax(380px, .95fr) minmax(380px, 1fr) 340px; gap: 18px; min-height: 100vh; padding: 18px; }
-      .panel { min-width: 0; border: 1px solid var(--line); border-radius: 20px; background: rgba(15,23,42,.84); overflow: hidden; }
-      .panel-body { padding: 20px; }
-      h1, h2, h3, p { margin-top: 0; }
-      h1 { margin-bottom: 6px; font-size: 25px; }
-      h2 { font-size: 18px; }
-      p, .hint { color: #94a3b8; line-height: 1.55; }
+      button { border: 0; border-radius: 10px; padding: 11px 13px; background: #2a373d; color: white; font-weight: 800; cursor: pointer; }
+      button.active, button.primary { background: linear-gradient(135deg, #6d28d9, #a855f7); }
+      button.warn { background: #92400e; }
+      .app { display: grid; grid-template-columns: minmax(360px, 470px) minmax(420px, 1fr) 360px; gap: 22px; min-height: 100vh; padding: 22px; }
+      .panel { border: 1px solid var(--line); border-radius: 22px; background: var(--panel); box-shadow: 0 16px 42px rgba(0,0,0,.36); overflow: hidden; }
+      .toolbar, .controls { padding: 20px; }
+      h1, h2, h3 { margin: 0 0 12px; }
+      p { margin: 0 0 16px; color: #9fb0bd; line-height: 1.6; }
       code { color: #ddd6fe; }
-      .stage-panel { display: grid; grid-template-rows: auto 1fr; background: radial-gradient(circle at 50% 35%, rgba(139,92,246,.23), transparent 48%), #0b1020; }
-      .stage-wrap { min-height: 600px; display: grid; place-items: center; padding: 20px; }
-      .stage { position: relative; width: min(390px, 94%); aspect-ratio: 408 / 612; }
+      .status { padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: #101719; color: #cbd5e1; font-size: 13px; }
+      .tabs, .actions, .preview-selectors { display: grid; gap: 10px; }
+      .tabs { grid-template-columns: repeat(2, 1fr); }
+      .preview-selectors { grid-template-columns: repeat(2, 1fr); margin-top: 16px; }
+      label { display: block; margin: 14px 0 7px; color: #9fb0bd; font-size: 13px; font-weight: 700; }
+      select, input, textarea { width: 100%; border: 1px solid var(--line); border-radius: 10px; background: #101719; color: white; padding: 10px 12px; }
+      input[type="range"] { padding: 0; accent-color: #a855f7; }
+      .grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-top: 16px; max-height: 380px; overflow: auto; padding-right: 4px; }
+      .item-card { position: relative; aspect-ratio: 1; padding: 0; border: 2px solid transparent; border-radius: 12px; background: #273136; overflow: hidden; }
+      .item-card.active { border-color: #c4b5fd; }
+      .item-card.equipped::after { content: "穿戴中"; position: absolute; left: 6px; right: 6px; bottom: 6px; padding: 3px 6px; border-radius: 999px; background: rgba(124,58,237,.9); font-size: 10px; }
+      .thumb-layer { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; transform-origin: center; }
+      .empty { grid-column: 1/-1; padding: 24px 12px; border: 1px dashed #3c4a50; border-radius: 12px; color: #9fb0bd; text-align: center; line-height: 1.6; }
+      .stage-panel { display: grid; place-items: center; min-height: calc(100vh - 44px); background: linear-gradient(180deg, #20133d 0%, #111827 100%); }
+      .stage { position: relative; width: min(420px, 92%); aspect-ratio: 408 / 612; }
       .layer { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; object-position: center bottom; transform-origin: center; pointer-events: none; }
-      .back { z-index: 1; } .base { z-index: 2; } .hair { z-index: 4; } .face { z-index: 5; } .body { z-index: 6; } .bottoms { z-index: 7; } .top { z-index: 8; }
-      .stage-platform { position: absolute; z-index: 0; left: 15%; right: 15%; bottom: 2%; height: 8%; border: 1px solid rgba(167,139,250,.48); border-radius: 50%; background: rgba(139,92,246,.11); box-shadow: 0 0 40px rgba(139,92,246,.22); }
-      .status { margin: 12px 0 0; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; color: #cbd5e1; background: rgba(2,6,23,.62); font-size: 13px; }
-      .outfit-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 9px; max-height: 350px; overflow: auto; }
-      .outfit-card { position: relative; aspect-ratio: 1; border: 1px solid var(--line); border-radius: 13px; background: #273449; overflow: hidden; }
-      .outfit-card.active { border-color: #c4b5fd; box-shadow: inset 0 0 0 1px #c4b5fd; }
-      .outfit-card strong { position: absolute; inset: auto 7px 7px; z-index: 5; padding: 4px 7px; border-radius: 999px; background: rgba(2,6,23,.82); font-size: 11px; }
-      .outfit-card img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
-      .actions { display: grid; grid-template-columns: repeat(2,1fr); gap: 9px; margin-top: 14px; }
-      .actions button, .tabs button { min-height: 42px; padding: 9px; border-radius: 10px; background: #334155; }
-      button.primary, button.active { background: linear-gradient(135deg, #6d28d9, #a855f7); }
-      .tabs { display: grid; grid-template-columns: repeat(2,1fr); gap: 8px; }
-      label { display: block; margin: 14px 0 7px; color: #cbd5e1; font-size: 12px; font-weight: 750; }
-      input, select, textarea { width: 100%; border: 1px solid var(--line); border-radius: 10px; padding: 10px 11px; color: white; background: rgba(2,6,23,.76); }
-      input[type="range"] { padding: 0; accent-color: var(--purple); }
-      .range label { display: flex; justify-content: space-between; }
-      .divider { height: 1px; margin: 18px 0; background: var(--line); }
-      .output { min-height: 230px; margin-top: 12px; resize: vertical; font: 11px/1.45 Consolas, monospace; }
-      .empty { padding: 26px 18px; border: 1px dashed rgba(255,255,255,.16); border-radius: 14px; color: #94a3b8; text-align: center; line-height: 1.7; }
-      @media (max-width: 1080px) { .app { grid-template-columns: 1fr 1fr; } .controls-panel { grid-column: 1/-1; } }
-      @media (max-width: 720px) { .app { grid-template-columns: 1fr; padding: 10px; } .controls-panel { grid-column: auto; } .stage-wrap { min-height: 510px; } }
+      .layer-back { z-index: 1; } .template-00 { z-index: 2; } .hair-front { z-index: 4; } .face-front { z-index: 5; } .template-02 { z-index: 6; } .bottoms-front { z-index: 7; } .top-front { z-index: 8; }
+      .range-row { margin-top: 14px; }
+      .range-row label { display: flex; justify-content: space-between; gap: 10px; }
+      .actions { grid-template-columns: repeat(2,1fr); margin-top: 18px; }
+      .output { min-height: 180px; margin-top: 14px; resize: vertical; font: 11px/1.45 Consolas, monospace; }
+      .target { margin: 12px 0 2px; padding: 10px; border-radius: 10px; background: #101719; color: #ddd6fe; font-size: 13px; overflow-wrap: anywhere; }
+      @media (max-width: 1120px) { .app { grid-template-columns: 1fr 1fr; } .controls-panel { grid-column: 1/-1; } }
+      @media (max-width: 760px) { .app { grid-template-columns: 1fr; padding: 10px; } .controls-panel { grid-column: auto; } .stage-panel { min-height: 620px; } }
     </style>
   </head>
   <body>
     <main class="app">
-      <section class="panel stage-panel">
-        <div class="panel-body">
-          <h1>商城套裝校正器</h1>
-          <p>自動讀取 <code>public/store</code> 中從 01 開始的完整套裝，只調整素材的相對位置與大小。</p>
-          <div id="scan-status" class="status">正在掃描素材…</div>
+      <section class="panel toolbar">
+        <h1>商城素材校正器</h1>
+        <p>操作方式與 Avatar 校正器相同。素材從 <code>public/store</code> 的 01 開始自動讀取。</p>
+        <div id="scan-status" class="status">正在讀取素材…</div>
+
+        <div id="preview-selectors" class="preview-selectors"></div>
+        <div id="tabs" class="tabs" style="margin-top:18px"></div>
+        <div id="item-grid" class="grid"></div>
+
+        <div class="actions">
+          <button id="rescan">重新讀取資料夾</button>
+          <button id="save-target" class="primary">儲存目前目標</button>
+          <button id="reset-target">重置目前目標</button>
+          <button id="download-output" class="primary">下載商城資料</button>
         </div>
-        <div class="stage-wrap"><div id="stage" class="stage"></div></div>
       </section>
 
-      <section class="panel">
-        <div class="panel-body">
-          <h2>套裝</h2>
-          <div id="outfit-grid" class="outfit-grid"></div>
-          <div class="actions">
-            <button id="rescan">重新讀取資料夾</button>
-            <button id="save-settings" class="primary">儲存校正設定</button>
-            <button id="reset-settings">重置目前套裝</button>
-            <button id="download-output" class="primary">下載商城資料</button>
-          </div>
-          <p class="hint" style="margin-top:14px">
-            下載後取代 <code>src/data/storeCatalogData.js</code>，再重新 build 與 deploy。
-          </p>
-          <textarea id="output" class="output" readonly></textarea>
-        </div>
+      <section class="panel stage-panel">
+        <div id="stage" class="stage"></div>
       </section>
 
       <section class="panel controls-panel">
-        <div class="panel-body">
-          <h2>素材相對位置</h2>
-          <div id="category-tabs" class="tabs"></div>
+        <div class="controls">
+          <h2>相對位置與大小</h2>
+          <div id="target-label" class="target">尚未選擇素材</div>
+
           <label>圖層</label>
           <select id="layer-select">
             <option value="front">前層</option>
             <option value="back">後層</option>
           </select>
-          <div id="target-path" class="status"></div>
 
-          <div class="range"><label>大小 <span id="scale-value">1.00</span></label><input id="scale" type="range" min="0.2" max="1.8" step="0.01" /></div>
-          <div class="range"><label>水平位置 <span id="x-value">0.00</span></label><input id="x" type="range" min="-60" max="60" step="0.05" /></div>
-          <div class="range"><label>垂直位置 <span id="y-value">0.00</span></label><input id="y" type="range" min="-60" max="60" step="0.05" /></div>
+          <div class="range-row"><label>大小 <span id="scale-value">1.00</span></label><input id="scale" type="range" min="0.2" max="1.8" step="0.01" /></div>
+          <div class="range-row"><label>水平位置 <span id="x-value">0.00</span></label><input id="x-pct" type="range" min="-60" max="60" step="0.05" /></div>
+          <div class="range-row"><label>垂直位置 <span id="y-value">0.00</span></label><input id="y-pct" type="range" min="-60" max="60" step="0.05" /></div>
 
-          <div class="divider"></div>
-          <h3>自動讀取的命名方式</h3>
-          <p class="hint">
-            頭部：<code>hair/頭髮01.png</code>，或前後層 <code>頭髮01-1.png</code>、<code>頭髮01-2.png</code><br />
+          <h3 style="margin-top:24px">讀取規則</h3>
+          <p>
+            頭部：<code>hair/頭髮01.png</code>，或 <code>頭髮01-1.png</code>＋<code>頭髮01-2.png</code><br />
             臉部：<code>face/表情01.png</code><br />
             上半身：<code>top/上衣01.png</code><br />
-            下半身：<code>bottoms/褲裝01.png</code><br />
-            模板：<code>templates/模板00.png</code>、<code>templates/模板02.png</code>
+            下半身：<code>bottoms/褲裝01.png</code>
           </p>
-          <p class="hint">也支援直接使用 <code>01.png</code>、<code>01-1.png</code>、<code>01-2.png</code>。</p>
+          <p>模板固定使用原本 Avatar 的 <code>模板00.png</code> 與 <code>模板02.png</code>，疊放順序也與原本 Avatar 校正器相同。</p>
+          <textarea id="export-output" class="output" readonly></textarea>
         </div>
       </section>
     </main>
 
-    <script type="module">
-      const STORAGE_KEY = "arvl_store_relative_settings_v2";
-      const BASE = `${import.meta.env.BASE_URL}store`;
+    <script>
+      const STORE_BASE = "public/store";
+      const AVATAR_TEMPLATE_BASE = "public/avatar-assets/templates";
+      const STORAGE_KEY = "arvl_store_relative_settings_v3";
       const categories = [
-        ["hair", "頭部"],
-        ["face", "臉部"],
-        ["top", "上半身"],
-        ["bottoms", "下半身"],
+        { key: "template", label: "模板" },
+        { key: "hair", label: "頭部" },
+        { key: "face", label: "臉部" },
+        { key: "top", label: "上半身" },
+        { key: "bottoms", label: "下半身" },
       ];
       const prefixes = { hair: "頭髮", face: "表情", top: "上衣", bottoms: "褲裝" };
       const state = {
-        outfits: [],
-        selected: "",
         category: "hair",
+        targetId: "",
         layer: "front",
+        items: { template: [], hair: [], face: [], top: [], bottoms: [] },
+        preview: { hair: "", face: "", top: "", bottoms: "" },
         settings: loadSettings(),
-        templates: {},
+        draftKey: "",
+        draftSetting: null,
       };
 
       function loadSettings() {
@@ -126,16 +123,19 @@
         catch { return {}; }
       }
 
-      function assetUrl(path) {
-        return `${BASE}/${path}`;
+      function defaultSetting(itemId = "") {
+        if (itemId === "template-00") return { scale: 1, x_pct: 0, y_pct: -0.7 };
+        if (itemId === "template-02") return { scale: 1, x_pct: 0, y_pct: 0.3 };
+        return { scale: 1, x_pct: 0, y_pct: 0 };
       }
+      function fileUrl(path) { return path; }
 
       function imageExists(path) {
         return new Promise((resolve) => {
           const image = new Image();
           image.onload = () => resolve(path);
           image.onerror = () => resolve("");
-          image.src = assetUrl(path);
+          image.src = fileUrl(path);
         });
       }
 
@@ -146,242 +146,306 @@
         return "";
       }
 
-      function candidates(category, number, layer = "front") {
-        const prefix = prefixes[category];
-        if (category === "hair") {
-          const suffix = layer === "back" ? "-2" : "-1";
-          return [
-            `${category}/${prefix}${number}${suffix}.png`,
-            `${category}/${number}${suffix}.png`,
-            ...(layer === "front"
-              ? [`${category}/${prefix}${number}.png`, `${category}/${number}.png`]
-              : []),
-          ];
-        }
-        return [`${category}/${prefix}${number}.png`, `${category}/${number}.png`];
-      }
-
-      async function discoverPiece(category, number) {
-        const front = await firstExisting(candidates(category, number, "front"));
-        const back = category === "hair"
-          ? await firstExisting(candidates(category, number, "back"))
-          : "";
-        return front ? { front, ...(back ? { back } : {}) } : null;
-      }
-
       async function discoverTemplates() {
-        const base = await firstExisting([
-          "templates/模板00.png", "templates/template00.png", "templates/00.png"
-        ]);
-        const body = await firstExisting([
-          "templates/模板02.png", "templates/template02.png", "templates/02.png"
-        ]);
-        state.templates = { base, body };
+        const definitions = [
+          ["template-00", "模板00", "模板00.png", "template-00"],
+          ["template-02", "模板02", "模板02.png", "template-02"],
+        ];
+        const result = [];
+        for (const [id, label, filename, className] of definitions) {
+          const img = await firstExisting([`${AVATAR_TEMPLATE_BASE}/${filename}`]);
+          if (img) result.push({ id, label, img, className });
+        }
+        return result;
       }
 
-      async function scanStore() {
-        document.getElementById("scan-status").textContent = "正在掃描 store 資料夾…";
-        state.outfits = [];
-        await discoverTemplates();
-
+      async function discoverCategory(category) {
+        const items = [];
         let misses = 0;
         for (let index = 1; index <= 99 && misses < 5; index += 1) {
           const number = String(index).padStart(2, "0");
-          const entries = await Promise.all(
-            categories.map(async ([category]) => [category, await discoverPiece(category, number)])
-          );
-          const pieces = Object.fromEntries(entries);
-          const complete = categories.every(([category]) => Boolean(pieces[category]));
+          const prefix = prefixes[category];
+          let front = "";
+          let back = "";
 
-          if (complete) {
-            state.outfits.push({ number, pieces });
+          if (category === "hair") {
+            front = await firstExisting([
+              `${STORE_BASE}/hair/${prefix}${number}-1.png`,
+              `${STORE_BASE}/hair/${number}-1.png`,
+              `${STORE_BASE}/hair/${prefix}${number}.png`,
+              `${STORE_BASE}/hair/${number}.png`,
+            ]);
+            back = await firstExisting([
+              `${STORE_BASE}/hair/${prefix}${number}-2.png`,
+              `${STORE_BASE}/hair/${number}-2.png`,
+            ]);
+          } else {
+            front = await firstExisting([
+              `${STORE_BASE}/${category}/${prefix}${number}.png`,
+              `${STORE_BASE}/${category}/${number}.png`,
+            ]);
+          }
+
+          if (front) {
+            items.push({
+              id: `store-outfit-${number}-${category}`,
+              number,
+              label: `${categories.find((entry) => entry.key === category).label} ${number}`,
+              frontImg: front,
+              ...(back ? { backImg: back } : {}),
+            });
             misses = 0;
           } else {
             misses += 1;
           }
         }
+        return items;
+      }
 
-        if (!state.outfits.some((outfit) => outfit.number === state.selected)) {
-          state.selected = state.outfits[0]?.number || "";
+      async function scanAssets() {
+        document.getElementById("scan-status").textContent = "正在讀取素材…";
+        const [templates, hair, face, top, bottoms] = await Promise.all([
+          discoverTemplates(),
+          discoverCategory("hair"),
+          discoverCategory("face"),
+          discoverCategory("top"),
+          discoverCategory("bottoms"),
+        ]);
+        state.items = { template: templates, hair, face, top, bottoms };
+
+        ["hair", "face", "top", "bottoms"].forEach((category) => {
+          if (!state.items[category].some((item) => item.id === state.preview[category])) {
+            state.preview[category] = state.items[category][0]?.id || "";
+          }
+        });
+        if (!state.items[state.category].some((item) => item.id === state.targetId)) {
+          state.targetId = state.items[state.category][0]?.id || "";
         }
+        state.layer = "front";
+        startDraft();
 
-        const templateMessage = state.templates.base && state.templates.body
-          ? "模板已載入"
-          : "找不到完整模板";
+        const total = hair.length + face.length + top.length + bottoms.length;
         document.getElementById("scan-status").textContent =
-          `找到 ${state.outfits.length} 套完整套裝・${templateMessage}`;
+          `已讀取 ${templates.length} 張模板、${total} 個商城素材`;
         renderAll();
       }
 
-      function currentOutfit() {
-        return state.outfits.find((outfit) => outfit.number === state.selected) || null;
+      function currentList() { return state.items[state.category] || []; }
+      function currentItem() { return currentList().find((item) => item.id === state.targetId) || null; }
+      function settingKey() { return state.category === "template" ? state.targetId : `${state.targetId}_${state.layer}`; }
+      function savedSetting(itemId, layer = "front") {
+        const key = itemId.startsWith("template-") ? itemId : `${itemId}_${layer}`;
+        return { ...defaultSetting(itemId), ...(state.settings[key] || {}) };
       }
-
-      function pieceId(number, category) {
-        return `store-outfit-${number}-${category}`;
+      function displaySetting(itemId, layer = "front") {
+        const key = itemId.startsWith("template-") ? itemId : `${itemId}_${layer}`;
+        return state.draftKey === key && state.draftSetting
+          ? state.draftSetting
+          : savedSetting(itemId, layer);
       }
-
-      function settingKey(category = state.category, layer = state.layer) {
-        return `${pieceId(state.selected, category)}_${layer}`;
+      function startDraft() {
+        state.draftKey = settingKey();
+        state.draftSetting = state.targetId ? { ...savedSetting(state.targetId, state.layer) } : defaultSetting();
       }
-
-      function defaultSetting() {
-        return { scale: 1, x_pct: 0, y_pct: 0 };
-      }
-
-      function getSetting(category, layer = "front") {
-        return { ...defaultSetting(), ...(state.settings[`${pieceId(state.selected, category)}_${layer}`] || {}) };
-      }
-
       function applyStyle(element, setting) {
         element.style.transform = `translate(${Number(setting.x_pct) || 0}%, ${Number(setting.y_pct) || 0}%) scale(${Number(setting.scale) || 1})`;
       }
-
-      function appendLayer(stage, path, className, setting) {
-        if (!path) return;
+      function appendImage(parent, src, className, setting) {
+        if (!src) return;
         const image = document.createElement("img");
-        image.className = `layer ${className}`;
-        image.src = assetUrl(path);
+        image.className = className;
+        image.src = src;
         applyStyle(image, setting);
-        stage.appendChild(image);
+        parent.appendChild(image);
       }
 
       function renderStage() {
         const stage = document.getElementById("stage");
-        const outfit = currentOutfit();
-        stage.innerHTML = '<div class="stage-platform"></div>';
-        if (!outfit) return;
-
+        stage.innerHTML = "";
         ["bottoms", "top", "face", "hair"].forEach((category) => {
-          appendLayer(stage, outfit.pieces[category]?.back, "back", getSetting(category, "back"));
+          const item = state.items[category].find((entry) => entry.id === state.preview[category]);
+          if (item?.backImg) appendImage(stage, item.backImg, "layer layer-back", displaySetting(item.id, "back"));
         });
-        appendLayer(stage, state.templates.base, "base", defaultSetting());
-        appendLayer(stage, outfit.pieces.hair.front, "hair", getSetting("hair"));
-        appendLayer(stage, outfit.pieces.face.front, "face", getSetting("face"));
-        appendLayer(stage, state.templates.body, "body", defaultSetting());
-        appendLayer(stage, outfit.pieces.bottoms.front, "bottoms", getSetting("bottoms"));
-        appendLayer(stage, outfit.pieces.top.front, "top", getSetting("top"));
+        const base = state.items.template.find((item) => item.id === "template-00");
+        const body = state.items.template.find((item) => item.id === "template-02");
+        if (base) appendImage(stage, base.img, "layer template-00", displaySetting(base.id));
+        const hair = state.items.hair.find((item) => item.id === state.preview.hair);
+        const face = state.items.face.find((item) => item.id === state.preview.face);
+        const top = state.items.top.find((item) => item.id === state.preview.top);
+        const bottoms = state.items.bottoms.find((item) => item.id === state.preview.bottoms);
+        if (hair) appendImage(stage, hair.frontImg, "layer hair-front", displaySetting(hair.id));
+        if (face) appendImage(stage, face.frontImg, "layer face-front", displaySetting(face.id));
+        if (body) appendImage(stage, body.img, "layer template-02", displaySetting(body.id));
+        if (bottoms) appendImage(stage, bottoms.frontImg, "layer bottoms-front", displaySetting(bottoms.id));
+        if (top) appendImage(stage, top.frontImg, "layer top-front", displaySetting(top.id));
       }
 
-      function renderOutfits() {
-        const wrap = document.getElementById("outfit-grid");
+      function renderPreviewSelectors() {
+        const wrap = document.getElementById("preview-selectors");
         wrap.innerHTML = "";
-        if (!state.outfits.length) {
-          wrap.innerHTML = '<div class="empty" style="grid-column:1/-1">找不到從 01 開始、四個部位皆完整的套裝。</div>';
-          return;
-        }
-        state.outfits.forEach((outfit) => {
-          const button = document.createElement("button");
-          button.className = `outfit-card ${outfit.number === state.selected ? "active" : ""}`;
-          const preview = document.createElement("img");
-          preview.src = assetUrl(outfit.pieces.top.front);
-          button.append(preview);
-          const label = document.createElement("strong");
-          label.textContent = `套裝 ${outfit.number}`;
-          button.append(label);
-          button.onclick = () => { state.selected = outfit.number; state.layer = "front"; renderAll(); };
-          wrap.appendChild(button);
+        ["hair", "face", "top", "bottoms"].forEach((category) => {
+          const box = document.createElement("div");
+          const label = document.createElement("label");
+          label.textContent = categories.find((item) => item.key === category).label;
+          const select = document.createElement("select");
+          const noneOption = document.createElement("option");
+          noneOption.value = "";
+          noneOption.textContent = "不穿（本地預覽）";
+          select.appendChild(noneOption);
+          state.items[category].forEach((item) => {
+            const option = document.createElement("option");
+            option.value = item.id;
+            option.textContent = item.label;
+            select.appendChild(option);
+          });
+          select.value = state.preview[category];
+          select.disabled = state.items[category].length === 0;
+          select.onchange = () => { state.preview[category] = select.value; renderStage(); renderGrid(); exportCode(); };
+          box.append(label, select);
+          wrap.appendChild(box);
         });
       }
 
       function renderTabs() {
-        const wrap = document.getElementById("category-tabs");
+        const wrap = document.getElementById("tabs");
         wrap.innerHTML = "";
-        categories.forEach(([key, label]) => {
+        categories.forEach((category) => {
           const button = document.createElement("button");
-          button.textContent = label;
-          button.className = state.category === key ? "active" : "";
-          button.onclick = () => { state.category = key; state.layer = "front"; renderAll(); };
+          button.textContent = `${category.label} (${state.items[category.key].length})`;
+          button.className = state.category === category.key ? "active" : "";
+          button.onclick = () => {
+            state.category = category.key;
+            state.targetId = state.items[category.key][0]?.id || "";
+            state.layer = "front";
+            startDraft();
+            renderAll();
+          };
           wrap.appendChild(button);
         });
       }
 
-      function renderControls() {
-        const outfit = currentOutfit();
-        const selectedPiece = outfit?.pieces?.[state.category];
-        const layerSelect = document.getElementById("layer-select");
-        const hasBack = Boolean(selectedPiece?.back);
-        if (!hasBack) state.layer = "front";
-        layerSelect.disabled = !hasBack;
-        layerSelect.value = state.layer;
-        document.getElementById("target-path").textContent = selectedPiece
-          ? selectedPiece[state.layer] || "此圖層沒有素材"
-          : "尚未選擇套裝";
-
-        const value = outfit ? getSetting(state.category, state.layer) : defaultSetting();
-        [["scale", value.scale], ["x", value.x_pct], ["y", value.y_pct]].forEach(([id, next]) => {
-          const input = document.getElementById(id);
-          input.value = next;
-          input.disabled = !outfit;
-          document.getElementById(`${id}-value`).textContent = Number(next).toFixed(2);
+      function renderGrid() {
+        const grid = document.getElementById("item-grid");
+        grid.innerHTML = "";
+        const list = currentList();
+        if (!list.length) {
+          grid.innerHTML = '<div class="empty">這個資料夾目前沒有符合命名規則的素材。</div>';
+          return;
+        }
+        list.forEach((item) => {
+          const button = document.createElement("button");
+          const equipped = state.category !== "template" && state.preview[state.category] === item.id;
+          button.className = `item-card ${state.targetId === item.id ? "active" : ""} ${equipped ? "equipped" : ""}`;
+          if (state.category === "template") {
+            appendImage(button, item.img, "thumb-layer", displaySetting(item.id));
+          } else {
+            if (item.backImg) appendImage(button, item.backImg, "thumb-layer", displaySetting(item.id, "back"));
+            appendImage(button, item.frontImg, "thumb-layer", displaySetting(item.id, "front"));
+          }
+          button.onclick = () => {
+            state.targetId = item.id;
+            if (state.category !== "template") {
+              state.preview[state.category] =
+                state.preview[state.category] === item.id ? "" : item.id;
+            }
+            state.layer = "front";
+            startDraft();
+            renderAll();
+          };
+          grid.appendChild(button);
         });
       }
 
+      function renderControls() {
+        const item = currentItem();
+        const select = document.getElementById("layer-select");
+        const hasBack = state.category !== "template" && Boolean(item?.backImg);
+        if (!hasBack) state.layer = "front";
+        select.disabled = !hasBack;
+        select.value = state.layer;
+        document.getElementById("target-label").textContent = item
+          ? `目前校準：${item.label}${state.category === "template" ? "" : ` / ${state.layer === "front" ? "前層" : "後層"}`}`
+          : "尚未選擇素材";
+        const value = item ? displaySetting(item.id, state.layer) : defaultSetting();
+        [["scale", "scale-value", value.scale], ["x-pct", "x-value", value.x_pct], ["y-pct", "y-value", value.y_pct]].forEach(([inputId, valueId, next]) => {
+          const input = document.getElementById(inputId);
+          input.value = next;
+          input.disabled = !item;
+          document.getElementById(valueId).textContent = Number(next).toFixed(2);
+        });
+      }
+
+      function completeNumbers() {
+        const sets = ["hair", "face", "top", "bottoms"].map((category) => new Set(state.items[category].map((item) => item.number)));
+        return [...sets[0]].filter((number) => sets.every((set) => set.has(number))).sort();
+      }
+
+      function relativeStorePath(fullPath) {
+        return fullPath.replace(/^public\//, "");
+      }
+
       function catalogSource() {
-        return state.outfits.map((outfit) => ({
-          id: `outfit-${outfit.number}`,
-          name: `套裝 ${outfit.number}`,
-          published: true,
-          pieces: Object.fromEntries(categories.map(([category, label]) => {
-            const source = outfit.pieces[category];
-            return [category, {
-              id: pieceId(outfit.number, category),
-              label: `套裝 ${outfit.number}・${label}`,
-              front: `store/${source.front}`,
-              ...(source.back ? { back: `store/${source.back}` } : {}),
-            }];
-          })),
-          settings: Object.fromEntries(
-            Object.entries(state.settings).filter(([key]) => key.startsWith(`store-outfit-${outfit.number}-`))
-          ),
-        }));
+        return completeNumbers().map((number) => {
+          const pieces = {};
+          ["hair", "face", "top", "bottoms"].forEach((category) => {
+            const item = state.items[category].find((entry) => entry.number === number);
+            pieces[category] = {
+              id: item.id,
+              label: `套裝 ${number}・${categories.find((entry) => entry.key === category).label}`,
+              front: relativeStorePath(item.frontImg),
+              ...(item.backImg ? { back: relativeStorePath(item.backImg) } : {}),
+            };
+          });
+          return {
+            id: `outfit-${number}`,
+            name: `套裝 ${number}`,
+            published: true,
+            pieces,
+            settings: Object.fromEntries(Object.entries(state.settings).filter(([key]) => key.startsWith(`store-outfit-${number}-`))),
+          };
+        });
       }
 
       function exportCode() {
         const code = `// 商城上架資料的唯一來源。\n// 由 store-outfit-calibrator.html 依 public/store 素材產生。\nexport const STORE_CATALOG_SOURCE = ${JSON.stringify(catalogSource(), null, 2)};\n`;
-        document.getElementById("output").value = code;
+        document.getElementById("export-output").value = code;
         return code;
       }
 
       function renderAll() {
-        renderOutfits();
+        renderPreviewSelectors();
         renderTabs();
+        renderGrid();
         renderControls();
         renderStage();
         exportCode();
       }
 
-      document.getElementById("layer-select").addEventListener("change", (event) => {
-        state.layer = event.target.value;
-        renderAll();
-      });
+      function updateDraft() {
+        if (!currentItem()) return;
+        state.draftSetting = {
+          scale: Number(document.getElementById("scale").value),
+          x_pct: Number(document.getElementById("x-pct").value),
+          y_pct: Number(document.getElementById("y-pct").value),
+        };
+        renderControls();
+        renderGrid();
+        renderStage();
+        exportCode();
+      }
 
-      ["scale", "x", "y"].forEach((id) => {
-        document.getElementById(id).addEventListener("input", (event) => {
-          if (!currentOutfit()) return;
-          const key = settingKey();
-          const next = getSetting();
-          next[id === "x" ? "x_pct" : id === "y" ? "y_pct" : "scale"] = Number(event.target.value);
-          state.settings[key] = next;
-          renderControls();
-          renderStage();
-          exportCode();
-        });
-      });
-
-      document.getElementById("rescan").onclick = scanStore;
-      document.getElementById("save-settings").onclick = () => {
+      document.getElementById("layer-select").onchange = (event) => { state.layer = event.target.value; startDraft(); renderAll(); };
+      ["scale", "x-pct", "y-pct"].forEach((id) => document.getElementById(id).addEventListener("input", updateDraft));
+      document.getElementById("rescan").onclick = scanAssets;
+      document.getElementById("save-target").onclick = () => {
+        if (!currentItem()) return;
+        state.settings[settingKey()] = { ...state.draftSetting };
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state.settings));
-        alert("校正設定已儲存在此瀏覽器。");
-      };
-      document.getElementById("reset-settings").onclick = () => {
-        if (!state.selected || !confirm(`確定重置套裝 ${state.selected} 的校正設定？`)) return;
-        Object.keys(state.settings).forEach((key) => {
-          if (key.startsWith(`store-outfit-${state.selected}-`)) delete state.settings[key];
-        });
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(state.settings));
+        startDraft();
         renderAll();
+        alert("已儲存目前素材設定。");
       };
+      document.getElementById("reset-target").onclick = () => { if (!currentItem()) return; state.draftSetting = defaultSetting(currentItem().id); renderAll(); };
       document.getElementById("download-output").onclick = () => {
         const blob = new Blob([exportCode()], { type: "text/javascript;charset=utf-8" });
         const link = document.createElement("a");
@@ -391,7 +455,7 @@
         URL.revokeObjectURL(link.href);
       };
 
-      scanStore();
+      scanAssets();
     </script>
   </body>
 </html>
