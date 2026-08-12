@@ -83,31 +83,18 @@ function Store() {
     }
   }
 
-  if (!selectedOutfit) {
-    return (
-      <main className="store-page">
-        <section className="store-empty">
-          <OutfitIcon />
-          <h1>商城準備中</h1>
-          <p>目前沒有已上架的套裝。</p>
-        </section>
-      </main>
-    );
-  }
-
   return (
     <main className="store-page">
       <header className="store-header">
-        <div>
-          <span className="store-eyebrow">AVATAR OUTFIT STORE</span>
-          <h1>套裝商城</h1>
-          <p>挑選完整造型並直接試穿。預覽期間所有套裝皆可穿戴，尚未開放購買。</p>
-        </div>
-        <div className="store-preview-pill">
-          <span /> Preview Mode
-        </div>
+        <h1>商城</h1>
       </header>
 
+      {!selectedOutfit ? (
+        <section className="store-empty">
+          <OutfitIcon />
+          <h2>目前尚未上架任何套裝</h2>
+        </section>
+      ) : (
       <div className="store-layout">
         <section
           className="store-preview-panel"
@@ -198,6 +185,7 @@ function Store() {
           </button>
         </section>
       </div>
+      )}
     </main>
   );
 }

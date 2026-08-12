@@ -19,10 +19,6 @@
 }
 
 .store-header {
-  display: flex;
-  align-items: end;
-  justify-content: space-between;
-  gap: 24px;
   margin-bottom: 26px;
 }
 
@@ -36,38 +32,9 @@
 }
 
 .store-header h1 {
-  margin: 8px 0 7px;
+  margin: 0;
   font-size: clamp(34px, 5vw, 54px);
   line-height: 1;
-}
-
-.store-header p {
-  max-width: 650px;
-  margin: 0;
-  color: rgba(255, 255, 255, 0.64);
-  line-height: 1.7;
-}
-
-.store-preview-pill {
-  flex: 0 0 auto;
-  padding: 10px 14px;
-  border: 1px solid rgba(192, 132, 252, 0.28);
-  border-radius: 999px;
-  color: #ddd6fe;
-  background: rgba(126, 34, 206, 0.14);
-  font-size: 12px;
-  font-weight: 850;
-  letter-spacing: 0.08em;
-}
-
-.store-preview-pill span {
-  display: inline-block;
-  width: 7px;
-  height: 7px;
-  margin-right: 7px;
-  border-radius: 50%;
-  background: #a855f7;
-  box-shadow: 0 0 12px #a855f7;
 }
 
 .store-layout {
@@ -301,12 +268,17 @@
 
 .store-empty {
   width: min(520px, 100%);
-  margin: 14vh auto 0;
+  margin: 12vh auto 0;
   padding: 42px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 24px;
   text-align: center;
   background: rgba(3, 7, 18, 0.74);
+}
+
+.store-empty h2 {
+  margin: 14px 0 0;
+  font-size: 22px;
 }
 
 .store-empty svg {
@@ -334,15 +306,6 @@
 @media (max-width: 640px) {
   .store-page {
     padding: calc(var(--navbar-height) + 22px) 16px 30px;
-  }
-
-  .store-header {
-    display: block;
-  }
-
-  .store-preview-pill {
-    width: fit-content;
-    margin-top: 14px;
   }
 
   .store-preview-panel,
