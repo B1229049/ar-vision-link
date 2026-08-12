@@ -101,9 +101,9 @@ function Store() {
           style={{ "--outfit-accent": selectedOutfit.accent }}
         >
           <div className="store-preview-copy">
-            <span>{selectedOutfit.tagline}</span>
+            {selectedOutfit.tagline && <span>{selectedOutfit.tagline}</span>}
             <h2>{selectedOutfit.name}</h2>
-            <p>{selectedOutfit.description}</p>
+            {selectedOutfit.description && <p>{selectedOutfit.description}</p>}
           </div>
 
           <div className="store-avatar-stage">
@@ -160,7 +160,7 @@ function Store() {
                   }}
                   aria-pressed={active}
                 >
-                  <span className="store-card-badge">{outfit.badge || "PREVIEW"}</span>
+                  {outfit.badge && <span className="store-card-badge">{outfit.badge}</span>}
                   <span className="store-card-avatar">
                     <AvatarRenderer
                       config={outfit.config}
@@ -169,7 +169,7 @@ function Store() {
                   </span>
                   <span className="store-card-copy">
                     <strong>{outfit.name}</strong>
-                    <small>{outfit.tagline}</small>
+                    {outfit.tagline && <small>{outfit.tagline}</small>}
                   </span>
                 </button>
               );
