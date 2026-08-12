@@ -9,6 +9,7 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
+    "store:calibrate": "vite --open /ar-vision-link/store-outfit-calibrator.html",
     "deploy": "gh-pages -d dist"
   },
   "dependencies": {

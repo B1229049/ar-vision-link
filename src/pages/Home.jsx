@@ -103,7 +103,7 @@ function Home() {
               <button
                 type="button"
                 className="home-shop-button"
-                onClick={() => alert("商城功能即將開放，敬請期待！")}
+                onClick={() => navigate("/store")}
               >
                 <span className="shop-icon-wrap">
                   <ShopIcon />

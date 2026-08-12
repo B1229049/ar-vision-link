@@ -353,8 +353,13 @@ function normalizeAvatarConfig(config) {
   }
 
   for (const category of Object.keys(AVATAR_ITEMS)) {
-    if (AVATAR_ITEMS[category].includes(config[category])) {
-      normalized[category] = config[category];
+    const itemId = config[category];
+    const isStoreItem =
+      typeof itemId === "string" &&
+      new RegExp(`^store-[a-z0-9-]+-${category}$`).test(itemId);
+
+    if (AVATAR_ITEMS[category].includes(itemId) || isStoreItem) {
+      normalized[category] = itemId;
     }
   }
 

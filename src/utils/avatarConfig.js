@@ -4,6 +4,7 @@ import {
   DEFAULT_AVATAR_ITEM_SETTINGS,
   DEFAULT_AVATAR_TEMPLATE_SETTINGS,
 } from "./avatarItemSettings";
+import { getStoreItem, STORE_ITEM_SETTINGS } from "../data/storeCatalog";
 
 const ASSET_BASE = `${import.meta.env.BASE_URL}avatar-assets`;
 
@@ -76,7 +77,11 @@ export const AVATAR_TEMPLATE = {
 };
 
 export function getAvatarItem(category, itemId) {
-  return AVATAR_ITEMS[category]?.find((item) => item.id === itemId) || null;
+  return (
+    AVATAR_ITEMS[category]?.find((item) => item.id === itemId) ||
+    getStoreItem(category, itemId) ||
+    null
+  );
 }
 
 export function normalizeAvatarConfig(config) {
@@ -109,6 +114,8 @@ export function getItemSetting(settings, itemId, layer = "front") {
   return (
     runtimeSettings[`${itemId}_${layer}`] ||
     runtimeSettings[itemId] ||
+    STORE_ITEM_SETTINGS[`${itemId}_${layer}`] ||
+    STORE_ITEM_SETTINGS[itemId] ||
     DEFAULT_AVATAR_ITEM_SETTINGS[`${itemId}_${layer}`] ||
     DEFAULT_AVATAR_ITEM_SETTINGS[itemId] ||
     fallback

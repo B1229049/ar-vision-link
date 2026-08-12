@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AR Vision Link Store Outfit Calibrator</title>
+    <style>
+      * { box-sizing: border-box; }
+      :root { color-scheme: dark; --purple: #8b5cf6; --line: rgba(255,255,255,.11); }
+      body { margin: 0; min-height: 100vh; color: #fff; background: #070a16; font-family: "Segoe UI", "Noto Sans TC", sans-serif; }
+      button, input, textarea, select { font: inherit; }
+      button { border: 0; color: #fff; cursor: pointer; font-weight: 800; }
+      .app { display: grid; grid-template-columns: minmax(360px, .9fr) minmax(400px, 1fr) 350px; gap: 18px; min-height: 100vh; padding: 18px; }
+      .panel { min-width: 0; border: 1px solid var(--line); border-radius: 20px; background: rgba(15,23,42,.82); overflow: hidden; }
+      .panel-body { padding: 20px; }
+      h1, h2, h3, p { margin-top: 0; }
+      h1 { margin-bottom: 6px; font-size: 25px; }
+      h2 { font-size: 18px; }
+      p, .hint { color: #94a3b8; line-height: 1.55; }
+      .stage-panel { display: grid; grid-template-rows: auto 1fr; background: radial-gradient(circle at 50% 35%, rgba(139,92,246,.23), transparent 48%), #0b1020; }
+      .stage-wrap { min-height: 600px; display: grid; place-items: center; padding: 20px; }
+      .stage { position: relative; width: min(390px, 94%); aspect-ratio: 408 / 612; }
+      .layer { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; object-position: center bottom; transform-origin: center; pointer-events: none; }
+      .back { z-index: 1; } .base { z-index: 2; } .hair { z-index: 4; } .face { z-index: 5; } .body { z-index: 6; } .bottoms { z-index: 7; } .top { z-index: 8; }
+      .stage-platform { position: absolute; z-index: 0; left: 15%; right: 15%; bottom: 2%; height: 8%; border: 1px solid rgba(167,139,250,.48); border-radius: 50%; background: rgba(139,92,246,.11); box-shadow: 0 0 40px rgba(139,92,246,.22); }
+      label { display: block; margin: 12px 0 6px; color: #cbd5e1; font-size: 12px; font-weight: 750; }
+      input, textarea, select { width: 100%; border: 1px solid var(--line); border-radius: 10px; padding: 10px 11px; color: white; background: rgba(2,6,23,.76); }
+      textarea { min-height: 76px; resize: vertical; }
+      input[type="range"] { padding: 0; accent-color: var(--purple); }
+      input[type="checkbox"] { width: auto; accent-color: var(--purple); }
+      .two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+      .actions { display: grid; grid-template-columns: repeat(2, 1fr); gap: 9px; margin-top: 14px; }
+      .actions button, .tabs button, .product-row { min-height: 42px; border-radius: 10px; background: #334155; }
+      button.primary, button.active { background: linear-gradient(135deg, #6d28d9, #a855f7); }
+      button.danger { background: rgba(190,24,93,.7); }
+      .products { display: grid; gap: 8px; max-height: 220px; overflow: auto; margin: 12px 0 18px; }
+      .product-row { display: flex; align-items: center; justify-content: space-between; padding: 9px 12px; text-align: left; }
+      .product-row small { color: #c4b5fd; }
+      .product-row.active { outline: 2px solid #c4b5fd; }
+      .divider { height: 1px; margin: 18px 0; background: var(--line); }
+      .tabs { display: grid; grid-template-columns: repeat(2,1fr); gap: 8px; }
+      .tabs button { padding: 9px; }
+      .range label { display: flex; justify-content: space-between; }
+      .publish-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 14px; padding: 11px; border: 1px solid var(--line); border-radius: 10px; }
+      .publish-row label { margin: 0; font-size: 14px; }
+      .output { min-height: 150px; margin-top: 12px; font: 11px/1.45 Consolas, monospace; }
+      code { color: #ddd6fe; }
+      @media (max-width: 1100px) { .app { grid-template-columns: 1fr 1fr; } .controls-panel { grid-column: 1 / -1; } }
+      @media (max-width: 720px) { .app { grid-template-columns: 1fr; padding: 10px; } .controls-panel { grid-column: auto; } .stage-wrap { min-height: 520px; } }
+    </style>
+  </head>
+  <body>
+    <main class="app">
+      <section class="panel stage-panel">
+        <div class="panel-body">
+          <h1>商城套裝校正器</h1>
+          <p>先把透明 PNG 放入 <code>public/store</code> 的四個分類，再於這裡建立完整套裝。</p>
+        </div>
+        <div class="stage-wrap"><div id="stage" class="stage"></div></div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-body">
+          <h2>上架套裝</h2>
+          <div id="products" class="products"></div>
+          <div class="actions">
+            <button id="add-product" class="primary">新增套裝</button>
+            <button id="delete-product" class="danger">刪除套裝</button>
+          </div>
+          <div class="divider"></div>
+
+          <div class="two">
+            <div><label>套裝 ID</label><input id="product-id" placeholder="future-runner" /></div>
+            <div><label>徽章</label><input id="badge" placeholder="NEW" /></div>
+          </div>
+          <label>套裝名稱</label><input id="name" />
+          <label>系列副標</label><input id="tagline" />
+          <label>套裝介紹</label><textarea id="description"></textarea>
+          <div class="two">
+            <div><label>主色</label><input id="accent" type="color" /></div>
+            <div class="publish-row"><label for="published">顯示於所有人的商城</label><input id="published" type="checkbox" /></div>
+          </div>
+
+          <div class="actions">
+            <button id="save-local" class="primary">儲存到瀏覽器</button>
+            <button id="reset-data">重載專案資料</button>
+            <button id="copy-output">複製 catalog</button>
+            <button id="download-output" class="primary">下載 catalog 檔</button>
+          </div>
+          <p class="hint" style="margin-top:12px">下載後取代 <code>src/data/storeCatalogData.js</code>，再 build＋deploy，即會同步給所有使用者。</p>
+          <textarea id="output" class="output" readonly></textarea>
+        </div>
+      </section>
+
+      <section class="panel controls-panel">
+        <div class="panel-body">
+          <h2>部位與圖層</h2>
+          <div id="category-tabs" class="tabs"></div>
+          <label>調整圖層</label>
+          <select id="layer-select"><option value="front">前層</option><option value="back">後層</option></select>
+          <label>素材路徑（相對 public）</label><input id="asset-path" placeholder="store/hair/example.png" />
+          <p class="hint">頭部若有前後兩張圖，請分別切換前層／後層填入；其他部位通常只需要前層。</p>
+
+          <div class="range"><label>大小 <span id="scale-value"></span></label><input id="scale" type="range" min="0.2" max="1.8" step="0.01" /></div>
+          <div class="range"><label>水平位置 <span id="x-value"></span></label><input id="x" type="range" min="-60" max="60" step="0.05" /></div>
+          <div class="range"><label>垂直位置 <span id="y-value"></span></label><input id="y" type="range" min="-60" max="60" step="0.05" /></div>
+
+          <div class="divider"></div>
+          <h3>建議素材命名</h3>
+          <p class="hint">
+            <code>store/hair/future-runner-front.png</code><br />
+            <code>store/hair/future-runner-back.png</code><br />
+            <code>store/face/future-runner.png</code><br />
+            <code>store/top/future-runner.png</code><br />
+            <code>store/bottoms/future-runner.png</code>
+          </p>
+        </div>
+      </section>
+    </main>
+
+    <script type="module">
+      import { STORE_CATALOG_SOURCE } from "./src/data/storeCatalogData.js";
+
+      const STORAGE_KEY = "arvl_store_catalog_draft_v1";
+      const categories = [
+        ["hair", "頭部"], ["face", "臉部"], ["top", "上半身"], ["bottoms", "下半身"]
+      ];
+      const clone = (value) => JSON.parse(JSON.stringify(value));
+      const defaultSetting = () => ({ scale: 1, x_pct: 0, y_pct: 0 });
+      const publicPath = (path) =>
+        path
+          ? `${import.meta.env.BASE_URL}${String(path)
+              .replace(/^\/?public\//, "")
+              .replace(/^\//, "")}`
+          : "";
+      const slug = (value) => String(value || "outfit").toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "outfit";
+
+      let products;
+      try { products = JSON.parse(localStorage.getItem(STORAGE_KEY)) || clone(STORE_CATALOG_SOURCE); }
+      catch { products = clone(STORE_CATALOG_SOURCE); }
+
+      const state = { selected: products[0]?.id || "", category: "hair", layer: "front" };
+      const current = () => products.find((item) => item.id === state.selected) || products[0];
+      const piece = () => current()?.pieces?.[state.category];
+      const settingKey = () => `${piece()?.id}_${state.layer}`;
+      const setting = () => ({ ...defaultSetting(), ...(current()?.settings?.[settingKey()] || {}) });
+
+      function ensureProductShape(product) {
+        product.pieces ||= {};
+        product.settings ||= {};
+        categories.forEach(([category]) => {
+          product.pieces[category] ||= {
+            id: `store-${slug(product.id)}-${category}`,
+            label: `${product.name || "新套裝"}・${category}`,
+            front: `store/${category}/${slug(product.id)}.png`,
+          };
+          product.pieces[category].id = `store-${slug(product.id)}-${category}`;
+          if (category !== "hair") delete product.pieces[category].back;
+        });
+      }
+
+      function applyStyle(img, value) {
+        img.style.transform = `translate(${Number(value.x_pct) || 0}%, ${Number(value.y_pct) || 0}%) scale(${Number(value.scale) || 1})`;
+      }
+
+      function addLayer(stage, path, className, value) {
+        if (!path) return;
+        const img = document.createElement("img");
+        img.className = `layer ${className}`;
+        img.src = publicPath(path);
+        img.addEventListener("error", () => { img.style.opacity = ".12"; img.title = `找不到 ${path}`; });
+        applyStyle(img, value);
+        stage.appendChild(img);
+      }
+
+      function getPieceSetting(product, category, layer = "front") {
+        const item = product.pieces?.[category];
+        return { ...defaultSetting(), ...(product.settings?.[`${item?.id}_${layer}`] || {}) };
+      }
+
+      function renderStage() {
+        const product = current();
+        const stage = document.getElementById("stage");
+        stage.innerHTML = '<div class="stage-platform"></div>';
+        if (!product) return;
+
+        ["bottoms", "top", "face", "hair"].forEach((category) => {
+          const item = product.pieces?.[category];
+          addLayer(stage, item?.back, "back", getPieceSetting(product, category, "back"));
+        });
+        addLayer(stage, "avatar-assets/templates/模板00.png", "base", { scale: 1, x_pct: 0, y_pct: -.7 });
+        addLayer(stage, product.pieces?.hair?.front, "hair", getPieceSetting(product, "hair"));
+        addLayer(stage, product.pieces?.face?.front, "face", getPieceSetting(product, "face"));
+        addLayer(stage, "avatar-assets/templates/模板02.png", "body", { scale: 1, x_pct: 0, y_pct: .3 });
+        addLayer(stage, product.pieces?.bottoms?.front, "bottoms", getPieceSetting(product, "bottoms"));
+        addLayer(stage, product.pieces?.top?.front, "top", getPieceSetting(product, "top"));
+      }
+
+      function renderProducts() {
+        const wrap = document.getElementById("products");
+        wrap.innerHTML = "";
+        products.forEach((product) => {
+          const button = document.createElement("button");
+          button.className = `product-row ${product.id === state.selected ? "active" : ""}`;
+          button.innerHTML = `<span>${product.name || "未命名套裝"}</span><small>${product.published === false ? "草稿" : "已上架"}</small>`;
+          button.onclick = () => { state.selected = product.id; state.layer = "front"; renderAll(); };
+          wrap.appendChild(button);
+        });
+      }
+
+      function renderTabs() {
+        const wrap = document.getElementById("category-tabs");
+        wrap.innerHTML = "";
+        categories.forEach(([key, label]) => {
+          const button = document.createElement("button");
+          button.textContent = label;
+          button.className = state.category === key ? "active" : "";
+          button.onclick = () => { state.category = key; state.layer = "front"; renderAll(); };
+          wrap.appendChild(button);
+        });
+      }
+
+      function setValue(id, value) { document.getElementById(id).value = value ?? ""; }
+      function renderForm() {
+        const product = current();
+        if (!product) return;
+        ensureProductShape(product);
+        setValue("product-id", product.id); setValue("name", product.name); setValue("tagline", product.tagline);
+        setValue("description", product.description); setValue("badge", product.badge); setValue("accent", product.accent || "#8b5cf6");
+        document.getElementById("published").checked = product.published !== false;
+        document.getElementById("layer-select").value = state.layer;
+        document.getElementById("layer-select").disabled = state.category !== "hair";
+        setValue("asset-path", piece()?.[state.layer] || "");
+        const value = setting();
+        [["scale", value.scale], ["x", value.x_pct], ["y", value.y_pct]].forEach(([id, next]) => {
+          setValue(id, next); document.getElementById(`${id}-value`).textContent = Number(next).toFixed(2);
+        });
+      }
+
+      function exportCode() {
+        const code = `// 商城上架資料的唯一來源。\n// 由 store-outfit-calibrator.html 產生。\nexport const STORE_CATALOG_SOURCE = ${JSON.stringify(products, null, 2)};\n`;
+        document.getElementById("output").value = code;
+        return code;
+      }
+
+      function renderAll() { renderProducts(); renderTabs(); renderForm(); renderStage(); exportCode(); }
+
+      ["name", "tagline", "description", "badge", "accent"].forEach((id) => {
+        document.getElementById(id).addEventListener("input", (event) => { current()[id] = event.target.value; renderProducts(); renderStage(); exportCode(); });
+      });
+      document.getElementById("published").addEventListener("change", (event) => { current().published = event.target.checked; renderProducts(); exportCode(); });
+      document.getElementById("product-id").addEventListener("change", (event) => {
+        const product = current(); const oldId = product.id; product.id = slug(event.target.value);
+        Object.values(product.pieces || {}).forEach((item) => { item.id = item.id.replace(`store-${oldId}-`, `store-${product.id}-`); });
+        const renamed = {};
+        Object.entries(product.settings || {}).forEach(([key, value]) => { renamed[key.replace(`store-${oldId}-`, `store-${product.id}-`)] = value; });
+        product.settings = renamed; state.selected = product.id; ensureProductShape(product); renderAll();
+      });
+      document.getElementById("layer-select").addEventListener("change", (event) => { state.layer = event.target.value; renderAll(); });
+      document.getElementById("asset-path").addEventListener("input", (event) => { piece()[state.layer] = event.target.value.replace(/^\/?public\//, ""); renderStage(); exportCode(); });
+      ["scale", "x", "y"].forEach((id) => {
+        document.getElementById(id).addEventListener("input", (event) => {
+          const product = current(); const key = settingKey(); const value = setting();
+          value[id === "x" ? "x_pct" : id === "y" ? "y_pct" : "scale"] = Number(event.target.value);
+          product.settings[key] = value; renderForm(); renderStage(); exportCode();
+        });
+      });
+      document.getElementById("add-product").onclick = () => {
+        let index = products.length + 1; let id = `new-outfit-${index}`;
+        while (products.some((item) => item.id === id)) id = `new-outfit-${++index}`;
+        const product = { id, name: "新套裝", tagline: "預覽套裝", description: "", badge: "NEW", accent: "#8b5cf6", published: false, pieces: {}, settings: {} };
+        ensureProductShape(product); products.push(product); state.selected = id; renderAll();
+      };
+      document.getElementById("delete-product").onclick = () => {
+        if (!current() || !confirm(`確定刪除「${current().name}」？`)) return;
+        products = products.filter((item) => item.id !== state.selected); state.selected = products[0]?.id || ""; renderAll();
+      };
+      document.getElementById("save-local").onclick = () => { localStorage.setItem(STORAGE_KEY, JSON.stringify(products)); alert("商城草稿已儲存在此瀏覽器。"); };
+      document.getElementById("reset-data").onclick = () => { if (!confirm("放棄本機草稿並重載專案內的 catalog？")) return; products = clone(STORE_CATALOG_SOURCE); state.selected = products[0]?.id || ""; localStorage.removeItem(STORAGE_KEY); renderAll(); };
+      document.getElementById("copy-output").onclick = async () => { await navigator.clipboard.writeText(exportCode()); alert("已複製 catalog。"); };
+      document.getElementById("download-output").onclick = () => {
+        const blob = new Blob([exportCode()], { type: "text/javascript;charset=utf-8" });
+        const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = "storeCatalogData.js"; link.click(); URL.revokeObjectURL(link.href);
+      };
+
+      renderAll();
+    </script>
+  </body>
+</html>
