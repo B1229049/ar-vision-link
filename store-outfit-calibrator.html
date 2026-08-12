@@ -59,7 +59,7 @@
           <button id="rescan">重新讀取資料夾</button>
           <button id="save-target" class="primary">儲存目前目標</button>
           <button id="reset-target">重置目前目標</button>
-          <button id="download-output" class="primary">下載商城資料</button>
+          <button id="copy-output" class="primary">複製匯出碼</button>
         </div>
       </section>
 
@@ -446,13 +446,18 @@
         alert("已儲存目前素材設定。");
       };
       document.getElementById("reset-target").onclick = () => { if (!currentItem()) return; state.draftSetting = defaultSetting(currentItem().id); renderAll(); };
-      document.getElementById("download-output").onclick = () => {
-        const blob = new Blob([exportCode()], { type: "text/javascript;charset=utf-8" });
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = "storeCatalogData.js";
-        link.click();
-        URL.revokeObjectURL(link.href);
+      document.getElementById("copy-output").onclick = async () => {
+        const code = exportCode();
+        try {
+          await navigator.clipboard.writeText(code);
+          alert("已複製匯出碼。");
+        } catch {
+          const output = document.getElementById("export-output");
+          output.focus();
+          output.select();
+          document.execCommand("copy");
+          alert("已複製匯出碼。");
+        }
       };
 
       scanAssets();
