@@ -119,6 +119,12 @@ function Home() {
                   <strong>最新消息</strong>
                 </div>
               </section>
+
+              <section className="home-news-banner" aria-label="信件">
+                <div className="news-badge">
+                  <strong>信件</strong>
+                </div>
+              </section>
             </div>
           )}
         </div>
