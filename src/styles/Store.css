@@ -14,8 +14,9 @@
 
 .store-header,
 .store-catalog-panel {
-  width: min(1180px, 100%);
+  width: min(920px, 100%);
   margin-inline: auto;
+  box-sizing: border-box;
 }
 
 .store-header {
@@ -43,16 +44,18 @@
 
 .store-outfit-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
 }
 
 .store-outfit-card {
   position: relative;
   min-width: 0;
-  height: 420px;
+  aspect-ratio: 0.76;
   display: grid;
   place-items: center;
+  padding: 20px;
+  box-sizing: border-box;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.09);
   border-radius: 18px;
@@ -65,22 +68,8 @@
     rgba(51, 65, 85, 0.34);
 }
 
-.store-outfit-card::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  bottom: 38px;
-  width: 210px;
-  height: 28px;
-  border: 1px solid color-mix(in srgb, var(--outfit-accent) 35%, transparent);
-  border-radius: 50%;
-  background: color-mix(in srgb, var(--outfit-accent) 10%, transparent);
-  transform: translateX(-50%);
-  box-shadow: 0 0 28px color-mix(in srgb, var(--outfit-accent) 18%, transparent);
-}
-
 .store-outfit-card .avatar-renderer {
-  width: 235px;
+  width: min(72%, 230px);
   z-index: 1;
   filter: drop-shadow(0 20px 20px rgba(0, 0, 0, 0.34));
 }
@@ -117,7 +106,8 @@
   }
 
   .store-catalog-panel {
-    padding: 18px;
+    width: 100%;
+    padding: 16px;
     border-radius: 20px;
   }
 
@@ -126,14 +116,31 @@
   }
 
   .store-outfit-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
   }
 
   .store-outfit-card {
-    height: 390px;
+    width: 100%;
+    padding: 10px;
+    border-radius: 16px;
   }
 
   .store-outfit-card .avatar-renderer {
-    width: 215px;
+    width: 82%;
+  }
+}
+
+@media (max-width: 380px) {
+  .store-page {
+    padding-inline: 12px;
+  }
+
+  .store-catalog-panel {
+    padding: 12px;
+  }
+
+  .store-outfit-grid {
+    gap: 8px;
   }
 }
