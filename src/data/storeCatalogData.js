@@ -103,29 +103,29 @@ export const STORE_CATALOG_SOURCE = [
   },
   {
     "id": "outfit-03",
-    "name": "魔君再臨",
+    "name": "魔王再臨",
     "badge": "NEW",
     "published": true,
     "pieces": {
       "hair": {
         "id": "store-outfit-03-hair",
-        "label": "魔君再臨・頭部",
+        "label": "魔王再臨・頭部",
         "front": "store/hair/頭髮03-1.png",
         "back": "store/hair/頭髮03-2.png"
       },
       "face": {
         "id": "store-outfit-03-face",
-        "label": "魔君再臨・臉部",
+        "label": "魔王再臨・臉部",
         "front": "store/face/表情03.png"
       },
       "top": {
         "id": "store-outfit-03-top",
-        "label": "魔君再臨・上半身",
+        "label": "魔王再臨・上半身",
         "front": "store/top/上衣03.png"
       },
       "bottoms": {
         "id": "store-outfit-03-bottoms",
-        "label": "魔君再臨・下半身",
+        "label": "魔王再臨・下半身",
         "front": "store/bottoms/褲裝03.png"
       }
     },
@@ -204,6 +204,62 @@ export const STORE_CATALOG_SOURCE = [
         "scale": 0.79,
         "x_pct": -0.65,
         "y_pct": 14.05
+      }
+    }
+  },
+  {
+    "id": "outfit-05",
+    "name": "九幽冥尊",
+    "badge": "NEW",
+    "published": true,
+    "pieces": {
+      "hair": {
+        "id": "store-outfit-05-hair",
+        "label": "九幽冥尊・頭部",
+        "front": "store/hair/頭髮05-1.png",
+        "back": "store/hair/頭髮05-2.png"
+      },
+      "face": {
+        "id": "store-outfit-05-face",
+        "label": "九幽冥尊・臉部",
+        "front": "store/face/表情05.png"
+      },
+      "top": {
+        "id": "store-outfit-05-top",
+        "label": "九幽冥尊・上半身",
+        "front": "store/top/上衣05.png"
+      },
+      "bottoms": {
+        "id": "store-outfit-05-bottoms",
+        "label": "九幽冥尊・下半身",
+        "front": "store/bottoms/褲裝05.png"
+      }
+    },
+    "settings": {
+      "store-outfit-05-top_front": {
+        "scale": 0.43,
+        "x_pct": -1,
+        "y_pct": 17.65
+      },
+      "store-outfit-05-bottoms_front": {
+        "scale": 0.79,
+        "x_pct": -0.65,
+        "y_pct": 12.45
+      },
+      "store-outfit-05-hair_front": {
+        "scale": 0.98,
+        "x_pct": 0.3,
+        "y_pct": -1.95
+      },
+      "store-outfit-05-hair_back": {
+        "scale": 0.95,
+        "x_pct": 0,
+        "y_pct": 0
+      },
+      "store-outfit-05-face_front": {
+        "scale": 0.7,
+        "x_pct": -3.25,
+        "y_pct": -7.85
       }
     }
   }
