@@ -72,6 +72,9 @@
           <h2>相對位置與大小</h2>
           <div id="target-label" class="target">尚未選擇素材</div>
 
+          <label>商城造型名稱（同編號四個部位共用）</label>
+          <input id="outfit-name" type="text" maxlength="30" placeholder="例如：荒野牛仔" />
+
           <label>圖層</label>
           <select id="layer-select">
             <option value="front">前層</option>
@@ -99,6 +102,7 @@
       const STORE_BASE = "public/store";
       const AVATAR_TEMPLATE_BASE = "public/avatar-assets/templates";
       const STORAGE_KEY = "arvl_store_relative_settings_v3";
+      const NAME_STORAGE_KEY = "arvl_store_outfit_names_v1";
       const categories = [
         { key: "template", label: "模板" },
         { key: "hair", label: "頭部" },
@@ -114,12 +118,18 @@
         items: { template: [], hair: [], face: [], top: [], bottoms: [] },
         preview: { hair: "", face: "", top: "", bottoms: "" },
         settings: loadSettings(),
+        names: loadNames(),
         draftKey: "",
         draftSetting: null,
       };
 
       function loadSettings() {
         try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"); }
+        catch { return {}; }
+      }
+
+      function loadNames() {
+        try { return JSON.parse(localStorage.getItem(NAME_STORAGE_KEY) || "{}"); }
         catch { return {}; }
       }
 
@@ -358,6 +368,7 @@
 
       function renderControls() {
         const item = currentItem();
+        const outfitNameInput = document.getElementById("outfit-name");
         const select = document.getElementById("layer-select");
         const hasBack = state.category !== "template" && Boolean(item?.backImg);
         if (!hasBack) state.layer = "front";
@@ -366,6 +377,9 @@
         document.getElementById("target-label").textContent = item
           ? `目前校準：${item.label}${state.category === "template" ? "" : ` / ${state.layer === "front" ? "前層" : "後層"}`}`
           : "尚未選擇素材";
+        const canNameOutfit = state.category !== "template" && Boolean(item?.number);
+        outfitNameInput.disabled = !canNameOutfit;
+        outfitNameInput.value = canNameOutfit ? state.names[item.number] || "" : "";
         const value = item ? displaySetting(item.id, state.layer) : defaultSetting();
         [["scale", "scale-value", value.scale], ["x-pct", "x-value", value.x_pct], ["y-pct", "y-value", value.y_pct]].forEach(([inputId, valueId, next]) => {
           const input = document.getElementById(inputId);
@@ -386,19 +400,21 @@
 
       function catalogSource() {
         return completeNumbers().map((number) => {
+          const outfitName = String(state.names[number] || "").trim();
           const pieces = {};
           ["hair", "face", "top", "bottoms"].forEach((category) => {
             const item = state.items[category].find((entry) => entry.number === number);
             pieces[category] = {
               id: item.id,
-              label: `套裝 ${number}・${categories.find((entry) => entry.key === category).label}`,
+              label: `${outfitName || `套裝 ${number}`}・${categories.find((entry) => entry.key === category).label}`,
               front: relativeStorePath(item.frontImg),
               ...(item.backImg ? { back: relativeStorePath(item.backImg) } : {}),
             };
           });
           return {
             id: `outfit-${number}`,
-            name: `套裝 ${number}`,
+            name: outfitName,
+            badge: "PREVIEW",
             published: true,
             pieces,
             settings: Object.fromEntries(Object.entries(state.settings).filter(([key]) => key.startsWith(`store-outfit-${number}-`))),
@@ -435,12 +451,19 @@
       }
 
       document.getElementById("layer-select").onchange = (event) => { state.layer = event.target.value; startDraft(); renderAll(); };
+      document.getElementById("outfit-name").addEventListener("input", (event) => {
+        const item = currentItem();
+        if (state.category === "template" || !item?.number) return;
+        state.names[item.number] = event.target.value;
+        exportCode();
+      });
       ["scale", "x-pct", "y-pct"].forEach((id) => document.getElementById(id).addEventListener("input", updateDraft));
       document.getElementById("rescan").onclick = scanAssets;
       document.getElementById("save-target").onclick = () => {
         if (!currentItem()) return;
         state.settings[settingKey()] = { ...state.draftSetting };
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state.settings));
+        localStorage.setItem(NAME_STORAGE_KEY, JSON.stringify(state.names));
         startDraft();
         renderAll();
         alert("已儲存目前素材設定。");

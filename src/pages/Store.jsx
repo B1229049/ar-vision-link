@@ -1,5 +1,7 @@
+import { useMemo, useState } from "react";
 import AvatarRenderer from "../components/AvatarRenderer";
 import { STORE_CATALOG } from "../data/storeCatalog";
+import { normalizeAvatarConfig } from "../utils/avatarConfig";
 import "../styles/Store.css";
 
 function OutfitIcon() {
@@ -11,7 +13,27 @@ function OutfitIcon() {
   );
 }
 
+function visibleOutfitName(outfit) {
+  const name = String(outfit?.name || "").trim();
+  return name && !/^(套裝|造型)\s*\d+$/u.test(name) ? name : "未命名造型";
+}
+
 function Store() {
+  const currentAvatarConfig = useMemo(() => {
+    try {
+      const user = JSON.parse(localStorage.getItem("currentUser") || "null");
+      return normalizeAvatarConfig(user?.avatar_config);
+    } catch {
+      return normalizeAvatarConfig();
+    }
+  }, []);
+
+  const [previewOutfitId, setPreviewOutfitId] = useState("");
+  const previewOutfit =
+    STORE_CATALOG.find((outfit) => outfit.id === previewOutfitId) || null;
+  const previewConfig = previewOutfit?.config || currentAvatarConfig;
+  const previewSettings = previewOutfit?.settings;
+
   return (
     <main className="store-page">
       <header className="store-header">
@@ -24,25 +46,75 @@ function Store() {
           <h2>目前尚未上架任何造型</h2>
         </section>
       ) : (
-        <section className="store-catalog-panel" aria-label="造型預覽">
-          <h2>造型預覽</h2>
+        <div className="store-layout">
+          <aside className="store-tryon-panel" aria-label="Avatar 試穿預覽">
+            <div className="store-tryon-heading">
+              <span>{previewOutfit ? "商城試穿" : "目前 Avatar"}</span>
+              <h2>{previewOutfit ? visibleOutfitName(previewOutfit) : "我的造型"}</h2>
+              <p>此處只提供預覽，不會變更或儲存你的 Avatar。</p>
+            </div>
 
-          <div className="store-outfit-grid">
-            {STORE_CATALOG.map((outfit) => (
-              <article
-                key={outfit.id}
-                className="store-outfit-card"
-                style={{ "--outfit-accent": outfit.accent || "#8b5cf6" }}
-                aria-label="商城造型預覽"
+            <div className="store-tryon-stage">
+              <div className="store-tryon-glow" />
+              <AvatarRenderer
+                config={previewConfig}
+                itemSettings={previewSettings}
+                className="store-tryon-avatar"
+              />
+            </div>
+
+            {previewOutfit && (
+              <button
+                type="button"
+                className="store-reset-preview"
+                onClick={() => setPreviewOutfitId("")}
               >
-                <AvatarRenderer
-                  config={outfit.config}
-                  itemSettings={outfit.settings}
-                />
-              </article>
-            ))}
-          </div>
-        </section>
+                顯示目前 Avatar
+              </button>
+            )}
+          </aside>
+
+          <section className="store-catalog-panel" aria-label="造型預覽">
+            <div className="store-catalog-heading">
+              <div>
+                <span>COLLECTION</span>
+                <h2>造型預覽</h2>
+              </div>
+              <strong>{STORE_CATALOG.length} SETS</strong>
+            </div>
+
+            <div className="store-outfit-grid">
+              {STORE_CATALOG.map((outfit) => {
+                const active = outfit.id === previewOutfitId;
+
+                return (
+                  <button
+                    type="button"
+                    key={outfit.id}
+                    className={`store-outfit-card ${active ? "active" : ""}`}
+                    style={{ "--outfit-accent": outfit.accent || "#8b5cf6" }}
+                    onClick={() => setPreviewOutfitId(outfit.id)}
+                    aria-pressed={active}
+                    aria-label={`預覽 ${visibleOutfitName(outfit)}`}
+                  >
+                    <span className="store-card-badge">
+                      {outfit.badge || "PREVIEW"}
+                    </span>
+                    <span className="store-card-avatar">
+                      <AvatarRenderer
+                        config={outfit.config}
+                        itemSettings={outfit.settings}
+                      />
+                    </span>
+                    <strong className="store-card-name">
+                      {visibleOutfitName(outfit)}
+                    </strong>
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+        </div>
       )}
     </main>
   );
