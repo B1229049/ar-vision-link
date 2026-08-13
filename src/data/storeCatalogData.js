@@ -98,5 +98,60 @@ export const STORE_CATALOG_SOURCE = [
         "y_pct": 18.95
       }
     }
+  },
+  {
+    "id": "outfit-03",
+    "name": "套裝 03",
+    "published": true,
+    "pieces": {
+      "hair": {
+        "id": "store-outfit-03-hair",
+        "label": "套裝 03・頭部",
+        "front": "store/hair/頭髮03-1.png",
+        "back": "store/hair/頭髮03-2.png"
+      },
+      "face": {
+        "id": "store-outfit-03-face",
+        "label": "套裝 03・臉部",
+        "front": "store/face/表情03.png"
+      },
+      "top": {
+        "id": "store-outfit-03-top",
+        "label": "套裝 03・上半身",
+        "front": "store/top/上衣03.png"
+      },
+      "bottoms": {
+        "id": "store-outfit-03-bottoms",
+        "label": "套裝 03・下半身",
+        "front": "store/bottoms/褲裝03.png"
+      }
+    },
+    "settings": {
+      "store-outfit-03-hair_front": {
+        "scale": 0.96,
+        "x_pct": 0.3,
+        "y_pct": -6.85
+      },
+      "store-outfit-03-hair_back": {
+        "scale": 1,
+        "x_pct": 0,
+        "y_pct": -1.65
+      },
+      "store-outfit-03-face_front": {
+        "scale": 0.69,
+        "x_pct": -2.3,
+        "y_pct": -4.25
+      },
+      "store-outfit-03-top_front": {
+        "scale": 0.49,
+        "x_pct": 0,
+        "y_pct": 18.95
+      },
+      "store-outfit-03-bottoms_front": {
+        "scale": 0.79,
+        "x_pct": -0.65,
+        "y_pct": 14.05
+      }
+    }
   }
 ];
