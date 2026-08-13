@@ -4,7 +4,7 @@ export const STORE_CATALOG_SOURCE = [
   {
     "id": "outfit-01",
     "name": "牛仔很忙",
-    "badge": "PREVIEW",
+    "badge": "NEW",
     "published": true,
     "pieces": {
       "hair": {
@@ -54,7 +54,7 @@ export const STORE_CATALOG_SOURCE = [
   {
     "id": "outfit-02",
     "name": "傑克伯爵",
-    "badge": "PREVIEW",
+    "badge": "NEW",
     "published": true,
     "pieces": {
       "hair": {
@@ -104,7 +104,7 @@ export const STORE_CATALOG_SOURCE = [
   {
     "id": "outfit-03",
     "name": "魔君再臨",
-    "badge": "PREVIEW",
+    "badge": "NEW",
     "published": true,
     "pieces": {
       "hair": {
@@ -151,6 +151,56 @@ export const STORE_CATALOG_SOURCE = [
         "y_pct": 18.95
       },
       "store-outfit-03-bottoms_front": {
+        "scale": 0.79,
+        "x_pct": -0.65,
+        "y_pct": 14.05
+      }
+    }
+  },
+  {
+    "id": "outfit-04",
+    "name": "街邊boy",
+    "badge": "NEW",
+    "published": true,
+    "pieces": {
+      "hair": {
+        "id": "store-outfit-04-hair",
+        "label": "街邊boy・頭部",
+        "front": "store/hair/頭髮04.png"
+      },
+      "face": {
+        "id": "store-outfit-04-face",
+        "label": "街邊boy・臉部",
+        "front": "store/face/表情04.png"
+      },
+      "top": {
+        "id": "store-outfit-04-top",
+        "label": "街邊boy・上半身",
+        "front": "store/top/上衣04.png"
+      },
+      "bottoms": {
+        "id": "store-outfit-04-bottoms",
+        "label": "街邊boy・下半身",
+        "front": "store/bottoms/褲裝04.png"
+      }
+    },
+    "settings": {
+      "store-outfit-04-hair_front": {
+        "scale": 1,
+        "x_pct": -1.65,
+        "y_pct": -5.25
+      },
+      "store-outfit-04-face_front": {
+        "scale": 1.18,
+        "x_pct": 0.3,
+        "y_pct": -1.3
+      },
+      "store-outfit-04-top_front": {
+        "scale": 0.46,
+        "x_pct": 0,
+        "y_pct": 14.4
+      },
+      "store-outfit-04-bottoms_front": {
         "scale": 0.79,
         "x_pct": -0.65,
         "y_pct": 14.05
