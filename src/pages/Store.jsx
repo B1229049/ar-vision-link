@@ -49,22 +49,13 @@ function Store() {
         <div className="store-layout">
           <aside className="store-tryon-panel" aria-label="Avatar 試穿預覽">
             <div className="store-tryon-stage">
+              <div className="store-tryon-platform" aria-hidden="true" />
               <AvatarRenderer
                 config={previewConfig}
                 itemSettings={previewSettings}
                 className="store-tryon-avatar"
               />
             </div>
-
-            {previewOutfit && (
-              <button
-                type="button"
-                className="store-reset-preview"
-                onClick={() => setPreviewOutfitId("")}
-              >
-                取消試穿
-              </button>
-            )}
           </aside>
 
           <section className="store-catalog-panel" aria-label="造型預覽">
