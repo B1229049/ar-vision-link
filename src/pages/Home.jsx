@@ -135,7 +135,6 @@ function Home() {
         <>
         <section className="home-section">
         <div className="section-title">
-          <span>Core Features</span>
           <h2>核心功能</h2>
           <p>從登入、出題、主持到玩家互動，完整支援即時測驗流程。</p>
         </div>
@@ -218,7 +217,12 @@ function Home() {
             </p>
           </div>
 
-          <div className="dressup-empty-panel" aria-label="avatar dress-up visual placeholder" />
+          <div className="dressup-visual-panel">
+            <img
+              src={`${import.meta.env.BASE_URL}home-avatar-dressup.png`}
+              alt="Avatar 虛擬替身裝扮介面預覽"
+            />
+          </div>
         </div>
       </section>
 
