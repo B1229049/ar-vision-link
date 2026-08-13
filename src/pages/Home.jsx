@@ -219,12 +219,10 @@ function Home() {
             </p>
           </div>
 
-          <div className="dressup-visual-panel">
-            <img
-              src={`${import.meta.env.BASE_URL}home-avatar-dressup.png`}
-              alt="Avatar 虛擬替身裝扮介面預覽"
-            />
-          </div>
+          <div
+            className="dressup-visual-panel"
+            aria-label="Avatar 虛擬替身裝扮預覽區"
+          />
         </div>
       </section>
 
