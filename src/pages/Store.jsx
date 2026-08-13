@@ -48,14 +48,7 @@ function Store() {
       ) : (
         <div className="store-layout">
           <aside className="store-tryon-panel" aria-label="Avatar 試穿預覽">
-            <div className="store-tryon-heading">
-              <span>{previewOutfit ? "商城試穿" : "目前 Avatar"}</span>
-              <h2>{previewOutfit ? visibleOutfitName(previewOutfit) : "我的造型"}</h2>
-              <p>此處只提供預覽，不會變更或儲存你的 Avatar。</p>
-            </div>
-
             <div className="store-tryon-stage">
-              <div className="store-tryon-glow" />
               <AvatarRenderer
                 config={previewConfig}
                 itemSettings={previewSettings}
@@ -69,20 +62,12 @@ function Store() {
                 className="store-reset-preview"
                 onClick={() => setPreviewOutfitId("")}
               >
-                顯示目前 Avatar
+                取消試穿
               </button>
             )}
           </aside>
 
           <section className="store-catalog-panel" aria-label="造型預覽">
-            <div className="store-catalog-heading">
-              <div>
-                <span>COLLECTION</span>
-                <h2>造型預覽</h2>
-              </div>
-              <strong>{STORE_CATALOG.length} SETS</strong>
-            </div>
-
             <div className="store-outfit-grid">
               {STORE_CATALOG.map((outfit) => {
                 const active = outfit.id === previewOutfitId;
@@ -97,9 +82,7 @@ function Store() {
                     aria-pressed={active}
                     aria-label={`預覽 ${visibleOutfitName(outfit)}`}
                   >
-                    <span className="store-card-badge">
-                      {outfit.badge || "PREVIEW"}
-                    </span>
+                    <span className="store-card-badge">NEW</span>
                     <span className="store-card-avatar">
                       <AvatarRenderer
                         config={outfit.config}
