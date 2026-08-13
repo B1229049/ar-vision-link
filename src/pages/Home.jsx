@@ -44,10 +44,12 @@ function Home() {
         <div className="hero-left">
           <h1>AR Vision Link</h1>
 
-          <p>
-            支援臉部登入、AR 辨識、多人online答題，以及 AI
-            自動出題，讓課堂、展示與活動互動更加有趣的平台。
-          </p>
+          {!currentUser && (
+            <p>
+              從你的臉開始，連結身份、互動與創意，打造更有趣的課堂 AR
+              互動體驗。
+            </p>
+          )}
 
           {!currentUser && (
             <div className="hero-actions">
