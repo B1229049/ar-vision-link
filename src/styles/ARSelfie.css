@@ -24,7 +24,8 @@
 }
 
 .ar-selfie-video,
-.ar-selfie-canvas {
+.ar-selfie-canvas,
+.ar-selfie-three-canvas {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -38,6 +39,24 @@
 
 .ar-selfie-canvas {
   pointer-events: none;
+}
+
+.ar-selfie-three-canvas {
+  z-index: 1;
+  pointer-events: none;
+}
+
+.ar-selfie-effect-option.is-3d .ar-selfie-option-preview::after {
+  content: "3D";
+  position: absolute;
+  right: -4px;
+  top: -4px;
+  padding: 2px 3px;
+  border-radius: 5px;
+  background: #f0abfc;
+  color: #2e1065;
+  font-size: 7px;
+  line-height: 1;
 }
 
 .ar-selfie-status {
@@ -148,6 +167,7 @@
 }
 
 .ar-selfie-option-preview {
+  position: relative;
   width: 40px;
   height: 40px;
   display: grid;

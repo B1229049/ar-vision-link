@@ -8,6 +8,7 @@ import {
   renderFaceEffect,
   smoothFaceLandmarks,
 } from "../utils/arSelfieEffects";
+import { ARSelfie3DRenderer, isThreeEffect } from "../utils/arSelfie3D";
 import "../styles/ARSelfie.css";
 
 const FILTERS = [
@@ -28,11 +29,13 @@ function ARSelfie() {
   const navigate = useNavigate();
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
+  const threeCanvasRef = useRef(null);
   const streamRef = useRef(null);
   const faceLandmarkerRef = useRef(null);
   const animationRef = useRef(null);
   const smoothedLandmarksRef = useRef(null);
   const effectRef = useRef("sparkle");
+  const threeRendererRef = useRef(null);
 
   const [filterId, setFilterId] = useState("natural");
   const [effectId, setEffectId] = useState("sparkle");
@@ -71,6 +74,7 @@ function ARSelfie() {
       if (!mounted) return;
       const video = videoRef.current;
       const canvas = canvasRef.current;
+      const threeRenderer = threeRendererRef.current;
 
       if (video && canvas && video.readyState >= 2) {
         const frame = drawVideoFrame(video, canvas);
@@ -103,18 +107,27 @@ function ARSelfie() {
               category.score,
             ])
           );
-          renderFaceEffect(
-            frame.ctx,
+          if (!isThreeEffect(effectRef.current)) {
+            renderFaceEffect(
+              frame.ctx,
+              smoothedLandmarksRef.current,
+              frame.width,
+              frame.height,
+              effectRef.current,
+              blendshapes,
+              timestamp
+            );
+          }
+          threeRenderer?.render(
             smoothedLandmarksRef.current,
             frame.width,
             frame.height,
-            effectRef.current,
-            blendshapes,
-            timestamp
+            effectRef.current
           );
         } else {
           missingFaceFrames += 1;
           if (missingFaceFrames > 8) smoothedLandmarksRef.current = null;
+          if (missingFaceFrames > 2) threeRenderer?.clear();
         }
       }
 
@@ -153,6 +166,14 @@ function ARSelfie() {
         }
 
         streamRef.current = stream;
+        if (threeCanvasRef.current) {
+          try {
+            threeRendererRef.current = new ARSelfie3DRenderer(threeCanvasRef.current);
+          } catch (webglError) {
+            console.warn("WebGL AR effects unavailable", webglError);
+            threeRendererRef.current = null;
+          }
+        }
         videoRef.current.srcObject = stream;
         await videoRef.current.play();
         animationRef.current = requestAnimationFrame(renderLoop);
@@ -182,6 +203,8 @@ function ARSelfie() {
       streamRef.current?.getTracks().forEach((track) => track.stop());
       streamRef.current = null;
       smoothedLandmarksRef.current = null;
+      threeRendererRef.current?.dispose();
+      threeRendererRef.current = null;
       document.body.style.overflow = previousBodyOverflow;
       document.documentElement.style.overflow = previousHtmlOverflow;
     };
@@ -210,7 +233,7 @@ function ARSelfie() {
     setSaving(true);
     setStatus("正在套用效果並儲存照片...");
     try {
-      const snapshot = createFilteredSnapshot(canvas, filterId);
+      const snapshot = createFilteredSnapshot(canvas, threeCanvasRef.current, filterId);
       const response = await fetch(`${BACKEND_URL}/api/users/${user.id}/ar-selfies`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -235,6 +258,7 @@ function ARSelfie() {
       <section className="ar-selfie-viewfinder" aria-label="AR 自拍預覽">
         <video ref={videoRef} className="ar-selfie-video" autoPlay playsInline muted />
         <canvas ref={canvasRef} className="ar-selfie-canvas" style={{ filter: activeFilter }} />
+        <canvas ref={threeCanvasRef} className="ar-selfie-three-canvas" aria-hidden="true" />
         <p className="ar-selfie-status">{status}</p>
       </section>
 
@@ -272,7 +296,7 @@ function ARSelfie() {
                 type="button"
                 role="radio"
                 aria-checked={effectId === effect.id}
-                className={`ar-selfie-option ar-selfie-effect-option${effectId === effect.id ? " is-selected" : ""}`}
+                className={`ar-selfie-option ar-selfie-effect-option${effectId === effect.id ? " is-selected" : ""}${isThreeEffect(effect.id) ? " is-3d" : ""}`}
                 onClick={(event) => selectEffect(effect, event.currentTarget)}
               >
                 <span className="ar-selfie-option-preview">{effect.icon}</span>

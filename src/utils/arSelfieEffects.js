@@ -7,7 +7,7 @@ export const AR_SELFIE_EFFECTS = [
   { id: "sunglasses", label: "墨鏡", icon: "▰" },
   { id: "mask", label: "霓虹面具", icon: "◒" },
   { id: "crown", label: "皇冠", icon: "♛" },
-  { id: "cat", label: "貓咪", icon: "ฅ" },
+  { id: "cat", label: "動物耳鼻", icon: "ฅ" },
   { id: "cyber", label: "賽博臉譜", icon: "◇" },
 ];
 
@@ -405,13 +405,18 @@ function clampColor(value) {
   return clamp(value, 0, 255);
 }
 
-export function createFilteredSnapshot(source, filterId) {
+export function createFilteredSnapshot(source, overlayOrFilterId, requestedFilterId) {
+  const overlay = typeof overlayOrFilterId === "string" ? null : overlayOrFilterId;
+  const filterId = typeof overlayOrFilterId === "string" ? overlayOrFilterId : requestedFilterId;
   const snapshot = document.createElement("canvas");
   snapshot.width = source.width;
   snapshot.height = source.height;
   const ctx = snapshot.getContext("2d", { willReadFrequently: true });
   ctx.drawImage(source, 0, 0);
-  if (filterId === "natural") return snapshot;
+  if (filterId === "natural") {
+    if (overlay) ctx.drawImage(overlay, 0, 0, snapshot.width, snapshot.height);
+    return snapshot;
+  }
 
   const imageData = ctx.getImageData(0, 0, snapshot.width, snapshot.height);
   const pixels = imageData.data;
@@ -447,6 +452,7 @@ export function createFilteredSnapshot(source, filterId) {
     pixels[index + 2] = clampColor(blue);
   }
   ctx.putImageData(imageData, 0, 0);
+  if (overlay) ctx.drawImage(overlay, 0, 0, snapshot.width, snapshot.height);
   return snapshot;
 }
 
