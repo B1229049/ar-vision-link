@@ -161,6 +161,7 @@ function AvatarDressup() {
       <div className="avatar-dressup-card">
         <div className="avatar-dressup-preview">
           <div className="avatar-dressup-stage">
+            <div className="avatar-dressup-platform" aria-hidden="true" />
             <AvatarRenderer
               config={avatarConfig}
               itemSettings={itemSettings}
