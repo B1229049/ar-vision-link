@@ -5,23 +5,13 @@ export const AR_SELFIE_EFFECTS = [
   { id: "blush", label: "腮紅", icon: "●" },
   { id: "freckles", label: "雀斑", icon: "∴" },
   { id: "sunglasses", label: "墨鏡", icon: "▰" },
-  { id: "mask", label: "霓虹面具", icon: "◒" },
   { id: "crown", label: "皇冠", icon: "♛" },
   { id: "hat", label: "3D 派對帽", icon: "△" },
   { id: "cat", label: "狗狗", icon: "ฅ" },
-  { id: "cyber", label: "賽博臉譜", icon: "◇" },
 ];
 
 const RIGHT_EYE = [33, 7, 163, 144, 145, 153, 154, 155, 133, 173, 157, 158, 159, 160, 161, 246];
 const LEFT_EYE = [263, 249, 390, 373, 374, 380, 381, 382, 362, 398, 384, 385, 386, 387, 388, 466];
-const FACE_OVAL = [10, 338, 297, 332, 284, 251, 389, 356, 454, 323, 361, 288, 397, 365, 379, 378, 400, 377, 152, 148, 176, 149, 150, 136, 172, 58, 132, 93, 234, 127, 162, 21, 54, 103, 67, 109];
-const CYBER_LINES = [
-  [10, 151, 9, 8, 168, 6, 197, 195, 5, 4, 1, 19, 94, 2],
-  [127, 34, 139, 71, 68, 104, 69, 108, 151],
-  [356, 264, 368, 301, 298, 333, 299, 337, 151],
-  [234, 93, 132, 58, 172, 136, 150, 149, 176, 148, 152],
-  [454, 323, 361, 288, 397, 365, 379, 378, 400, 377, 152],
-];
 
 function clamp(value, minimum, maximum) {
   return Math.max(minimum, Math.min(maximum, value));
@@ -41,13 +31,6 @@ function averagePoints(points) {
     (sum, item) => ({ x: sum.x + item.x / points.length, y: sum.y + item.y / points.length }),
     { x: 0, y: 0 }
   );
-}
-
-function tracePoints(ctx, points, close = false) {
-  if (!points.length) return;
-  ctx.moveTo(points[0].x, points[0].y);
-  points.slice(1).forEach((item) => ctx.lineTo(item.x, item.y));
-  if (close) ctx.closePath();
 }
 
 function roundedRectPath(ctx, x, y, width, height, radius) {
@@ -147,54 +130,6 @@ function drawSunglasses(ctx, metrics) {
   ctx.moveTo(lensOffset + lensWidth / 2, -lensHeight * 0.2);
   ctx.lineTo(eyeDistance * 0.82, -lensHeight * 0.42);
   ctx.stroke();
-  ctx.restore();
-}
-
-function drawNeonMask(ctx, metrics) {
-  const { eyeCenter, eyeDistance, eyeAngle } = metrics;
-  const width = eyeDistance * 1.72;
-  const height = eyeDistance * 0.72;
-
-  ctx.save();
-  ctx.translate(eyeCenter.x, eyeCenter.y - height * 0.03);
-  ctx.rotate(eyeAngle);
-  ctx.shadowColor = "rgba(192, 132, 252, 0.9)";
-  ctx.shadowBlur = eyeDistance * 0.12;
-
-  const gradient = ctx.createLinearGradient(-width / 2, 0, width / 2, 0);
-  gradient.addColorStop(0, "rgba(30, 64, 175, 0.96)");
-  gradient.addColorStop(0.5, "rgba(126, 34, 206, 0.97)");
-  gradient.addColorStop(1, "rgba(219, 39, 119, 0.96)");
-  ctx.fillStyle = gradient;
-  ctx.strokeStyle = "rgba(233, 213, 255, 0.98)";
-  ctx.lineWidth = clamp(eyeDistance * 0.035, 3, 10);
-
-  ctx.beginPath();
-  ctx.moveTo(-width / 2, -height * 0.14);
-  ctx.quadraticCurveTo(-width * 0.28, -height * 0.62, 0, -height * 0.28);
-  ctx.quadraticCurveTo(width * 0.28, -height * 0.62, width / 2, -height * 0.14);
-  ctx.quadraticCurveTo(width * 0.4, height * 0.48, width * 0.12, height * 0.35);
-  ctx.quadraticCurveTo(0, height * 0.72, -width * 0.12, height * 0.35);
-  ctx.quadraticCurveTo(-width * 0.4, height * 0.48, -width / 2, -height * 0.14);
-  ctx.closePath();
-  ctx.fill();
-  ctx.stroke();
-
-  ctx.globalCompositeOperation = "destination-out";
-  [-1, 1].forEach((side) => {
-    ctx.beginPath();
-    ctx.ellipse(side * eyeDistance * 0.3, 0, eyeDistance * 0.23, eyeDistance * 0.13, 0, 0, Math.PI * 2);
-    ctx.fill();
-  });
-  ctx.globalCompositeOperation = "source-over";
-  ctx.shadowBlur = 0;
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.86)";
-  ctx.lineWidth = Math.max(2, eyeDistance * 0.018);
-  [-1, 1].forEach((side) => {
-    ctx.beginPath();
-    ctx.ellipse(side * eyeDistance * 0.3, 0, eyeDistance * 0.23, eyeDistance * 0.13, 0, 0, Math.PI * 2);
-    ctx.stroke();
-  });
   ctx.restore();
 }
 
@@ -303,31 +238,6 @@ function drawCat(ctx, metrics) {
   ctx.restore();
 }
 
-function drawCyberMesh(ctx, landmarks, width, height, time) {
-  ctx.save();
-  ctx.lineWidth = clamp(width * 0.0017, 1.5, 4);
-  ctx.strokeStyle = "rgba(34, 211, 238, 0.72)";
-  ctx.shadowColor = "#22d3ee";
-  ctx.shadowBlur = 7;
-  [...CYBER_LINES, FACE_OVAL].forEach((line) => {
-    ctx.beginPath();
-    tracePoints(ctx, line.map((index) => point(landmarks, index, width, height)), line === FACE_OVAL);
-    ctx.stroke();
-  });
-  const scanY = height * (0.28 + ((time / 1600) % 1) * 0.48);
-  const gradient = ctx.createLinearGradient(0, scanY - 12, 0, scanY + 12);
-  gradient.addColorStop(0, "rgba(236, 72, 153, 0)");
-  gradient.addColorStop(0.5, "rgba(236, 72, 153, 0.88)");
-  gradient.addColorStop(1, "rgba(236, 72, 153, 0)");
-  ctx.strokeStyle = gradient;
-  ctx.lineWidth = 6;
-  ctx.beginPath();
-  ctx.moveTo(width * 0.25, scanY);
-  ctx.lineTo(width * 0.75, scanY);
-  ctx.stroke();
-  ctx.restore();
-}
-
 export function smoothFaceLandmarks(previous, current, amount = 0.46) {
   if (!previous || previous.length !== current.length) {
     return current.map((item) => ({ ...item }));
@@ -359,11 +269,9 @@ export function renderFaceEffect(ctx, landmarks, width, height, effectId, blends
   };
 
   if (effectId === "sunglasses") drawSunglasses(ctx, metrics);
-  if (effectId === "mask") drawNeonMask(ctx, metrics);
   if (effectId === "freckles") drawFreckles(ctx, landmarks, width, height, eyeDistance);
   if (effectId === "crown") drawCrown(ctx, metrics);
   if (effectId === "cat") drawCat(ctx, metrics);
-  if (effectId === "cyber") drawCyberMesh(ctx, landmarks, width, height, time);
 
   if (effectId === "blush") {
     ctx.save();

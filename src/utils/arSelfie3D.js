@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
 const ASSET_BASE = `${import.meta.env.BASE_URL}ar-assets`;
-const THREE_EFFECTS = new Set(["sunglasses", "mask", "cat", "hat"]);
+const THREE_EFFECTS = new Set(["sunglasses", "cat", "hat"]);
 
 function disposeObject(object) {
   object.traverse((child) => {
@@ -59,26 +59,6 @@ async function createOfficialGlasses() {
     child.material.needsUpdate = true;
   });
   return model;
-}
-
-async function createOfficialMask() {
-  const [geometry, colorMap] = await Promise.all([
-    loadGeometry(`${ASSET_BASE}/mask/anonymous.json`),
-    loadTexture(`${ASSET_BASE}/mask/anonymous.png`),
-  ]);
-  geometry.computeVertexNormals();
-  const material = new THREE.MeshStandardMaterial({
-    map: colorMap,
-    roughness: 0.48,
-    metalness: 0.05,
-    transparent: true,
-    alphaTest: 0.08,
-    side: THREE.DoubleSide,
-  });
-  const mesh = new THREE.Mesh(geometry, material);
-  mesh.frustumCulled = false;
-  normalizeModel(mesh, 1.62);
-  return mesh;
 }
 
 async function createOfficialDog() {
@@ -186,7 +166,6 @@ export class ARSelfie3DRenderer {
   async loadAssets() {
     const factories = {
       sunglasses: createOfficialGlasses,
-      mask: createOfficialMask,
       cat: createOfficialDog,
       hat: createOfficialHat,
     };
@@ -238,7 +217,9 @@ export class ARSelfie3DRenderer {
     const chin = landmarkPoint(landmarks, 152, width, height);
     const eyeCenter = leftEye.clone().add(rightEye).multiplyScalar(0.5);
     const eyeDistance = leftEye.distanceTo(rightEye);
-    const roll = Math.atan2(rightEye.y - leftEye.y, rightEye.x - leftEye.x);
+    let roll = Math.atan2(rightEye.y - leftEye.y, rightEye.x - leftEye.x);
+    if (roll > Math.PI / 2) roll -= Math.PI;
+    if (roll < -Math.PI / 2) roll += Math.PI;
     const yaw = THREE.MathUtils.clamp((nose.x - eyeCenter.x) / eyeDistance * 1.65, -0.72, 0.72);
     const faceHeight = Math.max(eyeDistance, forehead.distanceTo(chin));
     const pitch = THREE.MathUtils.clamp(((nose.y - eyeCenter.y) / faceHeight + 0.2) * 1.55, -0.42, 0.42);
@@ -249,9 +230,6 @@ export class ARSelfie3DRenderer {
     if (effectId === "sunglasses") {
       target.position.set(eyeCenter.x, eyeCenter.y, 20);
       target.scale.setScalar(eyeDistance);
-    } else if (effectId === "mask") {
-      target.position.set(eyeCenter.x, eyeCenter.y - eyeDistance * 0.28, 20);
-      target.scale.setScalar(eyeDistance * 1.03);
     } else if (effectId === "hat") {
       target.position.set(forehead.x, forehead.y + eyeDistance * 0.48, 20);
       target.scale.setScalar(eyeDistance * 1.05);
