@@ -3,17 +3,22 @@ import { useNavigate } from "react-router-dom";
 import "../styles/ARSelfie.css";
 
 const FILTERS = [
-  { id: "natural", label: "自然", value: "none" },
-  { id: "warm", label: "暖陽", value: "sepia(0.18) saturate(1.18) brightness(1.04)" },
-  { id: "cool", label: "冷調", value: "saturate(0.84) hue-rotate(10deg) brightness(1.05)" },
-  { id: "mono", label: "黑白", value: "grayscale(1) contrast(1.08)" },
+  { id: "natural", label: "自然", value: "none", preview: "linear-gradient(135deg, #d6a77a, #f4d4bc)" },
+  { id: "warm", label: "暖陽", value: "sepia(0.18) saturate(1.18) brightness(1.04)", preview: "linear-gradient(135deg, #f59e0b, #fde68a)" },
+  { id: "cool", label: "冷調", value: "saturate(0.84) hue-rotate(10deg) brightness(1.05)", preview: "linear-gradient(135deg, #2563eb, #a5f3fc)" },
+  { id: "vivid", label: "鮮明", value: "saturate(1.45) contrast(1.08)", preview: "linear-gradient(135deg, #ec4899, #8b5cf6, #22d3ee)" },
+  { id: "soft", label: "柔霧", value: "brightness(1.08) contrast(0.9) saturate(0.9)", preview: "linear-gradient(135deg, #fbcfe8, #e9d5ff)" },
+  { id: "film", label: "底片", value: "sepia(0.25) contrast(1.1) saturate(0.85)", preview: "linear-gradient(135deg, #92400e, #d6d3d1)" },
+  { id: "mono", label: "黑白", value: "grayscale(1) contrast(1.08)", preview: "linear-gradient(135deg, #171717, #d4d4d4)" },
 ];
 
 const EFFECTS = [
-  { id: "none", label: "無特效" },
-  { id: "sparkle", label: "星光" },
-  { id: "heart", label: "愛心" },
-  { id: "blush", label: "腮紅" },
+  { id: "none", label: "無特效", icon: "×" },
+  { id: "sparkle", label: "星光", icon: "✦" },
+  { id: "heart", label: "愛心", icon: "♥" },
+  { id: "blush", label: "腮紅", icon: "●" },
+  { id: "halo", label: "光環", icon: "◯" },
+  { id: "freckles", label: "雀斑", icon: "∴" },
 ];
 
 const BACKEND_URL = "https://ar-vision-link.onrender.com";
@@ -74,6 +79,10 @@ function ARSelfie() {
 
   useEffect(() => {
     let mounted = true;
+    const previousBodyOverflow = document.body.style.overflow;
+    const previousHtmlOverflow = document.documentElement.style.overflow;
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
 
     async function start() {
       if (!window.FaceMesh || !window.Camera) {
@@ -124,6 +133,8 @@ function ARSelfie() {
     return () => {
       cameraRef.current?.stop?.();
       streamRef.current?.getTracks().forEach((track) => track.stop());
+      document.body.style.overflow = previousBodyOverflow;
+      document.documentElement.style.overflow = previousHtmlOverflow;
     };
   }, []);
 
@@ -180,16 +191,50 @@ function ARSelfie() {
       });
       ctx.restore();
     }
+
+    if (effectRef.current === "halo") {
+      ctx.save();
+      ctx.strokeStyle = "rgba(255, 232, 125, 0.96)";
+      ctx.lineWidth = Math.max(7, width * 0.006);
+      ctx.shadowColor = "rgba(255, 213, 74, 0.9)";
+      ctx.shadowBlur = 18;
+      ctx.beginPath();
+      ctx.ellipse(forehead.x, forehead.y - height * 0.16, width * 0.13, height * 0.026, 0, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    if (effectRef.current === "freckles") {
+      ctx.save();
+      ctx.fillStyle = "rgba(126, 73, 51, 0.72)";
+      [leftCheek, rightCheek].forEach((cheek, sideIndex) => {
+        for (let index = 0; index < 6; index += 1) {
+          const direction = sideIndex === 0 ? 1 : -1;
+          const x = cheek.x + direction * (width * (0.016 + index * 0.009));
+          const y = cheek.y - height * 0.018 + (index % 2) * height * 0.012;
+          ctx.beginPath();
+          ctx.arc(x, y, Math.max(2.4, width * 0.0027), 0, Math.PI * 2);
+          ctx.fill();
+        }
+      });
+      ctx.restore();
+    }
   }
 
-  function selectFilter(filter) {
+  function centerSelectedOption(element) {
+    element?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+  }
+
+  function selectFilter(filter, element) {
     filterRef.current = filter.value;
     setFilterId(filter.id);
+    centerSelectedOption(element);
   }
 
-  function selectEffect(effect) {
+  function selectEffect(effect, element) {
     effectRef.current = effect.id;
     setEffectId(effect.id);
+    centerSelectedOption(element);
   }
 
   async function saveSelfie() {
@@ -226,16 +271,50 @@ function ARSelfie() {
       </section>
 
       <section className="ar-selfie-controls">
-        <div className="ar-selfie-control-row" aria-label="選擇濾鏡">
-          {FILTERS.map((filter) => (
-            <button key={filter.id} type="button" className={filterId === filter.id ? "is-selected" : ""} onClick={() => selectFilter(filter)}>{filter.label}</button>
-          ))}
+        <div className="ar-selfie-control-group">
+          <div className="ar-selfie-control-heading">
+            <strong>整體色調</strong>
+            <span>左右滑動選擇</span>
+          </div>
+          <div className="ar-selfie-control-row" role="radiogroup" aria-label="選擇整體色調">
+            {FILTERS.map((filter) => (
+              <button
+                key={filter.id}
+                type="button"
+                role="radio"
+                aria-checked={filterId === filter.id}
+                className={`ar-selfie-option ar-selfie-filter-option${filterId === filter.id ? " is-selected" : ""}`}
+                onClick={(event) => selectFilter(filter, event.currentTarget)}
+              >
+                <span className="ar-selfie-option-preview" style={{ background: filter.preview }} />
+                <span className="ar-selfie-option-label">{filter.label}</span>
+              </button>
+            ))}
+          </div>
         </div>
-        <div className="ar-selfie-control-row" aria-label="選擇 AR 特效">
-          {EFFECTS.map((effect) => (
-            <button key={effect.id} type="button" className={effectId === effect.id ? "is-selected" : ""} onClick={() => selectEffect(effect)}>{effect.label}</button>
-          ))}
+
+        <div className="ar-selfie-control-group">
+          <div className="ar-selfie-control-heading">
+            <strong>臉部特效</strong>
+            <span>左右滑動選擇</span>
+          </div>
+          <div className="ar-selfie-control-row" role="radiogroup" aria-label="選擇臉部特效">
+            {EFFECTS.map((effect) => (
+              <button
+                key={effect.id}
+                type="button"
+                role="radio"
+                aria-checked={effectId === effect.id}
+                className={`ar-selfie-option ar-selfie-effect-option${effectId === effect.id ? " is-selected" : ""}`}
+                onClick={(event) => selectEffect(effect, event.currentTarget)}
+              >
+                <span className="ar-selfie-option-preview">{effect.icon}</span>
+                <span className="ar-selfie-option-label">{effect.label}</span>
+              </button>
+            ))}
+          </div>
         </div>
+
         <div className="ar-selfie-capture-actions">
           <button className="ar-selfie-shutter" type="button" onClick={saveSelfie} disabled={saving} aria-label="拍攝並儲存到動態牆"><span /></button>
           <button className="ar-selfie-back" type="button" onClick={() => navigate("/profile")}>返回</button>
