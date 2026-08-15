@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { io } from "socket.io-client";
 import AvatarRenderer from "../components/AvatarRenderer";
+import LobbyProfileModal from "../components/LobbyProfileModal";
 import ProfileImage from "../components/ProfileImage";
 import "../styles/JoinQuiz.css";
 
@@ -24,6 +25,7 @@ function JoinQuiz() {
   const [questions, setQuestions] = useState([]);
   const [players, setPlayers] = useState([]);
   const [playerPanelOpen, setPlayerPanelOpen] = useState(false);
+  const [profileUser, setProfileUser] = useState(null);
 
   const [playMode, setPlayMode] = useState(
     localStorage.getItem("quizPlayMode") || "normal"
@@ -68,6 +70,12 @@ function JoinQuiz() {
     if (gameMode === "ar") return "ar";
 
     return localStorage.getItem("quizPlayMode") || playMode || "normal";
+  }
+
+  function openPlayerProfile(user) {
+    if (!user || Number(user.id) === Number(currentUser?.id)) return;
+    setPlayerPanelOpen(false);
+    setProfileUser(user);
   }
 
   function goToGame(targetSession = session) {
@@ -383,16 +391,20 @@ function JoinQuiz() {
                   const user = record.users;
 
                   return (
-                    <div
+                    <button
+                      type="button"
                       className="waiting-avatar-player"
                       key={record.record_id}
+                      onClick={() => openPlayerProfile(user)}
+                      disabled={Number(user?.id) === Number(currentUser?.id)}
+                      aria-label={`查看 ${user?.nickname || user?.name || "玩家"} 的個人資料`}
                     >
                       <strong>{user?.name || "未知玩家"}</strong>
                       <AvatarRenderer
                         config={user?.avatar_config}
                         className="waiting-avatar-renderer"
                       />
-                    </div>
+                    </button>
                   );
                 })}
               </div>
@@ -424,9 +436,13 @@ function JoinQuiz() {
                     const user = record.users;
 
                     return (
-                      <div
+                      <button
+                        type="button"
                         className="waiting-player-chip"
                         key={record.record_id}
+                        onClick={() => openPlayerProfile(user)}
+                        disabled={Number(user?.id) === Number(currentUser?.id)}
+                        aria-label={`查看 ${user?.nickname || user?.name || "玩家"} 的個人資料`}
                       >
                         <span>{index + 1}</span>
                         <ProfileImage
@@ -434,13 +450,18 @@ function JoinQuiz() {
                           className="waiting-player-head"
                         />
                         <strong>{user?.name || "未知玩家"}</strong>
-                      </div>
+                      </button>
                     );
                   })}
                 </div>
               </section>
             </div>
           )}
+
+          <LobbyProfileModal
+            user={profileUser}
+            onClose={() => setProfileUser(null)}
+          />
 
           <div className="waiting-message">
             {session?.started_at

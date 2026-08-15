@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
 import AvatarRenderer from "../components/AvatarRenderer";
+import LobbyProfileModal from "../components/LobbyProfileModal";
 import ProfileImage from "../components/ProfileImage";
 import "../styles/HostLobby.css";
 
@@ -48,17 +49,6 @@ function HostLobby() {
       socketRef.current?.disconnect();
     };
   }, []);
-
-  useEffect(() => {
-    if (!profileUser) return undefined;
-
-    function handleKeyDown(event) {
-      if (event.key === "Escape") setProfileUser(null);
-    }
-
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [profileUser]);
 
   async function loadMyQuizzes(userId) {
     try {
@@ -549,58 +539,10 @@ function HostLobby() {
               </aside>
             )}
 
-            {profileUser && (
-              <div
-                className="lobby-profile-overlay"
-                onMouseDown={(event) => {
-                  if (event.target === event.currentTarget) setProfileUser(null);
-                }}
-              >
-                <section
-                  className="lobby-profile-modal"
-                  role="dialog"
-                  aria-modal="true"
-                  aria-labelledby="lobby-profile-title"
-                >
-                  <button
-                    type="button"
-                    className="lobby-profile-close"
-                    onClick={() => setProfileUser(null)}
-                    aria-label="關閉個人資料"
-                  >
-                    ×
-                  </button>
-
-                  <h2 id="lobby-profile-title" className="lobby-profile-label">
-                    玩家資料
-                  </h2>
-
-                  <div className="lobby-profile-content">
-                    <div className="lobby-profile-info">
-                      <ProfileImage
-                        user={profileUser}
-                        className="lobby-profile-image"
-                      />
-
-                      <h3>
-                        {profileUser.nickname || profileUser.name || "未設定暱稱"}
-                      </h3>
-
-                      <p className="lobby-profile-bio">
-                        {profileUser.description?.trim() || "這位玩家尚未填寫自我介紹。"}
-                      </p>
-                    </div>
-
-                    <div className="lobby-profile-avatar-wrap">
-                      <AvatarRenderer
-                        config={profileUser.avatar_config}
-                        className="lobby-profile-avatar"
-                      />
-                    </div>
-                  </div>
-                </section>
-              </div>
-            )}
+            <LobbyProfileModal
+              user={profileUser}
+              onClose={() => setProfileUser(null)}
+            />
           </div>
         )}
 
