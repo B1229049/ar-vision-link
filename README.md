@@ -158,7 +158,6 @@ id INT8 PRIMARY KEY
 name VARCHAR
 nickname VARCHAR
 description TEXT
-extra_info TEXT
 is_active BOOLEAN
 created_at TIMESTAMPTZ
 updated_at TIMESTAMPTZ

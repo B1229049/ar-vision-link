@@ -112,9 +112,6 @@ function Profile() {
               @{currentUser.nickname || "unknown"}
             </p>
 
-            {currentUser.description?.trim() && (
-              <p className="profile-bio">{currentUser.description}</p>
-            )}
           </div>
 
           <div className="profile-avatar-stage">
@@ -126,13 +123,20 @@ function Profile() {
           </div>
         </div>
 
+        <section className="profile-bio-section">
+          <div className="profile-section-heading">
+            <h3>自我介紹</h3>
+          </div>
+          <p>{currentUser.description?.trim() || "尚未填寫自我介紹"}</p>
+        </section>
+
         <div className="profile-media-section">
           <div className="profile-section-heading">
             <h3>動態牆</h3>
           </div>
 
           <div className="profile-media-grid">
-            {Array.from({ length: 3 }).map((_, index) => (
+            {Array.from({ length: 2 }).map((_, index) => (
               <div className="profile-media-tile" key={index}>
                 {selfies[index] && (
                   <>

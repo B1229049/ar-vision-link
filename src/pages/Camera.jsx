@@ -455,10 +455,6 @@ function Camera() {
                 {face.user.description || "尚無介紹"}
               </div>
 
-              <div className="extra-info">
-                {face.user.extra_info || "無額外資訊"}
-              </div>
-
               <div className="time-info">
                 建立：{formatDate(face.user.created_at)}
               </div>

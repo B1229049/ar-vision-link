@@ -12,7 +12,6 @@ function EditProfile() {
   const [name, setName] = useState("");
   const [nickname, setNickname] = useState("");
   const [description, setDescription] = useState("");
-  const [extraInfo, setExtraInfo] = useState("");
   const [profileUrl, setProfileUrl] = useState("");
   const [processingImage, setProcessingImage] = useState(false);
   const [imageError, setImageError] = useState("");
@@ -36,7 +35,6 @@ function EditProfile() {
     setName(user.name || "");
     setNickname(user.nickname || "");
     setDescription(user.description || "");
-    setExtraInfo(user.extra_info || "");
     setProfileUrl(user.profile_url || "");
   }, [navigate]);
 
@@ -86,7 +84,6 @@ function EditProfile() {
           name: name.trim(),
           nickname: nickname.trim(),
           description: description.trim(),
-          extra_info: extraInfo.trim(),
           ...(profileUrl !== (currentUser.profile_url || "")
             ? { profile_url: profileUrl }
             : {}),
@@ -135,7 +132,7 @@ function EditProfile() {
         <h2>編輯個人資料</h2>
 
         <p className="edit-subtitle">
-          修改你的頭像、名稱、暱稱、自我介紹與額外資訊。
+          修改你的頭像、名稱、暱稱與自我介紹。
         </p>
 
         <div className="edit-profile-image-section">
@@ -205,15 +202,6 @@ function EditProfile() {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="簡短介紹自己"
-          />
-        </div>
-
-        <div className="edit-field">
-          <label>額外資訊</label>
-          <textarea
-            value={extraInfo}
-            onChange={(e) => setExtraInfo(e.target.value)}
-            placeholder="例如：IG / 備註 / 興趣"
           />
         </div>
 

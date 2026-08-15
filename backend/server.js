@@ -50,7 +50,7 @@ const upload = multer({
 });
 
 const AR_SELFIE_BUCKET = "ar-selfies";
-const MAX_AR_SELFIES_PER_USER = 3;
+const MAX_AR_SELFIES_PER_USER = 2;
 const MAX_AR_SELFIE_BYTES = 2 * 1024 * 1024;
 const MAX_AR_SELFIE_THUMBNAIL_BYTES = 160 * 1024;
 
@@ -59,7 +59,6 @@ const USER_PUBLIC_SELECT = `
   name,
   nickname,
   description,
-  extra_info,
   profile_url,
   avatar_config,
   is_active,
@@ -72,7 +71,6 @@ const USER_PRIVATE_SELECT = `
   name,
   nickname,
   description,
-  extra_info,
   profile_url,
   avatar_config,
   is_active,
@@ -498,7 +496,6 @@ app.post("/api/users/register", async (req, res) => {
       name,
       nickname,
       description,
-      extra_info,
       profile_url,
       face_embedding,
       avatar_config,
@@ -534,7 +531,6 @@ app.post("/api/users/register", async (req, res) => {
           name: name.trim(),
           nickname: nickname?.trim() || "",
           description: description?.trim() || "",
-          extra_info: extra_info?.trim() || "",
           profile_url: profile_url || "",
           avatar_config: normalizeAvatarConfig(
             avatar_config || createRandomAvatarConfig()
@@ -566,7 +562,6 @@ app.put("/api/users/:id", async (req, res) => {
       name,
       nickname,
       description,
-      extra_info,
       profile_url,
       is_active,
     } = req.body;
@@ -578,7 +573,6 @@ app.put("/api/users/:id", async (req, res) => {
     if (name !== undefined) updateData.name = name;
     if (nickname !== undefined) updateData.nickname = nickname;
     if (description !== undefined) updateData.description = description;
-    if (extra_info !== undefined) updateData.extra_info = extra_info;
     if (profile_url !== undefined) {
       if (typeof profile_url !== "string" || !profile_url.startsWith("data:image/")) {
         return res.status(400).json({
@@ -894,7 +888,7 @@ app.post("/api/users/:id/ar-selfies", async (req, res) => {
       .eq("user_id", userId);
     if (countError) throw countError;
     if (count >= MAX_AR_SELFIES_PER_USER) {
-      return res.status(409).json({ success: false, error: "每位使用者最多只能保留 3 張 AR 自拍" });
+      return res.status(409).json({ success: false, error: "每位使用者最多只能保留 2 張 AR 自拍" });
     }
 
     const fileId = crypto.randomUUID();

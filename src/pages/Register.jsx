@@ -69,7 +69,6 @@ function Register() {
   const [name, setName] = useState("");
   const [nickname, setNickname] = useState("");
   const [description, setDescription] = useState("");
-  const [extraInfo, setExtraInfo] = useState("");
 
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -248,7 +247,6 @@ function Register() {
           name: name.trim(),
           nickname: nickname.trim(),
           description: description.trim(),
-          extra_info: extraInfo.trim(),
           is_active: true,
           face_embedding: embedding,
           profile_url: capturedImage,
@@ -277,7 +275,6 @@ function Register() {
       setName("");
       setNickname("");
       setDescription("");
-      setExtraInfo("");
       setCapturedImage(null);
       setMode("idle");
       setStep(1);
@@ -333,15 +330,6 @@ function Register() {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="簡短介紹自己"
-              />
-            </div>
-
-            <div className="field">
-              <label>額外資訊（可選）</label>
-              <textarea
-                value={extraInfo}
-                onChange={(e) => setExtraInfo(e.target.value)}
-                placeholder="例如：IG / 備註"
               />
             </div>
 
