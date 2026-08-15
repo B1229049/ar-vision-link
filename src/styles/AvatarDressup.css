@@ -286,8 +286,8 @@
     height: clamp(235px, 30dvh, 270px);
     min-height: clamp(235px, 30dvh, 270px);
     padding-inline: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 18px;
+    border: 0;
+    border-radius: 0;
     margin-bottom: 14px;
   }
 
@@ -302,8 +302,9 @@
   }
 
   .avatar-dressup-platform {
-    top: calc(50% + clamp(90px, 12dvh, 104px));
+    top: calc(50% + clamp(78px, 10dvh, 90px));
     width: min(190px, 92%);
+    height: 26px;
   }
 
   .avatar-dressup-actions {
@@ -315,14 +316,14 @@
   }
 
   .avatar-tabs {
-    padding: 18px 12px 8px;
+    padding: 10px 12px 5px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   }
 
   .avatar-tab {
-    min-height: 45px;
-    padding: 4px 6px 11px;
-    gap: 2px;
+    min-height: 36px;
+    padding: 2px 6px 6px;
+    gap: 1px;
   }
 
   .avatar-tab svg {
@@ -335,7 +336,7 @@
   }
 
   .avatar-tab::after {
-    bottom: 3px;
+    display: none;
   }
 
   .avatar-item-grid {
