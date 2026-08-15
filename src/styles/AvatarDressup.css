@@ -297,9 +297,9 @@
   }
 
   .avatar-dressup-renderer {
-    width: clamp(135px, 38.88vw, 156px);
+    width: clamp(122px, 35vw, 140px);
     max-width: 100%;
-    transform: translateY(12px);
+    transform: translateY(-6px);
   }
 
   .avatar-dressup-platform {
@@ -335,7 +335,7 @@
   }
 
   .avatar-tab span {
-    font-size: 11px;
+    font-size: 10px;
   }
 
   .avatar-tab::after {
@@ -447,12 +447,12 @@
   }
 
   .avatar-tab svg {
-    width: clamp(19px, 1.75vw, 23px);
-    height: clamp(19px, 1.75vw, 23px);
+    width: clamp(23px, 2.1vw, 28px);
+    height: clamp(23px, 2.1vw, 28px);
   }
 
   .avatar-tab span {
-    font-size: 12px;
+    font-size: 11px;
   }
 
   .avatar-tab::after {
