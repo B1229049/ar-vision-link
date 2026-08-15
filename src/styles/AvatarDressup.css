@@ -432,12 +432,12 @@
   .avatar-tabs {
     grid-column: 1;
     grid-row: 1;
-    padding: clamp(38px, 6dvh, 54px) clamp(16px, 2.5vw, 28px) 10px;
+    padding: clamp(30px, 4.8dvh, 43px) clamp(16px, 2.5vw, 28px) 8px;
   }
 
   .avatar-tab {
-    min-height: clamp(54px, 10dvh, 70px);
-    padding: 5px 6px 13px;
+    min-height: clamp(43px, 8dvh, 56px);
+    padding: 4px 6px 10px;
     gap: 3px;
   }
 
