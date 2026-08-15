@@ -7,7 +7,8 @@ export const AR_SELFIE_EFFECTS = [
   { id: "sunglasses", label: "墨鏡", icon: "▰" },
   { id: "mask", label: "霓虹面具", icon: "◒" },
   { id: "crown", label: "皇冠", icon: "♛" },
-  { id: "cat", label: "動物耳鼻", icon: "ฅ" },
+  { id: "hat", label: "3D 派對帽", icon: "△" },
+  { id: "cat", label: "狗狗", icon: "ฅ" },
   { id: "cyber", label: "賽博臉譜", icon: "◇" },
 ];
 

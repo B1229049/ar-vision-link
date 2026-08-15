@@ -1,135 +1,141 @@
 import * as THREE from "three";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
-const THREE_EFFECTS = new Set(["sunglasses", "mask", "cat"]);
+const ASSET_BASE = `${import.meta.env.BASE_URL}ar-assets`;
+const THREE_EFFECTS = new Set(["sunglasses", "mask", "cat", "hat"]);
 
 function disposeObject(object) {
   object.traverse((child) => {
     child.geometry?.dispose?.();
-    if (Array.isArray(child.material)) child.material.forEach((material) => material.dispose());
-    else child.material?.dispose?.();
+    const materials = Array.isArray(child.material) ? child.material : [child.material];
+    materials.filter(Boolean).forEach((material) => {
+      Object.values(material).forEach((value) => value?.isTexture && value.dispose());
+      material.dispose?.();
+    });
   });
 }
 
-function createGlasses() {
-  const group = new THREE.Group();
-  const frameMaterial = new THREE.MeshPhysicalMaterial({
-    color: 0x090b11,
-    metalness: 0.82,
-    roughness: 0.22,
-    clearcoat: 1,
-    clearcoatRoughness: 0.12,
+function loadGLTF(url) {
+  return new Promise((resolve, reject) => {
+    new GLTFLoader().load(url, (result) => resolve(result.scene), undefined, reject);
   });
-  const lensMaterial = new THREE.MeshPhysicalMaterial({
-    color: 0x101c30,
-    metalness: 0.18,
-    roughness: 0.08,
-    transmission: 0.18,
+}
+
+function loadGeometry(url) {
+  return new Promise((resolve, reject) => {
+    new THREE.BufferGeometryLoader().load(url, resolve, undefined, reject);
+  });
+}
+
+function loadTexture(url, colorTexture = true) {
+  return new Promise((resolve, reject) => {
+    new THREE.TextureLoader().load(url, (texture) => {
+      if (colorTexture) texture.colorSpace = THREE.SRGBColorSpace;
+      texture.anisotropy = 4;
+      resolve(texture);
+    }, undefined, reject);
+  });
+}
+
+function normalizeModel(model, targetWidth = 1) {
+  model.updateMatrixWorld(true);
+  const bounds = new THREE.Box3().setFromObject(model);
+  const size = bounds.getSize(new THREE.Vector3());
+  const center = bounds.getCenter(new THREE.Vector3());
+  const scale = targetWidth / Math.max(size.x, 0.001);
+  model.scale.multiplyScalar(scale);
+  model.position.addScaledVector(center, -scale);
+  return model;
+}
+
+async function createOfficialGlasses() {
+  const model = await loadGLTF(`${ASSET_BASE}/glasses/scene.gltf`);
+  normalizeModel(model, 1.38);
+  model.traverse((child) => {
+    if (!child.isMesh) return;
+    child.frustumCulled = false;
+    child.material.metalness = Math.max(child.material.metalness || 0, 0.35);
+    child.material.roughness = Math.min(child.material.roughness ?? 0.5, 0.28);
+    child.material.needsUpdate = true;
+  });
+  return model;
+}
+
+async function createOfficialMask() {
+  const [geometry, colorMap] = await Promise.all([
+    loadGeometry(`${ASSET_BASE}/mask/anonymous.json`),
+    loadTexture(`${ASSET_BASE}/mask/anonymous.png`),
+  ]);
+  geometry.computeVertexNormals();
+  const material = new THREE.MeshStandardMaterial({
+    map: colorMap,
+    roughness: 0.48,
+    metalness: 0.05,
     transparent: true,
-    opacity: 0.92,
+    alphaTest: 0.08,
     side: THREE.DoubleSide,
   });
-
-  [-0.34, 0.34].forEach((x) => {
-    const lens = new THREE.Mesh(new THREE.CircleGeometry(0.29, 48), lensMaterial);
-    lens.position.set(x, 0, 0.012);
-    lens.scale.y = 0.72;
-    group.add(lens);
-
-    const rim = new THREE.Mesh(new THREE.TorusGeometry(0.29, 0.035, 12, 48), frameMaterial);
-    rim.position.set(x, 0, 0.04);
-    rim.scale.y = 0.72;
-    group.add(rim);
-  });
-
-  const bridge = new THREE.Mesh(new THREE.TorusGeometry(0.13, 0.025, 10, 24, Math.PI), frameMaterial);
-  bridge.position.set(0, 0.025, 0.04);
-  bridge.rotation.z = Math.PI;
-  group.add(bridge);
-
-  [-1, 1].forEach((side) => {
-    const arm = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.035, 0.035), frameMaterial);
-    arm.position.set(side * 0.72, 0.02, -0.02);
-    arm.rotation.y = side * -0.2;
-    group.add(arm);
-  });
-  return group;
+  const mesh = new THREE.Mesh(geometry, material);
+  mesh.frustumCulled = false;
+  normalizeModel(mesh, 1.62);
+  return mesh;
 }
 
-function createMask() {
-  const shape = new THREE.Shape();
-  shape.moveTo(-0.9, 0.12);
-  shape.bezierCurveTo(-0.7, 0.5, -0.28, 0.55, 0, 0.32);
-  shape.bezierCurveTo(0.28, 0.55, 0.7, 0.5, 0.9, 0.12);
-  shape.bezierCurveTo(0.72, -0.42, 0.3, -0.43, 0.08, -0.22);
-  shape.bezierCurveTo(0, -0.12, 0, -0.12, -0.08, -0.22);
-  shape.bezierCurveTo(-0.3, -0.43, -0.72, -0.42, -0.9, 0.12);
-
-  [-0.36, 0.36].forEach((x) => {
-    const hole = new THREE.Path();
-    hole.absellipse(x, 0.05, 0.22, 0.105, 0, Math.PI * 2, true);
-    shape.holes.push(hole);
-  });
-
-  const geometry = new THREE.ExtrudeGeometry(shape, {
-    depth: 0.075,
-    bevelEnabled: true,
-    bevelSegments: 3,
-    bevelSize: 0.035,
-    bevelThickness: 0.025,
-    curveSegments: 32,
-  });
-  geometry.center();
-  const material = new THREE.MeshPhysicalMaterial({
-    color: 0x6d28d9,
-    emissive: 0x2e1065,
-    emissiveIntensity: 0.45,
-    metalness: 0.58,
-    roughness: 0.2,
-    clearcoat: 1,
-    clearcoatRoughness: 0.12,
-    side: THREE.DoubleSide,
-  });
-  const mask = new THREE.Mesh(geometry, material);
+async function createOfficialDog() {
+  const [earsGeometry, noseGeometry, earsMap, earsNormal, earsAlpha, noseMap, noseNormal] =
+    await Promise.all([
+      loadGeometry(`${ASSET_BASE}/dog/dog_ears.json`),
+      loadGeometry(`${ASSET_BASE}/dog/dog_nose.json`),
+      loadTexture(`${ASSET_BASE}/dog/texture_ears.jpg`),
+      loadTexture(`${ASSET_BASE}/dog/normal_ears.jpg`, false),
+      loadTexture(`${ASSET_BASE}/dog/alpha_ears_256.jpg`, false),
+      loadTexture(`${ASSET_BASE}/dog/texture_nose.jpg`),
+      loadTexture(`${ASSET_BASE}/dog/normal_nose.jpg`, false),
+    ]);
   const group = new THREE.Group();
-  group.add(mask);
-
-  const edge = new THREE.LineSegments(
-    new THREE.EdgesGeometry(geometry, 25),
-    new THREE.LineBasicMaterial({ color: 0xf0abfc, transparent: true, opacity: 0.8 })
+  const ears = new THREE.Mesh(
+    earsGeometry,
+    new THREE.MeshStandardMaterial({
+      map: earsMap,
+      normalMap: earsNormal,
+      alphaMap: earsAlpha,
+      transparent: true,
+      alphaTest: 0.12,
+      roughness: 0.78,
+      side: THREE.DoubleSide,
+    })
   );
-  edge.position.z = 0.004;
-  group.add(edge);
+  ears.scale.setScalar(0.025);
+  ears.position.y = -0.3;
+  ears.frustumCulled = false;
+
+  const nose = new THREE.Mesh(
+    noseGeometry,
+    new THREE.MeshPhysicalMaterial({
+      map: noseMap,
+      normalMap: noseNormal,
+      roughness: 0.3,
+      clearcoat: 0.65,
+      clearcoatRoughness: 0.18,
+    })
+  );
+  nose.scale.setScalar(0.018);
+  nose.position.set(0, -0.05, 0.15);
+  nose.frustumCulled = false;
+  group.add(ears, nose);
   return group;
 }
 
-function createAnimalFace() {
-  const group = new THREE.Group();
-  const fur = new THREE.MeshStandardMaterial({ color: 0x7c3f1d, roughness: 0.72 });
-  const inner = new THREE.MeshStandardMaterial({ color: 0xf0a28b, roughness: 0.7 });
-  const muzzleMaterial = new THREE.MeshStandardMaterial({ color: 0xf2c6a0, roughness: 0.82 });
-  const noseMaterial = new THREE.MeshPhysicalMaterial({ color: 0x151015, roughness: 0.2, clearcoat: 0.85 });
-
-  [-1, 1].forEach((side) => {
-    const ear = new THREE.Mesh(new THREE.ConeGeometry(0.27, 0.62, 24), fur);
-    ear.position.set(side * 0.55, 0.53, 0);
-    ear.rotation.z = side * -0.28;
-    group.add(ear);
-    const earInner = new THREE.Mesh(new THREE.ConeGeometry(0.14, 0.4, 24), inner);
-    earInner.position.set(side * 0.55, 0.53, 0.035);
-    earInner.rotation.z = side * -0.28;
-    group.add(earInner);
-
-    const muzzle = new THREE.Mesh(new THREE.SphereGeometry(0.25, 28, 18), muzzleMaterial);
-    muzzle.position.set(side * 0.18, -0.38, 0.08);
-    muzzle.scale.set(1, 0.75, 0.55);
-    group.add(muzzle);
+async function createOfficialHat() {
+  const model = await loadGLTF(`${ASSET_BASE}/hat/scene.gltf`);
+  normalizeModel(model, 1.45);
+  model.traverse((child) => {
+    if (!child.isMesh) return;
+    child.frustumCulled = false;
+    child.material.roughness = Math.min(child.material.roughness ?? 0.7, 0.58);
+    child.material.needsUpdate = true;
   });
-
-  const nose = new THREE.Mesh(new THREE.SphereGeometry(0.17, 28, 18), noseMaterial);
-  nose.position.set(0, -0.24, 0.2);
-  nose.scale.set(1, 0.68, 0.55);
-  group.add(nose);
-  return group;
+  return model;
 }
 
 function landmarkPoint(landmarks, index, width, height) {
@@ -138,8 +144,9 @@ function landmarkPoint(landmarks, index, width, height) {
 }
 
 export class ARSelfie3DRenderer {
-  constructor(canvas) {
+  constructor(canvas, onReady) {
     this.canvas = canvas;
+    this.onReady = onReady;
     this.renderer = new THREE.WebGLRenderer({
       canvas,
       alpha: true,
@@ -150,28 +157,51 @@ export class ARSelfie3DRenderer {
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     this.renderer.setClearColor(0x000000, 0);
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
+    this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    this.renderer.toneMappingExposure = 1.15;
+
     this.scene = new THREE.Scene();
     this.camera = new THREE.OrthographicCamera(0, 1, 1, 0, -2000, 2000);
     this.camera.position.z = 1000;
     this.root = new THREE.Group();
     this.scene.add(this.root);
-    this.scene.add(new THREE.HemisphereLight(0xe8f2ff, 0x3a2035, 2.25));
-    const keyLight = new THREE.DirectionalLight(0xffffff, 3.2);
-    keyLight.position.set(-2, -3, 5);
+    this.scene.add(new THREE.HemisphereLight(0xf5f7ff, 0x38251d, 2.5));
+    const keyLight = new THREE.DirectionalLight(0xffffff, 3.4);
+    keyLight.position.set(-2, 4, 6);
     this.scene.add(keyLight);
-    const rimLight = new THREE.DirectionalLight(0xb86cff, 2.4);
+    const rimLight = new THREE.DirectionalLight(0xa970ff, 2.2);
     rimLight.position.set(4, 1, 3);
     this.scene.add(rimLight);
 
-    this.effects = {
-      sunglasses: createGlasses(),
-      mask: createMask(),
-      cat: createAnimalFace(),
+    this.effects = Object.fromEntries([...THREE_EFFECTS].map((id) => {
+      const holder = new THREE.Group();
+      holder.visible = false;
+      holder.userData.loaded = false;
+      this.root.add(holder);
+      return [id, holder];
+    }));
+    this.loadAssets();
+  }
+
+  async loadAssets() {
+    const factories = {
+      sunglasses: createOfficialGlasses,
+      mask: createOfficialMask,
+      cat: createOfficialDog,
+      hat: createOfficialHat,
     };
-    Object.values(this.effects).forEach((effect) => {
-      effect.visible = false;
-      this.root.add(effect);
-    });
+    const results = await Promise.allSettled(Object.entries(factories).map(async ([id, factory]) => {
+      const model = await factory();
+      if (this.disposed) {
+        disposeObject(model);
+        return;
+      }
+      this.effects[id].add(model);
+      this.effects[id].userData.loaded = true;
+    }));
+    const failures = results.filter((result) => result.status === "rejected");
+    if (failures.length) console.warn("Some AR models could not be loaded", failures);
+    this.onReady?.(failures.length === 0);
   }
 
   resize(width, height) {
@@ -193,7 +223,9 @@ export class ARSelfie3DRenderer {
 
   render(landmarks, width, height, effectId) {
     this.resize(width, height);
-    Object.entries(this.effects).forEach(([id, effect]) => { effect.visible = id === effectId; });
+    Object.entries(this.effects).forEach(([id, effect]) => {
+      effect.visible = id === effectId && effect.userData.loaded;
+    });
     if (!landmarks?.length || !THREE_EFFECTS.has(effectId)) {
       this.renderer.clear();
       return;
@@ -209,29 +241,30 @@ export class ARSelfie3DRenderer {
     const roll = Math.atan2(rightEye.y - leftEye.y, rightEye.x - leftEye.x);
     const yaw = THREE.MathUtils.clamp((nose.x - eyeCenter.x) / eyeDistance * 1.65, -0.72, 0.72);
     const faceHeight = Math.max(eyeDistance, forehead.distanceTo(chin));
-    const pitch = THREE.MathUtils.clamp(((nose.y - eyeCenter.y) / faceHeight - 0.2) * 1.7, -0.42, 0.42);
-
+    const pitch = THREE.MathUtils.clamp(((nose.y - eyeCenter.y) / faceHeight + 0.2) * 1.55, -0.42, 0.42);
     const target = this.effects[effectId];
+
     target.rotation.set(pitch, -yaw, roll);
     target.position.z = 20;
-
     if (effectId === "sunglasses") {
-      target.position.x = eyeCenter.x;
-      target.position.y = eyeCenter.y;
-      target.scale.setScalar(eyeDistance * 1.08);
+      target.position.set(eyeCenter.x, eyeCenter.y, 20);
+      target.scale.setScalar(eyeDistance);
     } else if (effectId === "mask") {
-      target.position.x = eyeCenter.x;
-      target.position.y = eyeCenter.y + eyeDistance * 0.03;
-      target.scale.setScalar(eyeDistance * 0.92);
+      target.position.set(eyeCenter.x, eyeCenter.y - eyeDistance * 0.28, 20);
+      target.scale.setScalar(eyeDistance * 1.03);
+    } else if (effectId === "hat") {
+      target.position.set(forehead.x, forehead.y + eyeDistance * 0.48, 20);
+      target.scale.setScalar(eyeDistance * 1.05);
+      target.rotation.x = pitch - 0.08;
     } else {
-      target.position.x = nose.x;
-      target.position.y = nose.y - eyeDistance * 0.08;
-      target.scale.setScalar(eyeDistance * 0.92);
+      target.position.set(nose.x, nose.y + eyeDistance * 0.08, 20);
+      target.scale.setScalar(eyeDistance * 0.96);
     }
     this.renderer.render(this.scene, this.camera);
   }
 
   dispose() {
+    this.disposed = true;
     Object.values(this.effects).forEach(disposeObject);
     this.renderer.dispose();
   }
