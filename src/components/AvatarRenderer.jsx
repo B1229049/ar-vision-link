@@ -31,11 +31,12 @@ function layerStyle(setting) {
   };
 }
 
-function AvatarRenderer({ config, itemSettings, className = "", style }) {
+function AvatarRenderer({ config, itemSettings, templateSettings, className = "", style }) {
   const normalizedConfig = normalizeAvatarConfig(config);
   const bodyY = Number(DEFAULT_AVATAR_BODY_Y) || 0;
-  const baseTemplateSetting = getTemplateSetting("template-00");
-  const bodyTemplateSetting = getTemplateSetting("template-02");
+  const baseTemplateSetting = getTemplateSetting("template-00", templateSettings);
+  const headTemplateSetting = getTemplateSetting("template-01", templateSettings);
+  const bodyTemplateSetting = getTemplateSetting("template-02", templateSettings);
 
   const resolvedItems = AVATAR_CATEGORIES.reduce((acc, { key }) => {
     acc[key] = getAvatarItem(key, normalizedConfig[key]);
@@ -60,12 +61,23 @@ function AvatarRenderer({ config, itemSettings, className = "", style }) {
           );
         })}
 
-        <img
-          className="avatar-layer avatar-base"
-          src={AVATAR_TEMPLATE.base}
-          alt=""
-          style={layerStyle(baseTemplateSetting)}
-        />
+        {baseTemplateSetting.visible !== false && (
+          <img
+            className="avatar-layer avatar-base"
+            src={AVATAR_TEMPLATE.base}
+            alt=""
+            style={layerStyle(baseTemplateSetting)}
+          />
+        )}
+
+        {headTemplateSetting.visible !== false && (
+          <img
+            className="avatar-layer avatar-head"
+            src={AVATAR_TEMPLATE.head}
+            alt=""
+            style={layerStyle(headTemplateSetting)}
+          />
+        )}
 
         {resolvedItems.hair && (
           <img
@@ -89,19 +101,21 @@ function AvatarRenderer({ config, itemSettings, className = "", style }) {
           />
         )}
 
-        <img
-          className="avatar-layer avatar-body"
-          src={AVATAR_TEMPLATE.body}
-          alt=""
-          style={
-            bodyTemplateSetting.x_pct !== undefined ||
-            bodyTemplateSetting.y_pct !== undefined ||
-            bodyTemplateSetting.x !== undefined ||
-            bodyTemplateSetting.y !== undefined
-              ? layerStyle(bodyTemplateSetting)
-              : { transform: `translateY(${bodyY}px)` }
-          }
-        />
+        {bodyTemplateSetting.visible !== false && (
+          <img
+            className="avatar-layer avatar-body"
+            src={AVATAR_TEMPLATE.body}
+            alt=""
+            style={
+              bodyTemplateSetting.x_pct !== undefined ||
+              bodyTemplateSetting.y_pct !== undefined ||
+              bodyTemplateSetting.x !== undefined ||
+              bodyTemplateSetting.y !== undefined
+                ? layerStyle(bodyTemplateSetting)
+                : { transform: `translateY(${bodyY}px)` }
+            }
+          />
+        )}
 
         {resolvedItems.bottoms && (
           <img
@@ -121,6 +135,17 @@ function AvatarRenderer({ config, itemSettings, className = "", style }) {
             alt="使用者虛擬替身"
             style={layerStyle(
               getItemSetting(itemSettings, resolvedItems.top.id, "front")
+            )}
+          />
+        )}
+
+        {resolvedItems.bottoms?.overlayImg && (
+          <img
+            className="avatar-layer avatar-layer-bottoms-overlay"
+            src={resolvedItems.bottoms.overlayImg}
+            alt=""
+            style={layerStyle(
+              getItemSetting(itemSettings, resolvedItems.bottoms.id, "overlay")
             )}
           />
         )}

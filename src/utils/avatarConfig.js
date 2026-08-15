@@ -73,6 +73,7 @@ export const DEFAULT_AVATAR_CONFIG = {
 
 export const AVATAR_TEMPLATE = {
   base: asset("templates/模板00.png"),
+  head: asset("templates/模板01.png"),
   body: asset("templates/模板02.png"),
 };
 
@@ -122,14 +123,18 @@ export function getItemSetting(settings, itemId, layer = "front") {
   );
 }
 
-export function getTemplateSetting(templateId) {
-  return (
-    DEFAULT_AVATAR_TEMPLATE_SETTINGS[templateId] || {
-      scale: 1,
-      x_pct: 0,
-      y_pct: 0,
-    }
-  );
+export function getTemplateSetting(templateId, templateSettings) {
+  const fallback = DEFAULT_AVATAR_TEMPLATE_SETTINGS[templateId] || {
+    scale: 1,
+    x_pct: 0,
+    y_pct: 0,
+    visible: templateId !== "template-01",
+  };
+
+  return {
+    ...fallback,
+    ...(templateSettings?.[templateId] || {}),
+  };
 }
 
 export {

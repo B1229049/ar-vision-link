@@ -28,6 +28,26 @@ export const STORE_CATALOG_SOURCE = [
         "front": "store/bottoms/褲裝01.png"
       }
     },
+    "templates": {
+      "template-00": {
+        "scale": 1,
+        "x_pct": 0,
+        "y_pct": -0.7,
+        "visible": true
+      },
+      "template-01": {
+        "scale": 1,
+        "x_pct": 0,
+        "y_pct": 0,
+        "visible": false
+      },
+      "template-02": {
+        "scale": 1,
+        "x_pct": 0,
+        "y_pct": 0.3,
+        "visible": true
+      }
+    },
     "settings": {
       "store-outfit-01-top_front": {
         "scale": 0.42,
@@ -76,6 +96,26 @@ export const STORE_CATALOG_SOURCE = [
         "id": "store-outfit-02-bottoms",
         "label": "傑克伯爵・下半身",
         "front": "store/bottoms/褲裝02.png"
+      }
+    },
+    "templates": {
+      "template-00": {
+        "scale": 1,
+        "x_pct": 0,
+        "y_pct": -0.7,
+        "visible": true
+      },
+      "template-01": {
+        "scale": 1,
+        "x_pct": 0,
+        "y_pct": 0,
+        "visible": false
+      },
+      "template-02": {
+        "scale": 1,
+        "x_pct": 0,
+        "y_pct": 0.3,
+        "visible": true
       }
     },
     "settings": {
@@ -129,6 +169,26 @@ export const STORE_CATALOG_SOURCE = [
         "front": "store/bottoms/褲裝03.png"
       }
     },
+    "templates": {
+      "template-00": {
+        "scale": 1,
+        "x_pct": 0,
+        "y_pct": -0.7,
+        "visible": true
+      },
+      "template-01": {
+        "scale": 1,
+        "x_pct": 0,
+        "y_pct": 0,
+        "visible": false
+      },
+      "template-02": {
+        "scale": 1,
+        "x_pct": 0,
+        "y_pct": 0.3,
+        "visible": true
+      }
+    },
     "settings": {
       "store-outfit-03-hair_front": {
         "scale": 0.96,
@@ -151,9 +211,9 @@ export const STORE_CATALOG_SOURCE = [
         "y_pct": 18.95
       },
       "store-outfit-03-bottoms_front": {
-        "scale": 0.79,
+        "scale": 0.8,
         "x_pct": -0.65,
-        "y_pct": 14.05
+        "y_pct": 13.4
       }
     }
   },
@@ -184,6 +244,26 @@ export const STORE_CATALOG_SOURCE = [
         "front": "store/bottoms/褲裝04.png"
       }
     },
+    "templates": {
+      "template-00": {
+        "scale": 1,
+        "x_pct": 0,
+        "y_pct": -0.7,
+        "visible": true
+      },
+      "template-01": {
+        "scale": 1,
+        "x_pct": 0,
+        "y_pct": 0,
+        "visible": false
+      },
+      "template-02": {
+        "scale": 1,
+        "x_pct": 0,
+        "y_pct": 0.3,
+        "visible": true
+      }
+    },
     "settings": {
       "store-outfit-04-hair_front": {
         "scale": 1,
@@ -201,38 +281,58 @@ export const STORE_CATALOG_SOURCE = [
         "y_pct": 14.4
       },
       "store-outfit-04-bottoms_front": {
-        "scale": 0.79,
+        "scale": 0.8,
         "x_pct": -0.65,
-        "y_pct": 14.05
+        "y_pct": 13.4
       }
     }
   },
   {
     "id": "outfit-05",
-    "name": "九幽冥尊",
+    "name": "夜真主",
     "badge": "NEW",
     "published": true,
     "pieces": {
       "hair": {
         "id": "store-outfit-05-hair",
-        "label": "九幽冥尊・頭部",
+        "label": "夜真主・頭部",
         "front": "store/hair/頭髮05-1.png",
         "back": "store/hair/頭髮05-2.png"
       },
       "face": {
         "id": "store-outfit-05-face",
-        "label": "九幽冥尊・臉部",
+        "label": "夜真主・臉部",
         "front": "store/face/表情05.png"
       },
       "top": {
         "id": "store-outfit-05-top",
-        "label": "九幽冥尊・上半身",
+        "label": "夜真主・上半身",
         "front": "store/top/上衣05.png"
       },
       "bottoms": {
         "id": "store-outfit-05-bottoms",
-        "label": "九幽冥尊・下半身",
+        "label": "夜真主・下半身",
         "front": "store/bottoms/褲裝05.png"
+      }
+    },
+    "templates": {
+      "template-00": {
+        "scale": 1,
+        "x_pct": 0,
+        "y_pct": -0.7,
+        "visible": true
+      },
+      "template-01": {
+        "scale": 1,
+        "x_pct": 0,
+        "y_pct": 0,
+        "visible": false
+      },
+      "template-02": {
+        "scale": 1,
+        "x_pct": 0,
+        "y_pct": 0.3,
+        "visible": true
       }
     },
     "settings": {
@@ -260,6 +360,82 @@ export const STORE_CATALOG_SOURCE = [
         "scale": 0.7,
         "x_pct": -3.25,
         "y_pct": -7.85
+      }
+    }
+  },
+  {
+    "id": "outfit-06",
+    "name": "jk",
+    "badge": "NEW",
+    "published": true,
+    "pieces": {
+      "hair": {
+        "id": "store-outfit-06-hair",
+        "label": "jk・頭部",
+        "front": "store/hair/頭髮06-1.png",
+        "back": "store/hair/頭髮06-2.png"
+      },
+      "face": {
+        "id": "store-outfit-06-face",
+        "label": "jk・臉部",
+        "front": "store/face/表情06.png"
+      },
+      "top": {
+        "id": "store-outfit-06-top",
+        "label": "jk・上半身",
+        "front": "store/top/上衣06.png"
+      },
+      "bottoms": {
+        "id": "store-outfit-06-bottoms",
+        "label": "jk・下半身",
+        "front": "store/bottoms/褲裝06-1.png"
+      }
+    },
+    "templates": {
+      "template-00": {
+        "scale": 1,
+        "x_pct": 0,
+        "y_pct": -0.7,
+        "visible": false
+      },
+      "template-01": {
+        "scale": 1,
+        "x_pct": 0.25,
+        "y_pct": -0.5,
+        "visible": true
+      },
+      "template-02": {
+        "scale": 0.89,
+        "x_pct": 0,
+        "y_pct": 1.8,
+        "visible": true
+      }
+    },
+    "settings": {
+      "store-outfit-06-hair_front": {
+        "scale": 1,
+        "x_pct": 3.6,
+        "y_pct": -1.65
+      },
+      "store-outfit-06-hair_back": {
+        "scale": 1,
+        "x_pct": -1.95,
+        "y_pct": -0.65
+      },
+      "store-outfit-06-face_front": {
+        "scale": 0.7,
+        "x_pct": -2.95,
+        "y_pct": -3.6
+      },
+      "store-outfit-06-top_front": {
+        "scale": 0.54,
+        "x_pct": -1,
+        "y_pct": 17
+      },
+      "store-outfit-06-bottoms_front": {
+        "scale": 0.68,
+        "x_pct": -0.85,
+        "y_pct": 14.4
       }
     }
   }

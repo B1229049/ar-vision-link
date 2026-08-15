@@ -34,12 +34,18 @@
       .stage-panel { display: grid; place-items: center; min-height: calc(100vh - 44px); background: linear-gradient(180deg, #20133d 0%, #111827 100%); }
       .stage { position: relative; width: min(420px, 92%); aspect-ratio: 408 / 612; }
       .layer { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; object-position: center bottom; transform-origin: center; pointer-events: none; }
-      .layer-back { z-index: 1; } .template-00 { z-index: 2; } .hair-front { z-index: 4; } .face-front { z-index: 5; } .template-02 { z-index: 6; } .bottoms-front { z-index: 7; } .top-front { z-index: 8; }
+      .layer-back { z-index: 1; } .template-00 { z-index: 2; } .template-01 { z-index: 3; } .hair-front { z-index: 4; } .face-front { z-index: 5; } .template-02 { z-index: 6; } .bottoms-front { z-index: 7; } .top-front { z-index: 8; } .bottoms-overlay { z-index: 9; }
       .range-row { margin-top: 14px; }
       .range-row label { display: flex; justify-content: space-between; gap: 10px; }
       .actions { grid-template-columns: repeat(2,1fr); margin-top: 18px; }
       .output { min-height: 180px; margin-top: 14px; resize: vertical; font: 11px/1.45 Consolas, monospace; }
       .target { margin: 12px 0 2px; padding: 10px; border-radius: 10px; background: #101719; color: #ddd6fe; font-size: 13px; overflow-wrap: anywhere; }
+      .template-tools { margin-top: 16px; padding: 14px; border: 1px solid var(--line); border-radius: 14px; background: #101719; }
+      .template-tools summary { cursor: pointer; color: #ddd6fe; font-weight: 800; }
+      .template-tools[open] summary { margin-bottom: 12px; }
+      .template-tools .range-row label { margin-top: 10px; }
+      .check-row { display: flex; align-items: center; gap: 9px; margin: 12px 0; color: #e2e8f0; font-weight: 700; }
+      .check-row input { width: auto; accent-color: #a855f7; }
       @media (max-width: 1120px) { .app { grid-template-columns: 1fr 1fr; } .controls-panel { grid-column: 1/-1; } }
       @media (max-width: 760px) { .app { grid-template-columns: 1fr; padding: 10px; } .controls-panel { grid-column: auto; } .stage-panel { min-height: 620px; } }
     </style>
@@ -50,6 +56,24 @@
         <h1>商城素材校正器</h1>
         <p>操作方式與 Avatar 校正器相同。素材從 <code>public/store</code> 的 01 開始自動讀取。</p>
         <div id="scan-status" class="status">正在讀取素材…</div>
+
+        <details class="template-tools">
+          <summary>調整目前套裝的模板（進階）</summary>
+          <div id="template-outfit-label" class="target">尚未選擇套裝</div>
+          <label>套裝</label>
+          <select id="template-outfit"></select>
+          <label>模板</label>
+          <select id="template-target">
+            <option value="template-00">模板00</option>
+            <option value="template-01">模板01</option>
+            <option value="template-02">模板02</option>
+          </select>
+          <label class="check-row"><input id="template-visible" type="checkbox" /> 顯示此模板</label>
+          <div class="range-row"><label>大小 <span id="template-scale-value">1.00</span></label><input id="template-scale" type="range" min="0.2" max="1.8" step="0.01" /></div>
+          <div class="range-row"><label>水平位置 <span id="template-x-value">0.00</span></label><input id="template-x" type="range" min="-60" max="60" step="0.05" /></div>
+          <div class="range-row"><label>垂直位置 <span id="template-y-value">0.00</span></label><input id="template-y" type="range" min="-60" max="60" step="0.05" /></div>
+          <button id="reset-template" style="width:100%;margin-top:12px">重置此模板</button>
+        </details>
 
         <div id="preview-selectors" class="preview-selectors"></div>
         <div id="tabs" class="tabs" style="margin-top:18px"></div>
@@ -90,9 +114,9 @@
             頭部：<code>hair/頭髮01.png</code>，或 <code>頭髮01-1.png</code>＋<code>頭髮01-2.png</code><br />
             臉部：<code>face/表情01.png</code><br />
             上半身：<code>top/上衣01.png</code><br />
-            下半身：<code>bottoms/褲裝01.png</code>
+            下半身：<code>bottoms/褲裝01-1.png</code>（上衣下層）＋<code>褲裝01-2.png</code>（上衣上層）；單張 <code>褲裝01.png</code> 仍可使用
           </p>
-          <p>模板固定使用原本 Avatar 的 <code>模板00.png</code> 與 <code>模板02.png</code>，疊放順序也與原本 Avatar 校正器相同。</p>
+          <p>模板使用原本 Avatar 的 <code>模板00.png</code>、<code>模板01.png</code> 與 <code>模板02.png</code>；可在左側進階功能中為每套造型分別調整。</p>
           <textarea id="export-output" class="output" readonly></textarea>
         </div>
       </section>
@@ -103,6 +127,7 @@
       const AVATAR_TEMPLATE_BASE = "public/avatar-assets/templates";
       const STORAGE_KEY = "arvl_store_relative_settings_v3";
       const NAME_STORAGE_KEY = "arvl_store_outfit_names_v1";
+      const TEMPLATE_STORAGE_KEY = "arvl_store_template_settings_v1";
       const categories = [
         { key: "template", label: "模板" },
         { key: "hair", label: "頭部" },
@@ -119,6 +144,9 @@
         preview: { hair: "", face: "", top: "", bottoms: "" },
         settings: loadSettings(),
         names: loadNames(),
+        templateSettings: loadTemplateSettings(),
+        templateTarget: "template-00",
+        templateOutfitNumber: "",
         draftKey: "",
         draftSetting: null,
       };
@@ -131,6 +159,17 @@
       function loadNames() {
         try { return JSON.parse(localStorage.getItem(NAME_STORAGE_KEY) || "{}"); }
         catch { return {}; }
+      }
+
+      function loadTemplateSettings() {
+        try { return JSON.parse(localStorage.getItem(TEMPLATE_STORAGE_KEY) || "{}"); }
+        catch { return {}; }
+      }
+
+      function defaultTemplateSetting(templateId) {
+        if (templateId === "template-00") return { scale: 1, x_pct: 0, y_pct: -0.7, visible: true };
+        if (templateId === "template-01") return { scale: 1, x_pct: 0, y_pct: 0, visible: false };
+        return { scale: 1, x_pct: 0, y_pct: 0.3, visible: true };
       }
 
       function defaultSetting(itemId = "") {
@@ -159,6 +198,7 @@
       async function discoverTemplates() {
         const definitions = [
           ["template-00", "模板00", "模板00.png", "template-00"],
+          ["template-01", "模板01", "模板01.png", "template-01"],
           ["template-02", "模板02", "模板02.png", "template-02"],
         ];
         const result = [];
@@ -177,6 +217,7 @@
           const prefix = prefixes[category];
           let front = "";
           let back = "";
+          let overlay = "";
 
           if (category === "hair") {
             front = await firstExisting([
@@ -188,6 +229,17 @@
             back = await firstExisting([
               `${STORE_BASE}/hair/${prefix}${number}-2.png`,
               `${STORE_BASE}/hair/${number}-2.png`,
+            ]);
+          } else if (category === "bottoms") {
+            front = await firstExisting([
+              `${STORE_BASE}/bottoms/${prefix}${number}-1.png`,
+              `${STORE_BASE}/bottoms/${number}-1.png`,
+              `${STORE_BASE}/bottoms/${prefix}${number}.png`,
+              `${STORE_BASE}/bottoms/${number}.png`,
+            ]);
+            overlay = await firstExisting([
+              `${STORE_BASE}/bottoms/${prefix}${number}-2.png`,
+              `${STORE_BASE}/bottoms/${number}-2.png`,
             ]);
           } else {
             front = await firstExisting([
@@ -203,6 +255,7 @@
               label: `${categories.find((entry) => entry.key === category).label} ${number}`,
               frontImg: front,
               ...(back ? { backImg: back } : {}),
+              ...(overlay ? { overlayImg: overlay } : {}),
             });
             misses = 0;
           } else {
@@ -231,6 +284,10 @@
         if (!state.items[state.category].some((item) => item.id === state.targetId)) {
           state.targetId = state.items[state.category][0]?.id || "";
         }
+        const availableOutfits = completeNumbers();
+        if (!availableOutfits.includes(state.templateOutfitNumber)) {
+          state.templateOutfitNumber = availableOutfits[0] || "";
+        }
         state.layer = "front";
         startDraft();
 
@@ -242,6 +299,13 @@
 
       function currentList() { return state.items[state.category] || []; }
       function currentItem() { return currentList().find((item) => item.id === state.targetId) || null; }
+      function currentOutfitNumber() { return state.templateOutfitNumber || currentItem()?.number || completeNumbers()[0] || ""; }
+      function outfitTemplateSetting(number, templateId) {
+        return {
+          ...defaultTemplateSetting(templateId),
+          ...(state.templateSettings[number]?.[templateId] || {}),
+        };
+      }
       function settingKey() { return state.category === "template" ? state.targetId : `${state.targetId}_${state.layer}`; }
       function savedSetting(itemId, layer = "front") {
         const key = itemId.startsWith("template-") ? itemId : `${itemId}_${layer}`;
@@ -278,16 +342,23 @@
         });
         const base = state.items.template.find((item) => item.id === "template-00");
         const body = state.items.template.find((item) => item.id === "template-02");
-        if (base) appendImage(stage, base.img, "layer template-00", displaySetting(base.id));
+        const head = state.items.template.find((item) => item.id === "template-01");
+        const outfitNumber = currentOutfitNumber();
+        const baseSetting = outfitTemplateSetting(outfitNumber, "template-00");
+        const headSetting = outfitTemplateSetting(outfitNumber, "template-01");
+        const bodySetting = outfitTemplateSetting(outfitNumber, "template-02");
+        if (base && baseSetting.visible !== false) appendImage(stage, base.img, "layer template-00", baseSetting);
+        if (head && headSetting.visible !== false) appendImage(stage, head.img, "layer template-01", headSetting);
         const hair = state.items.hair.find((item) => item.id === state.preview.hair);
         const face = state.items.face.find((item) => item.id === state.preview.face);
         const top = state.items.top.find((item) => item.id === state.preview.top);
         const bottoms = state.items.bottoms.find((item) => item.id === state.preview.bottoms);
         if (hair) appendImage(stage, hair.frontImg, "layer hair-front", displaySetting(hair.id));
         if (face) appendImage(stage, face.frontImg, "layer face-front", displaySetting(face.id));
-        if (body) appendImage(stage, body.img, "layer template-02", displaySetting(body.id));
+        if (body && bodySetting.visible !== false) appendImage(stage, body.img, "layer template-02", bodySetting);
         if (bottoms) appendImage(stage, bottoms.frontImg, "layer bottoms-front", displaySetting(bottoms.id));
         if (top) appendImage(stage, top.frontImg, "layer top-front", displaySetting(top.id));
+        if (bottoms?.overlayImg) appendImage(stage, bottoms.overlayImg, "layer bottoms-overlay", displaySetting(bottoms.id, "overlay"));
       }
 
       function renderPreviewSelectors() {
@@ -319,7 +390,7 @@
       function renderTabs() {
         const wrap = document.getElementById("tabs");
         wrap.innerHTML = "";
-        categories.forEach((category) => {
+        categories.filter((category) => category.key !== "template").forEach((category) => {
           const button = document.createElement("button");
           button.textContent = `${category.label} (${state.items[category.key].length})`;
           button.className = state.category === category.key ? "active" : "";
@@ -351,10 +422,12 @@
           } else {
             if (item.backImg) appendImage(button, item.backImg, "thumb-layer", displaySetting(item.id, "back"));
             appendImage(button, item.frontImg, "thumb-layer", displaySetting(item.id, "front"));
+            if (item.overlayImg) appendImage(button, item.overlayImg, "thumb-layer", displaySetting(item.id, "overlay"));
           }
           button.onclick = () => {
             state.targetId = item.id;
             if (state.category !== "template") {
+              state.templateOutfitNumber = item.number;
               state.preview[state.category] =
                 state.preview[state.category] === item.id ? "" : item.id;
             }
@@ -370,12 +443,26 @@
         const item = currentItem();
         const outfitNameInput = document.getElementById("outfit-name");
         const select = document.getElementById("layer-select");
-        const hasBack = state.category !== "template" && Boolean(item?.backImg);
-        if (!hasBack) state.layer = "front";
-        select.disabled = !hasBack;
+        const layers = state.category === "template"
+          ? [{ value: "front", label: "模板" }]
+          : [
+              { value: "front", label: state.category === "bottoms" && item?.overlayImg ? "衣服下層（-1）" : "前層" },
+              ...(item?.backImg ? [{ value: "back", label: "後層" }] : []),
+              ...(item?.overlayImg ? [{ value: "overlay", label: "衣服上層（-2）" }] : []),
+            ];
+        if (!layers.some((layer) => layer.value === state.layer)) state.layer = "front";
+        select.innerHTML = "";
+        layers.forEach((layer) => {
+          const option = document.createElement("option");
+          option.value = layer.value;
+          option.textContent = layer.label;
+          select.appendChild(option);
+        });
+        select.disabled = layers.length <= 1;
         select.value = state.layer;
+        const selectedLayerLabel = layers.find((layer) => layer.value === state.layer)?.label || "前層";
         document.getElementById("target-label").textContent = item
-          ? `目前校準：${item.label}${state.category === "template" ? "" : ` / ${state.layer === "front" ? "前層" : "後層"}`}`
+          ? `目前校準：${item.label}${state.category === "template" ? "" : ` / ${selectedLayerLabel}`}`
           : "尚未選擇素材";
         const canNameOutfit = state.category !== "template" && Boolean(item?.number);
         outfitNameInput.disabled = !canNameOutfit;
@@ -387,6 +474,52 @@
           input.disabled = !item;
           document.getElementById(valueId).textContent = Number(next).toFixed(2);
         });
+      }
+
+      function renderTemplateControls() {
+        const number = currentOutfitNumber();
+        const setting = outfitTemplateSetting(number, state.templateTarget);
+        const outfitSelect = document.getElementById("template-outfit");
+        outfitSelect.innerHTML = "";
+        completeNumbers().forEach((outfitNumber) => {
+          const option = document.createElement("option");
+          option.value = outfitNumber;
+          option.textContent = `套裝 ${outfitNumber}`;
+          outfitSelect.appendChild(option);
+        });
+        outfitSelect.value = number;
+        outfitSelect.disabled = !number;
+        document.getElementById("template-outfit-label").textContent = number
+          ? `套裝 ${number} 的專用模板設定`
+          : "尚未選擇套裝";
+        document.getElementById("template-target").value = state.templateTarget;
+        document.getElementById("template-visible").checked = setting.visible !== false;
+        [
+          ["template-scale", "template-scale-value", setting.scale],
+          ["template-x", "template-x-value", setting.x_pct],
+          ["template-y", "template-y-value", setting.y_pct],
+        ].forEach(([inputId, valueId, value]) => {
+          const input = document.getElementById(inputId);
+          input.value = value;
+          input.disabled = !number;
+          document.getElementById(valueId).textContent = Number(value).toFixed(2);
+        });
+        document.getElementById("template-visible").disabled = !number;
+        document.getElementById("reset-template").disabled = !number;
+      }
+
+      function updateTemplateSetting(patch) {
+        const number = currentOutfitNumber();
+        if (!number) return;
+        state.templateSettings[number] ||= {};
+        state.templateSettings[number][state.templateTarget] = {
+          ...outfitTemplateSetting(number, state.templateTarget),
+          ...patch,
+        };
+        localStorage.setItem(TEMPLATE_STORAGE_KEY, JSON.stringify(state.templateSettings));
+        renderTemplateControls();
+        renderStage();
+        exportCode();
       }
 
       function completeNumbers() {
@@ -409,6 +542,7 @@
               label: `${outfitName || `套裝 ${number}`}・${categories.find((entry) => entry.key === category).label}`,
               front: relativeStorePath(item.frontImg),
               ...(item.backImg ? { back: relativeStorePath(item.backImg) } : {}),
+              ...(item.overlayImg ? { overlay: relativeStorePath(item.overlayImg) } : {}),
             };
           });
           return {
@@ -417,6 +551,12 @@
             badge: "NEW",
             published: true,
             pieces,
+            templates: Object.fromEntries(
+              ["template-00", "template-01", "template-02"].map((templateId) => [
+                templateId,
+                outfitTemplateSetting(number, templateId),
+              ])
+            ),
             settings: Object.fromEntries(Object.entries(state.settings).filter(([key]) => key.startsWith(`store-outfit-${number}-`))),
           };
         });
@@ -433,6 +573,7 @@
         renderTabs();
         renderGrid();
         renderControls();
+        renderTemplateControls();
         renderStage();
         exportCode();
       }
@@ -451,6 +592,34 @@
       }
 
       document.getElementById("layer-select").onchange = (event) => { state.layer = event.target.value; startDraft(); renderAll(); };
+      document.getElementById("template-target").onchange = (event) => {
+        state.templateTarget = event.target.value;
+        renderTemplateControls();
+      };
+      document.getElementById("template-outfit").onchange = (event) => {
+        state.templateOutfitNumber = event.target.value;
+        ["hair", "face", "top", "bottoms"].forEach((category) => {
+          const item = state.items[category].find((entry) => entry.number === state.templateOutfitNumber);
+          state.preview[category] = item?.id || "";
+        });
+        const target = state.items[state.category].find((item) => item.number === state.templateOutfitNumber);
+        if (target) state.targetId = target.id;
+        state.layer = "front";
+        startDraft();
+        renderAll();
+      };
+      document.getElementById("template-visible").onchange = (event) => updateTemplateSetting({ visible: event.target.checked });
+      document.getElementById("template-scale").oninput = (event) => updateTemplateSetting({ scale: Number(event.target.value) });
+      document.getElementById("template-x").oninput = (event) => updateTemplateSetting({ x_pct: Number(event.target.value) });
+      document.getElementById("template-y").oninput = (event) => updateTemplateSetting({ y_pct: Number(event.target.value) });
+      document.getElementById("reset-template").onclick = () => {
+        const number = currentOutfitNumber();
+        if (!number) return;
+        state.templateSettings[number] ||= {};
+        state.templateSettings[number][state.templateTarget] = defaultTemplateSetting(state.templateTarget);
+        localStorage.setItem(TEMPLATE_STORAGE_KEY, JSON.stringify(state.templateSettings));
+        renderAll();
+      };
       document.getElementById("outfit-name").addEventListener("input", (event) => {
         const item = currentItem();
         if (state.category === "template" || !item?.number) return;

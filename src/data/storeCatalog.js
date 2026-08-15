@@ -14,6 +14,7 @@ function resolvePiece(piece) {
     label: piece.label,
     frontImg: publicAsset(piece.front),
     backImg: piece.back ? publicAsset(piece.back) : undefined,
+    overlayImg: piece.overlay ? publicAsset(piece.overlay) : undefined,
     thumbImg: piece.thumb ? publicAsset(piece.thumb) : undefined,
   };
 }

@@ -53,6 +53,7 @@ function Store() {
               <AvatarRenderer
                 config={previewConfig}
                 itemSettings={previewSettings}
+                templateSettings={previewOutfit?.templates}
                 className="store-tryon-avatar"
               />
             </div>
@@ -78,6 +79,7 @@ function Store() {
                       <AvatarRenderer
                         config={outfit.config}
                         itemSettings={outfit.settings}
+                        templateSettings={outfit.templates}
                       />
                     </span>
                     <strong className="store-card-name">

@@ -63,7 +63,11 @@ async function drawLayer(ctx, src, setting) {
   ctx.restore();
 }
 
-export async function renderAvatarImage(config, itemSettings = {}) {
+export async function renderAvatarImage(
+  config,
+  itemSettings = {},
+  templateSettings = {}
+) {
   const normalizedConfig = normalizeAvatarConfig(config);
   const stageCanvas = document.createElement("canvas");
   stageCanvas.width = STAGE_WIDTH;
@@ -88,7 +92,17 @@ export async function renderAvatarImage(config, itemSettings = {}) {
     }
   }
 
-  await drawLayer(stageCtx, AVATAR_TEMPLATE.base, getTemplateSetting("template-00"));
+  const baseTemplateSetting = getTemplateSetting("template-00", templateSettings);
+  const headTemplateSetting = getTemplateSetting("template-01", templateSettings);
+  const bodyTemplateSetting = getTemplateSetting("template-02", templateSettings);
+
+  if (baseTemplateSetting.visible !== false) {
+    await drawLayer(stageCtx, AVATAR_TEMPLATE.base, baseTemplateSetting);
+  }
+
+  if (headTemplateSetting.visible !== false) {
+    await drawLayer(stageCtx, AVATAR_TEMPLATE.head, headTemplateSetting);
+  }
 
   for (const category of ["hair", "face"]) {
     const item = resolvedItems[category];
@@ -101,7 +115,9 @@ export async function renderAvatarImage(config, itemSettings = {}) {
     }
   }
 
-  await drawLayer(stageCtx, AVATAR_TEMPLATE.body, getTemplateSetting("template-02"));
+  if (bodyTemplateSetting.visible !== false) {
+    await drawLayer(stageCtx, AVATAR_TEMPLATE.body, bodyTemplateSetting);
+  }
 
   for (const category of ["bottoms", "top"]) {
     const item = resolvedItems[category];
@@ -112,6 +128,14 @@ export async function renderAvatarImage(config, itemSettings = {}) {
         getItemSetting(itemSettings, item.id, "front")
       );
     }
+  }
+
+  if (resolvedItems.bottoms?.overlayImg) {
+    await drawLayer(
+      stageCtx,
+      resolvedItems.bottoms.overlayImg,
+      getItemSetting(itemSettings, resolvedItems.bottoms.id, "overlay")
+    );
   }
 
   const crop = DEFAULT_AVATAR_CROP_SETTINGS;
