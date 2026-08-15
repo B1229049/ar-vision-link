@@ -11,7 +11,7 @@ MindAR source code is licensed under the MIT License, Copyright (c) 2020 hiukim.
 
 ## Jeeliz FaceFilter example assets
 
-The Anonymous mask and dog face assets are adapted from the Jeeliz FaceFilter
-demonstrations, licensed under Apache License 2.0.
+The dog face assets are adapted from the Jeeliz FaceFilter demonstrations,
+licensed under Apache License 2.0.
 
 Source: https://github.com/jeeliz/jeelizFaceFilter
