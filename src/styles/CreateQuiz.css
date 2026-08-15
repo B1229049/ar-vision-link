@@ -492,13 +492,13 @@
 }
 
 .quiz-option-field.option-c {
-  --option-bg: #b45309;
+  --option-bg: #ca8a04;
   --option-border: transparent;
   --option-label: white;
 }
 
 .quiz-option-field.option-d {
-  --option-bg: #6d28d9;
+  --option-bg: #db2777;
   --option-border: transparent;
   --option-label: white;
 }

@@ -221,8 +221,11 @@
 }
 
 .option-btn.disabled {
-  opacity: 0.24;
-  filter: grayscale(0.7) brightness(0.58);
+  background: #374151;
+  border-color: #4b5563;
+  color: rgba(255, 255, 255, 0.58);
+  opacity: 1;
+  filter: none;
   cursor: not-allowed;
 }
 

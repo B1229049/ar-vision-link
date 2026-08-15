@@ -168,8 +168,10 @@
 }
 
 .ar-option.disabled {
-  opacity: 0.24;
-  filter: grayscale(0.72) brightness(0.55);
+  background: #374151;
+  color: rgba(255, 255, 255, 0.58);
+  opacity: 1;
+  filter: none;
 }
 
 .ar-option .option-correct-check {
