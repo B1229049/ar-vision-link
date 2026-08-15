@@ -447,7 +447,7 @@ function CreateQuiz() {
             {saving ? "建立中..." : "建立測驗"}
           </button>
 
-          <button className="create-btn ghost" onClick={() => navigate("/quiz")}>
+          <button className="create-btn ghost quiz-center-return" onClick={() => navigate("/quiz")}>
             返回 Quiz Center
           </button>
         </div>

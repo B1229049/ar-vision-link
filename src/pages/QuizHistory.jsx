@@ -177,9 +177,6 @@ function QuizHistory() {
             </p>
           </div>
 
-          <button className="history-btn ghost" onClick={() => navigate("/quiz")}>
-            返回 Quiz Center
-          </button>
         </header>
 
         <div className="history-tabs">
@@ -271,6 +268,13 @@ function QuizHistory() {
             )}
           </main>
         </div>
+
+        <button
+          className="history-btn ghost quiz-center-return"
+          onClick={() => navigate("/quiz")}
+        >
+          返回 Quiz Center
+        </button>
       </div>
     </div>
   );

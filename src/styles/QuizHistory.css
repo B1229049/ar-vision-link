@@ -448,3 +448,49 @@
     text-align: left;
   }
 }
+
+/* Quiz Center unified theme */
+.quiz-history-page {
+  background: var(--app-page-background);
+}
+
+.history-container {
+  background: rgba(3, 7, 18, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: var(--app-glass-shadow);
+  backdrop-filter: blur(12px);
+}
+
+.history-header {
+  display: block;
+  text-align: center;
+}
+
+.history-sidebar,
+.history-detail,
+.history-summary div,
+.leaderboard-row,
+.answer-row,
+.history-session-card {
+  background: #111827;
+  border-color: #293449;
+  backdrop-filter: none;
+  box-shadow: none;
+}
+
+.leaderboard-section h2,
+.answer-section h2,
+.answer-question strong,
+.rank {
+  color: white;
+}
+
+.rank {
+  background: #312e81;
+}
+
+.history-container > .quiz-center-return {
+  display: block;
+  width: 100%;
+  margin-top: 24px;
+}

@@ -439,3 +439,83 @@
     width: 100%;
   }
 }
+
+/* Quiz Center unified theme */
+.create-quiz-page {
+  background: var(--app-page-background);
+}
+
+.create-quiz-card {
+  background: rgba(3, 7, 18, 0.82);
+  border-color: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(12px);
+  box-shadow: var(--app-glass-shadow);
+}
+
+.question-card,
+.ai-generate-box {
+  background: #111827;
+  border: 1px solid #293449;
+  backdrop-filter: none;
+  box-shadow: none;
+}
+
+.question-header h3,
+.ai-status,
+.quiz-option-field label {
+  color: white;
+}
+
+.quiz-field input:focus,
+.quiz-field textarea:focus,
+.quiz-field select:focus {
+  border-color: rgba(192, 132, 252, 0.78);
+  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.16);
+}
+
+.quiz-option-field {
+  border: 0;
+  backdrop-filter: none;
+  box-shadow: none;
+}
+
+.quiz-option-field.option-a {
+  --option-bg: #1d4ed8;
+  --option-border: transparent;
+  --option-label: white;
+}
+
+.quiz-option-field.option-b {
+  --option-bg: #be123c;
+  --option-border: transparent;
+  --option-label: white;
+}
+
+.quiz-option-field.option-c {
+  --option-bg: #b45309;
+  --option-border: transparent;
+  --option-label: white;
+}
+
+.quiz-option-field.option-d {
+  --option-bg: #6d28d9;
+  --option-border: transparent;
+  --option-label: white;
+}
+
+.quiz-option-field input {
+  background: rgba(2, 6, 23, 0.64);
+  border-color: transparent;
+  color: white;
+}
+
+.create-quiz-page .quiz-field select option {
+  background: #111827;
+  color: white;
+}
+
+.create-quiz-card .button-row .quiz-center-return {
+  flex: 1 0 100%;
+  width: 100%;
+  margin-top: 8px;
+}

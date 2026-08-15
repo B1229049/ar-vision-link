@@ -445,3 +445,68 @@
     gap: 14px;
   }
 }
+
+/* Quiz Center unified theme */
+.manage-quizzes-page {
+  background: var(--app-page-background);
+}
+
+.manage-quizzes-container {
+  background: rgba(3, 7, 18, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: var(--app-glass-shadow);
+  backdrop-filter: blur(12px);
+}
+
+.manage-quizzes-header {
+  display: block;
+  text-align: center;
+}
+
+.manage-quizzes-header > div {
+  width: 100%;
+}
+
+.quiz-sidebar,
+.quiz-editor,
+.quiz-setting-panel,
+.ai-manage-content,
+.question-card,
+.sticky-actions {
+  background: #111827;
+  border: 1px solid #293449;
+  backdrop-filter: none;
+  box-shadow: none;
+}
+
+.quiz-title-input:focus,
+.question-input:focus,
+.option-input:focus,
+.time-input:focus,
+.answer-select:focus,
+.manage-field input:focus,
+.manage-field select:focus,
+.manage-field textarea:focus {
+  outline: 2px solid #a855f7;
+}
+
+.manage-quizzes-page h1,
+.manage-quizzes-page h2,
+.manage-quizzes-page h3,
+.manage-quizzes-page label,
+.manage-quizzes-page .quiz-item-id,
+.manage-quizzes-page .loading-text,
+.manage-quizzes-page .empty-text {
+  color: white;
+}
+
+.manage-quizzes-container > .quiz-center-return {
+  display: block;
+  width: 100%;
+  margin-top: 24px;
+}
+
+.manage-quizzes-page select option {
+  background: #111827;
+  color: white;
+}

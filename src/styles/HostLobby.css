@@ -39,6 +39,37 @@
   font-size: 15px;
 }
 
+.host-lobby-page:not(.active-room) {
+  background: var(--app-page-background);
+}
+
+.host-lobby-page:not(.active-room) .host-lobby-card {
+  background: rgba(3, 7, 18, 0.82);
+  border-color: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(12px);
+  box-shadow: var(--app-glass-shadow);
+}
+
+.host-lobby-page:not(.active-room) .host-field select,
+.host-lobby-page:not(.active-room) .host-mode-btn,
+.host-lobby-page:not(.active-room) .empty-box {
+  background: #111827;
+  border-color: #334155;
+  backdrop-filter: none;
+  box-shadow: none;
+}
+
+.host-lobby-page:not(.active-room) .host-field select:focus {
+  border-color: rgba(192, 132, 252, 0.78);
+  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.16);
+}
+
+.host-lobby-card > .quiz-center-return {
+  display: block;
+  width: 100%;
+  margin-top: 24px;
+}
+
 .host-field {
   text-align: left;
   margin-bottom: 20px;

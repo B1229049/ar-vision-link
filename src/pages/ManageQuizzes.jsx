@@ -399,9 +399,6 @@ function ManageQuizzes() {
             <p>選擇測驗後，可以編輯題目、刪除題目，或用 AI 新增題目。</p>
           </div>
 
-          <button className="manage-btn ghost" onClick={() => navigate("/quiz")}>
-            返回 Quiz Center
-          </button>
         </div>
 
         <div className="manage-layout">
@@ -650,6 +647,13 @@ function ManageQuizzes() {
             )}
           </main>
         </div>
+
+        <button
+          className="manage-btn ghost quiz-center-return"
+          onClick={() => navigate("/quiz")}
+        >
+          返回 Quiz Center
+        </button>
       </div>
     </div>
   );

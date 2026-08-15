@@ -513,8 +513,8 @@ function JoinQuiz() {
           {joining ? "加入中..." : "加入測驗"}
         </button>
 
-        <button className="join-btn secondary" onClick={() => navigate("/quiz")}>
-          返回 AR Vision Link
+        <button className="join-btn secondary quiz-center-return" onClick={() => navigate("/quiz")}>
+          返回 Quiz Center
         </button>
       </div>
     </div>

@@ -547,10 +547,10 @@ function HostLobby() {
         )}
 
         <button
-          className={session ? "host-btn ghost lobby-exit" : "host-btn ghost"}
+          className={session ? "host-btn ghost lobby-exit quiz-center-return" : "host-btn ghost quiz-center-return"}
           onClick={() => navigate("/quiz")}
         >
-          返回 AR Vision Link
+          返回 Quiz Center
         </button>
       </div>
     </div>
