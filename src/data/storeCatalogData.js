@@ -365,29 +365,29 @@ export const STORE_CATALOG_SOURCE = [
   },
   {
     "id": "outfit-06",
-    "name": "jk",
+    "name": "薇薇安",
     "badge": "NEW",
     "published": true,
     "pieces": {
       "hair": {
         "id": "store-outfit-06-hair",
-        "label": "jk・頭部",
+        "label": "薇薇安・頭部",
         "front": "store/hair/頭髮06-1.png",
         "back": "store/hair/頭髮06-2.png"
       },
       "face": {
         "id": "store-outfit-06-face",
-        "label": "jk・臉部",
+        "label": "薇薇安・臉部",
         "front": "store/face/表情06.png"
       },
       "top": {
         "id": "store-outfit-06-top",
-        "label": "jk・上半身",
+        "label": "薇薇安・上半身",
         "front": "store/top/上衣06.png"
       },
       "bottoms": {
         "id": "store-outfit-06-bottoms",
-        "label": "jk・下半身",
+        "label": "薇薇安・下半身",
         "front": "store/bottoms/褲裝06-1.png"
       }
     },

@@ -57,10 +57,10 @@
 .ar-selfie-controls {
   flex: 0 0 auto;
   min-width: 0;
-  padding: 9px 0 12px;
+  padding: 7px 0 8px;
   box-sizing: border-box;
   display: grid;
-  gap: 7px;
+  gap: 5px;
   justify-items: center;
   background: rgba(16, 20, 28, 0.98);
   border-top: 1px solid rgba(255, 255, 255, 0.08);
@@ -128,9 +128,28 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+.ar-selfie-filter-option {
+  flex: 0 0 auto;
+  min-width: 68px;
+  padding: 7px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  display: block;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.ar-selfie-filter-option.is-selected {
+  border-color: rgba(255, 255, 255, 0.92);
+  background: rgba(255, 255, 255, 0.12);
+  color: white;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.18);
+}
+
 .ar-selfie-option-preview {
-  width: 43px;
-  height: 43px;
+  width: 40px;
+  height: 40px;
   display: grid;
   place-items: center;
   box-sizing: border-box;
@@ -181,14 +200,14 @@
 .ar-selfie-capture-actions {
   position: relative;
   width: min(calc(100% - 24px), 520px);
-  height: 52px;
+  height: 48px;
   display: grid;
   place-items: center;
 }
 
 .ar-selfie-shutter {
-  width: 52px;
-  height: 52px;
+  width: 48px;
+  height: 48px;
   padding: 4px;
   border: 3px solid #fff;
   border-radius: 50%;
@@ -228,10 +247,6 @@
 }
 
 @media (max-width: 640px) {
-  .ar-selfie-page {
-    padding-bottom: var(--mobile-bottom-nav-height);
-  }
-
   .ar-selfie-control-group {
     width: 100%;
   }
@@ -262,6 +277,11 @@
   .ar-selfie-control-row {
     gap: 8px;
     padding-bottom: 1px;
+  }
+
+  .ar-selfie-filter-option {
+    padding: 5px 12px;
+    font-size: 11px;
   }
 
   .ar-selfie-option {
