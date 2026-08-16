@@ -42,7 +42,7 @@ function LobbyProfileModal({ user, onClose }) {
           onClick={onClose}
           aria-label="關閉個人資料"
         >
-          ×
+          X
         </button>
 
         <h2 id="shared-lobby-profile-title" className="shared-lobby-profile-label">
@@ -57,7 +57,7 @@ function LobbyProfileModal({ user, onClose }) {
 
             <h4>自我介紹</h4>
             <p className="shared-lobby-profile-bio">
-              {user.description?.trim() || "這位玩家尚未填寫自我介紹。"}
+              {user.description?.trim() || ""}
             </p>
           </div>
 

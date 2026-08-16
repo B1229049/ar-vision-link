@@ -24,6 +24,7 @@ function JoinQuiz() {
   const [quiz, setQuiz] = useState(null);
   const [questions, setQuestions] = useState([]);
   const [players, setPlayers] = useState([]);
+  const [hostUser, setHostUser] = useState(null);
   const [playerPanelOpen, setPlayerPanelOpen] = useState(false);
   const [profileUser, setProfileUser] = useState(null);
 
@@ -200,6 +201,7 @@ function JoinQuiz() {
     socket.on("session-sync", (data) => {
       setSession(data.session);
       setQuiz(data.quiz);
+      setHostUser(data.host || null);
       setQuestions(data.questions || []);
       setPlayers(data.leaderboard || []);
 
@@ -288,6 +290,7 @@ function JoinQuiz() {
     setQuiz(null);
     setQuestions([]);
     setPlayers([]);
+    setHostUser(null);
     setRoomCode("");
 
     localStorage.removeItem("currentGameSession");
@@ -332,6 +335,16 @@ function JoinQuiz() {
   if (joined) {
     const gameMode = session?.game_mode || "choice";
     const canChooseMode = gameMode === "choice";
+    const lobbyMembers = [
+      ...(hostUser
+        ? [{ key: `host-${hostUser.id}`, user: hostUser, role: "房主" }]
+        : []),
+      ...players.map((record) => ({
+        key: `player-${record.record_id}`,
+        user: record.users,
+        role: "玩家",
+      })),
+    ];
 
     return (
       <div className="join-quiz-page waiting-room-page">
@@ -383,23 +396,22 @@ function JoinQuiz() {
           </div>
 
           <div className="waiting-avatar-stage">
-            {players.length === 0 ? (
+            {lobbyMembers.length === 0 ? (
               <p className="joined-player-hint">等待玩家加入...</p>
             ) : (
               <div className="waiting-avatar-list">
-                {players.map((record) => {
-                  const user = record.users;
-
+                {lobbyMembers.map(({ key, user, role }) => {
                   return (
                     <button
                       type="button"
                       className="waiting-avatar-player"
-                      key={record.record_id}
+                      key={key}
                       onClick={() => openPlayerProfile(user)}
                       disabled={Number(user?.id) === Number(currentUser?.id)}
                       aria-label={`查看 ${user?.nickname || user?.name || "玩家"} 的個人資料`}
                     >
                       <strong>{user?.name || "未知玩家"}</strong>
+                      <small>{role}</small>
                       <AvatarRenderer
                         config={user?.avatar_config}
                         className="waiting-avatar-renderer"
@@ -432,24 +444,27 @@ function JoinQuiz() {
                 </div>
 
                 <div className="waiting-player-list">
-                  {players.map((record, index) => {
-                    const user = record.users;
-
+                  {lobbyMembers.map(({ key, user, role }, index) => {
                     return (
                       <button
                         type="button"
                         className="waiting-player-chip"
-                        key={record.record_id}
+                        key={key}
                         onClick={() => openPlayerProfile(user)}
                         disabled={Number(user?.id) === Number(currentUser?.id)}
                         aria-label={`查看 ${user?.nickname || user?.name || "玩家"} 的個人資料`}
                       >
-                        <span>{index + 1}</span>
+                        <span>
+                          {role === "房主" ? "主" : hostUser ? index : index + 1}
+                        </span>
                         <ProfileImage
                           user={user}
                           className="waiting-player-head"
                         />
-                        <strong>{user?.name || "未知玩家"}</strong>
+                        <strong>
+                          {user?.name || "未知玩家"}
+                          <small>{role}</small>
+                        </strong>
                       </button>
                     );
                   })}

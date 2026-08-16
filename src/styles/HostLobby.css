@@ -568,14 +568,14 @@
 }
 
 .host-mode-btn.active {
-  border-color: #a855f7;
+  border: 2px solid #a855f7;
   background: linear-gradient(
     135deg,
     rgba(126, 34, 206, 0.3),
     rgba(168, 85, 247, 0.2)
   );
   box-shadow:
-    0 0 0 3px rgba(168, 85, 247, 0.18),
+    0 0 0 3px rgba(168, 85, 247, 0.26),
     0 18px 45px rgba(126, 34, 206, 0.18);
 }
 
@@ -627,6 +627,8 @@
   border-radius: 0;
   box-shadow: none;
   backdrop-filter: none;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 .wayground-lobby {
@@ -636,6 +638,9 @@
   grid-template-rows: auto 1fr auto;
   gap: 18px;
   width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 .wayground-lobby::before,
@@ -664,6 +669,7 @@
   box-shadow: 0 22px 58px rgba(0, 0, 0, 0.52);
   backdrop-filter: blur(16px);
   z-index: 2;
+  box-sizing: border-box;
 }
 
 .join-board-main {
@@ -679,6 +685,8 @@
   padding: 14px;
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.08);
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .join-step {
@@ -698,6 +706,7 @@
   gap: 18px;
   align-items: center;
   text-align: left;
+  min-width: 0;
 }
 
 .join-copy span {
@@ -1106,9 +1115,47 @@
   }
 
   .join-board-row {
-    grid-template-columns: 34px minmax(0, 1fr) 48px;
+    grid-template-columns: 30px minmax(0, 1fr) 44px;
     gap: 9px;
     padding: 10px;
+  }
+
+  .wayground-join-board {
+    width: calc(100% - 24px);
+    padding: 10px;
+  }
+
+  .join-copy {
+    gap: 4px;
+  }
+
+  .join-copy span {
+    font-size: 13px;
+  }
+
+  .join-copy .join-url {
+    font-size: 12px;
+    line-height: 1.45;
+  }
+
+  .join-copy .join-code {
+    font-size: clamp(28px, 10vw, 42px);
+    letter-spacing: 3px;
+  }
+
+  .join-copy-btn {
+    width: 42px;
+    height: 42px;
+    padding: 0;
+    font-size: 12px;
+  }
+
+  .host-player-drawer-toggle {
+    position: static;
+    justify-self: end;
+    margin: 0 12px -6px;
+    padding: 9px 13px;
+    font-size: 13px;
   }
 
   .join-copy .join-code {

@@ -636,6 +636,13 @@
   cursor: pointer;
 }
 
+.waiting-avatar-player > small {
+  margin-top: 5px;
+  color: #c4b5fd;
+  font-size: 11px;
+  font-weight: 800;
+}
+
 .waiting-player-chip:not(:disabled):hover,
 .waiting-player-chip:not(:disabled):focus-visible {
   background: rgba(255, 255, 255, 0.12);
@@ -667,6 +674,13 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.waiting-player-chip strong small {
+  display: block;
+  margin-top: 2px;
+  color: #c4b5fd;
+  font-size: 11px;
 }
 
 .waiting-player-overlay {

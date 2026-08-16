@@ -186,6 +186,14 @@ async function getSessionFullData(sessionId) {
 
   if (quizError) throw new Error(quizError.message);
 
+  const { data: host, error: hostError } = await supabase
+    .from("users")
+    .select(USER_PUBLIC_SELECT)
+    .eq("id", quiz.host_id)
+    .maybeSingle();
+
+  if (hostError) throw new Error(hostError.message);
+
   const { data: questions, error: questionsError } = await supabase
     .from("questions")
     .select(QUESTION_SELECT)
@@ -197,6 +205,7 @@ async function getSessionFullData(sessionId) {
   return {
     session,
     quiz,
+    host: host || null,
     questions: questions || [],
   };
 }
