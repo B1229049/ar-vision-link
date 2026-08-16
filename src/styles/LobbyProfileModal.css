@@ -84,8 +84,17 @@
   overflow-wrap: anywhere;
 }
 
+.shared-lobby-profile-bio-panel {
+  width: 100%;
+  margin-top: 20px;
+  padding: 14px 16px;
+  box-sizing: border-box;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
 .shared-lobby-profile-info h4 {
-  margin: 20px 0 8px;
+  margin: 0 0 8px;
   color: #d8b4fe;
   font-size: 15px;
   font-weight: 900;
@@ -94,10 +103,8 @@
 .shared-lobby-profile-bio {
   width: 100%;
   margin: 0;
-  padding: 14px 16px;
-  box-sizing: border-box;
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.08);
+  min-height: 1.6em;
+  padding: 0;
   color: rgba(255, 255, 255, 0.78);
   line-height: 1.6;
   text-align: left;
@@ -118,6 +125,7 @@
 
 .shared-lobby-profile-avatar {
   width: min(208px, 80%);
+  transform: translateY(-22px);
 }
 
 @media (max-width: 520px) {
@@ -151,13 +159,16 @@
     font-size: 22px;
   }
 
-  .shared-lobby-profile-info h4 {
+  .shared-lobby-profile-bio-panel {
     margin-top: 16px;
+    padding: 10px;
+  }
+
+  .shared-lobby-profile-info h4 {
     font-size: 14px;
   }
 
   .shared-lobby-profile-bio {
-    padding: 10px;
     font-size: 13px;
   }
 }

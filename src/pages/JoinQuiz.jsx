@@ -411,7 +411,9 @@ function JoinQuiz() {
                       aria-label={`查看 ${user?.nickname || user?.name || "玩家"} 的個人資料`}
                     >
                       <strong>{user?.name || "未知玩家"}</strong>
-                      <small>{role}</small>
+                      <small className={role === "房主" ? "host-role" : ""}>
+                        {role}
+                      </small>
                       <AvatarRenderer
                         config={user?.avatar_config}
                         className="waiting-avatar-renderer"
@@ -444,7 +446,7 @@ function JoinQuiz() {
                 </div>
 
                 <div className="waiting-player-list">
-                  {lobbyMembers.map(({ key, user, role }, index) => {
+                  {lobbyMembers.map(({ key, user, role }) => {
                     return (
                       <button
                         type="button"
@@ -454,16 +456,15 @@ function JoinQuiz() {
                         disabled={Number(user?.id) === Number(currentUser?.id)}
                         aria-label={`查看 ${user?.nickname || user?.name || "玩家"} 的個人資料`}
                       >
-                        <span>
-                          {role === "房主" ? "主" : hostUser ? index : index + 1}
-                        </span>
                         <ProfileImage
                           user={user}
                           className="waiting-player-head"
                         />
                         <strong>
                           {user?.name || "未知玩家"}
-                          <small>{role}</small>
+                          <small className={role === "房主" ? "host-role" : ""}>
+                            {role}
+                          </small>
                         </strong>
                       </button>
                     );

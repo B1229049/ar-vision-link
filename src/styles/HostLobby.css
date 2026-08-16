@@ -452,7 +452,7 @@
 
 .host-player-side-panel h3 {
   margin: 0 0 14px;
-  color: #93c5fd;
+  color: #ffffff;
   font-size: 20px;
 }
 
@@ -464,7 +464,7 @@
 
 .host-player-side-item {
   display: grid;
-  grid-template-columns: 28px 44px minmax(0, 1fr);
+  grid-template-columns: 48px minmax(0, 1fr);
   gap: 12px;
   align-items: center;
   padding: 12px;
@@ -919,8 +919,8 @@
 }
 
 .host-player-avatar-head {
-  width: 52px;
-  border-radius: 12px;
+  width: 48px;
+  border-radius: 50%;
 }
 
 .host-player-side-item {
@@ -1164,7 +1164,11 @@
   }
 
   .join-board-meta {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .join-board-meta > div:first-child {
+    grid-column: 1 / -1;
   }
 
   .lobby-avatar-stage {

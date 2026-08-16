@@ -127,7 +127,7 @@ function Profile() {
           <div className="profile-section-heading">
             <h3>自我介紹</h3>
           </div>
-          <p>{currentUser.description?.trim() || "尚未填寫自我介紹"}</p>
+          <p>{currentUser.description?.trim() || ""}</p>
         </section>
 
         <div className="profile-media-section">

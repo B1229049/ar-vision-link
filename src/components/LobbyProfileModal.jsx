@@ -55,10 +55,12 @@ function LobbyProfileModal({ user, onClose }) {
 
             <h3>{user.nickname || user.name || "未設定暱稱"}</h3>
 
-            <h4>自我介紹</h4>
-            <p className="shared-lobby-profile-bio">
-              {user.description?.trim() || ""}
-            </p>
+            <div className="shared-lobby-profile-bio-panel">
+              <h4>自我介紹</h4>
+              <p className="shared-lobby-profile-bio">
+                {user.description?.trim() || ""}
+              </p>
+            </div>
           </div>
 
           <div className="shared-lobby-profile-avatar-wrap">

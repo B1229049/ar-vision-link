@@ -424,7 +424,7 @@
 }
 
 .waiting-room-summary {
-  width: min(760px, calc(100vw - 120px));
+  width: min(920px, calc(100vw - 64px));
   max-width: 100%;
   margin: 0 auto;
   padding: 12px;
@@ -435,7 +435,7 @@
   box-shadow: 0 22px 58px rgba(0, 0, 0, 0.52);
   backdrop-filter: blur(16px);
   display: grid;
-  grid-template-columns: 2fr repeat(3, 1fr);
+  grid-template-columns: minmax(0, 2fr) repeat(3, minmax(0, 1fr));
   gap: 10px;
 }
 
@@ -492,7 +492,7 @@
 }
 
 .waiting-room-list-toggle-row {
-  width: min(760px, calc(100vw - 120px));
+  width: min(920px, calc(100vw - 64px));
   max-width: 100%;
   margin: -4px auto 0;
   box-sizing: border-box;
@@ -626,7 +626,7 @@
   background: rgba(3, 7, 18, 0.56);
   border: 1px solid rgba(255, 255, 255, 0.1);
   display: grid;
-  grid-template-columns: 30px 48px minmax(0, 1fr);
+  grid-template-columns: 48px minmax(0, 1fr);
   gap: 10px;
   align-items: center;
   text-align: left;
@@ -654,17 +654,6 @@
   cursor: default;
 }
 
-.waiting-player-chip > span {
-  width: 30px;
-  height: 30px;
-  display: grid;
-  place-items: center;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.12);
-  color: #bfdbfe;
-  font-weight: 900;
-}
-
 .waiting-player-head {
   width: 48px;
   border-radius: 50%;
@@ -681,6 +670,11 @@
   margin-top: 2px;
   color: #c4b5fd;
   font-size: 11px;
+}
+
+.waiting-avatar-player > small.host-role,
+.waiting-player-chip strong small.host-role {
+  color: #fbbf24;
 }
 
 .waiting-player-overlay {
@@ -845,7 +839,7 @@
   }
 
   .waiting-player-chip {
-    grid-template-columns: 30px 54px minmax(0, 1fr);
+    grid-template-columns: 54px minmax(0, 1fr);
     padding: 12px;
   }
 

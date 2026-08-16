@@ -510,7 +510,7 @@ function HostLobby() {
                   <p className="host-player-hint">目前還沒有玩家加入。</p>
                 ) : (
                   <div className="host-player-side-list">
-                    {players.map((record, index) => {
+                    {players.map((record) => {
                       const user = record.users;
 
                       return (
@@ -521,10 +521,6 @@ function HostLobby() {
                           onClick={() => openPlayerProfile(user)}
                           aria-label={`查看 ${user?.nickname || user?.name || "玩家"} 的個人資料`}
                         >
-                          <span className="host-player-number">
-                            {index + 1}
-                          </span>
-
                           <ProfileImage
                             user={user}
                             className="host-player-avatar-head"
