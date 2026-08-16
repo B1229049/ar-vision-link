@@ -112,7 +112,7 @@ function Home() {
                 </span>
                 <span className="shop-button-copy">
                   <strong>商城</strong>
-                  <small>探索 Avatar 時裝與限定造型</small>
+                  <small>探索虛擬替身時裝與限定造型</small>
                 </span>
               </button>
 

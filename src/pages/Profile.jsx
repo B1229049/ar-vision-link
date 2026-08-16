@@ -209,7 +209,7 @@ function Profile() {
             className="profile-btn secondary"
             onClick={() => navigate("/avatar-dressup")}
           >
-            修改虛擬替身
+            編輯 虛擬替身
           </button>
 
           <button

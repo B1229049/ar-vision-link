@@ -5,6 +5,7 @@ import {
   getAvatarItem,
   getItemSetting,
   getTemplateSetting,
+  getTemplateSettingsForConfig,
   normalizeAvatarConfig,
 } from "./avatarConfig";
 
@@ -69,6 +70,10 @@ export async function renderAvatarImage(
   templateSettings = {}
 ) {
   const normalizedConfig = normalizeAvatarConfig(config);
+  const activeTemplateSettings = getTemplateSettingsForConfig(
+    normalizedConfig,
+    templateSettings
+  );
   const stageCanvas = document.createElement("canvas");
   stageCanvas.width = STAGE_WIDTH;
   stageCanvas.height = STAGE_HEIGHT;
@@ -92,9 +97,18 @@ export async function renderAvatarImage(
     }
   }
 
-  const baseTemplateSetting = getTemplateSetting("template-00", templateSettings);
-  const headTemplateSetting = getTemplateSetting("template-01", templateSettings);
-  const bodyTemplateSetting = getTemplateSetting("template-02", templateSettings);
+  const baseTemplateSetting = getTemplateSetting(
+    "template-00",
+    activeTemplateSettings
+  );
+  const headTemplateSetting = getTemplateSetting(
+    "template-01",
+    activeTemplateSettings
+  );
+  const bodyTemplateSetting = getTemplateSetting(
+    "template-02",
+    activeTemplateSettings
+  );
 
   if (baseTemplateSetting.visible !== false) {
     await drawLayer(stageCtx, AVATAR_TEMPLATE.base, baseTemplateSetting);

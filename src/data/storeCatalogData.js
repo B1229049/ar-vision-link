@@ -388,7 +388,7 @@ export const STORE_CATALOG_SOURCE = [
       "bottoms": {
         "id": "store-outfit-06-bottoms",
         "label": "薇薇安・下半身",
-        "front": "store/bottoms/褲裝06-1.png"
+        "front": "store/bottoms/褲裝06.png"
       }
     },
     "templates": {
@@ -400,14 +400,14 @@ export const STORE_CATALOG_SOURCE = [
       },
       "template-01": {
         "scale": 1,
-        "x_pct": 0.25,
+        "x_pct": 0.55,
         "y_pct": -0.5,
         "visible": true
       },
       "template-02": {
-        "scale": 0.89,
-        "x_pct": 0,
-        "y_pct": 1.8,
+        "scale": 0.56,
+        "x_pct": -0.75,
+        "y_pct": 2.35,
         "visible": true
       }
     },
@@ -433,9 +433,14 @@ export const STORE_CATALOG_SOURCE = [
         "y_pct": 17
       },
       "store-outfit-06-bottoms_front": {
-        "scale": 0.68,
-        "x_pct": -0.85,
-        "y_pct": 14.4
+        "scale": 0.39,
+        "x_pct": -0.55,
+        "y_pct": 30.75
+      },
+      "store-outfit-06-bottoms_overlay": {
+        "scale": 0.77,
+        "x_pct": -0.65,
+        "y_pct": 17.65
       }
     }
   }

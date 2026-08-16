@@ -343,7 +343,13 @@
         const base = state.items.template.find((item) => item.id === "template-00");
         const body = state.items.template.find((item) => item.id === "template-02");
         const head = state.items.template.find((item) => item.id === "template-01");
-        const outfitNumber = currentOutfitNumber();
+        const selectedTop = state.items.top.find((item) => item.id === state.preview.top);
+        const currentNumber = currentOutfitNumber();
+        const outfitNumber = selectedTop?.number === "06"
+          ? "06"
+          : currentNumber === "06"
+            ? ""
+            : currentNumber;
         const baseSetting = outfitTemplateSetting(outfitNumber, "template-00");
         const headSetting = outfitTemplateSetting(outfitNumber, "template-01");
         const bodySetting = outfitTemplateSetting(outfitNumber, "template-02");

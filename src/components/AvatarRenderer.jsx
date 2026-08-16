@@ -5,6 +5,7 @@ import {
   getAvatarItem,
   getItemSetting,
   getTemplateSetting,
+  getTemplateSettingsForConfig,
   normalizeAvatarConfig,
 } from "../utils/avatarConfig";
 import "../styles/AvatarRenderer.css";
@@ -34,9 +35,22 @@ function layerStyle(setting) {
 function AvatarRenderer({ config, itemSettings, templateSettings, className = "", style }) {
   const normalizedConfig = normalizeAvatarConfig(config);
   const bodyY = Number(DEFAULT_AVATAR_BODY_Y) || 0;
-  const baseTemplateSetting = getTemplateSetting("template-00", templateSettings);
-  const headTemplateSetting = getTemplateSetting("template-01", templateSettings);
-  const bodyTemplateSetting = getTemplateSetting("template-02", templateSettings);
+  const activeTemplateSettings = getTemplateSettingsForConfig(
+    normalizedConfig,
+    templateSettings
+  );
+  const baseTemplateSetting = getTemplateSetting(
+    "template-00",
+    activeTemplateSettings
+  );
+  const headTemplateSetting = getTemplateSetting(
+    "template-01",
+    activeTemplateSettings
+  );
+  const bodyTemplateSetting = getTemplateSetting(
+    "template-02",
+    activeTemplateSettings
+  );
 
   const resolvedItems = AVATAR_CATEGORIES.reduce((acc, { key }) => {
     acc[key] = getAvatarItem(key, normalizedConfig[key]);

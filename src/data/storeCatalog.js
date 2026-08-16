@@ -50,3 +50,13 @@ export function getStoreItem(category, itemId) {
 
   return null;
 }
+
+export function getStoreTemplateSettingsForTop(itemId) {
+  if (itemId !== "store-outfit-06-top") return null;
+
+  const outfit = STORE_CATALOG.find(
+    (entry) => entry.items?.top?.id === itemId
+  );
+
+  return outfit?.templates || null;
+}
