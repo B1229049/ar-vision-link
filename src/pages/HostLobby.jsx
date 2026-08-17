@@ -351,6 +351,7 @@ function HostLobby() {
                           ? "host-mode-btn active"
                           : "host-mode-btn"
                       }
+                      aria-pressed={gameMode === "normal"}
                       onClick={() => setGameMode("normal")}
                     >
                       普通模式
@@ -364,6 +365,7 @@ function HostLobby() {
                           ? "host-mode-btn active"
                           : "host-mode-btn"
                       }
+                      aria-pressed={gameMode === "ar"}
                       onClick={() => setGameMode("ar")}
                     >
                       AR 模式
@@ -377,6 +379,7 @@ function HostLobby() {
                           ? "host-mode-btn active"
                           : "host-mode-btn"
                       }
+                      aria-pressed={gameMode === "choice"}
                       onClick={() => setGameMode("choice")}
                     >
                       玩家自行選擇

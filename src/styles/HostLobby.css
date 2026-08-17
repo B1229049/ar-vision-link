@@ -567,6 +567,7 @@
   background: rgba(30, 41, 59, 0.86);
 }
 
+.host-lobby-page:not(.active-room) .host-mode-btn.active,
 .host-mode-btn.active {
   border: 2px solid #a855f7;
   background: linear-gradient(

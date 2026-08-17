@@ -406,7 +406,7 @@
     linear-gradient(180deg, #150a2e 0%, #111827 48%, #050816 100%);
 }
 
-.waiting-room-card {
+.join-quiz-card.joined.waiting-room-card {
   width: 100%;
   max-width: none;
   min-height: calc(100vh - var(--navbar-height) - 42px);
@@ -518,7 +518,7 @@
 .waiting-avatar-stage {
   min-height: 330px;
   display: flex;
-  align-items: end;
+  align-items: center;
   justify-content: center;
   padding-top: 10px;
 }
