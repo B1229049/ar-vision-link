@@ -70,4 +70,8 @@
   .mobile-bottom-nav button:active {
     transform: scale(0.93);
   }
+
+  body.room-focus-mode .mobile-bottom-nav {
+    display: none;
+  }
 }

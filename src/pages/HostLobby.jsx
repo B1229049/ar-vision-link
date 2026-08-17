@@ -51,6 +51,13 @@ function HostLobby() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!session) return undefined;
+
+    document.body.classList.add("room-focus-mode");
+    return () => document.body.classList.remove("room-focus-mode");
+  }, [session]);
+
   async function loadMyQuizzes(userId) {
     try {
       const response = await fetch(`${BACKEND_URL}/api/quizzes/host/${userId}`);
@@ -449,7 +456,6 @@ function HostLobby() {
             <section className="wayground-join-board">
               <div className="join-board-main">
                 <div className="join-board-row">
-                  <div className="join-step">1</div>
                   <div className="join-copy">
                     <span>房間連結</span>
                     <strong className="join-url">{getJoinUrl()}</strong>
@@ -465,7 +471,6 @@ function HostLobby() {
                 </div>
 
                 <div className="join-board-row">
-                  <div className="join-step">2</div>
                   <div className="join-copy">
                     <span>房間 PIN 碼</span>
                     <strong className="join-code">{session.room_code}</strong>
@@ -565,7 +570,7 @@ function HostLobby() {
                     onClick={() => setPlayerPanelOpen(false)}
                     aria-label="關閉玩家名單"
                   >
-                    X
+                    ×
                   </button>
                 </div>
 

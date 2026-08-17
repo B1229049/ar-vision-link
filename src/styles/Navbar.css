@@ -78,6 +78,15 @@
   }
 }
 
+@media (min-width: 641px) {
+  body.room-focus-mode .navbar .nav-home,
+  body.room-focus-mode .navbar .nav-quiz,
+  body.room-focus-mode .navbar .nav-camera,
+  body.room-focus-mode .navbar .nav-profile {
+    display: none;
+  }
+}
+
 /* 手機版：上方僅保留品牌名稱，功能由底部導覽提供 */
 @media (max-width: 640px) {
   .navbar {

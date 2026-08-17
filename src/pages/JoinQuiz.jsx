@@ -26,7 +26,6 @@ function JoinQuiz() {
   const [quiz, setQuiz] = useState(null);
   const [questions, setQuestions] = useState([]);
   const [players, setPlayers] = useState([]);
-  const [hostUser, setHostUser] = useState(null);
   const [playerPanelOpen, setPlayerPanelOpen] = useState(false);
   const [profileUser, setProfileUser] = useState(null);
 
@@ -65,6 +64,13 @@ function JoinQuiz() {
     window.addEventListener("pagehide", handlePageHide);
     return () => window.removeEventListener("pagehide", handlePageHide);
   }, [joined, session?.session_id]);
+
+  useEffect(() => {
+    if (!joined) return undefined;
+
+    document.body.classList.add("room-focus-mode");
+    return () => document.body.classList.remove("room-focus-mode");
+  }, [joined]);
 
   useEffect(() => {
     if (!currentUser || !autoRoomCode || autoJoinAttemptedRef.current) return;
@@ -218,7 +224,6 @@ function JoinQuiz() {
     socket.on("session-sync", (data) => {
       setSession(data.session);
       setQuiz(data.quiz);
-      setHostUser(data.host || null);
       setQuestions(data.questions || []);
       setPlayers(data.leaderboard || []);
 
@@ -315,7 +320,6 @@ function JoinQuiz() {
     setQuiz(null);
     setQuestions([]);
     setPlayers([]);
-    setHostUser(null);
     setRoomCode("");
 
     localStorage.removeItem("currentGameSession");
@@ -360,16 +364,10 @@ function JoinQuiz() {
   if (joined) {
     const gameMode = session?.game_mode || "choice";
     const canChooseMode = gameMode === "choice";
-    const lobbyMembers = [
-      ...(hostUser
-        ? [{ key: `host-${hostUser.id}`, user: hostUser, role: "房主" }]
-        : []),
-      ...players.map((record) => ({
+    const lobbyMembers = players.map((record) => ({
         key: `player-${record.record_id}`,
         user: record.users,
-        role: "玩家",
-      })),
-    ];
+      }));
 
     return (
       <div className="join-quiz-page waiting-room-page">
@@ -425,7 +423,7 @@ function JoinQuiz() {
               <p className="joined-player-hint">等待玩家加入...</p>
             ) : (
               <div className="waiting-avatar-list">
-                {lobbyMembers.map(({ key, user, role }) => {
+                {lobbyMembers.map(({ key, user }) => {
                   return (
                     <button
                       type="button"
@@ -436,9 +434,6 @@ function JoinQuiz() {
                       aria-label={`查看 ${user?.nickname || user?.name || "玩家"} 的個人資料`}
                     >
                       <strong>{user?.name || "未知玩家"}</strong>
-                      <small className={role === "房主" ? "host-role" : ""}>
-                        {role}
-                      </small>
                       <AvatarRenderer
                         config={user?.avatar_config}
                         className="waiting-avatar-renderer"
@@ -466,12 +461,12 @@ function JoinQuiz() {
                     aria-label="關閉玩家名單"
                     onClick={() => setPlayerPanelOpen(false)}
                   >
-                    X
+                    ×
                   </button>
                 </div>
 
                 <div className="waiting-player-list">
-                  {lobbyMembers.map(({ key, user, role }) => {
+                  {lobbyMembers.map(({ key, user }) => {
                     return (
                       <button
                         type="button"
@@ -485,12 +480,7 @@ function JoinQuiz() {
                           user={user}
                           className="waiting-player-head"
                         />
-                        <strong>
-                          {user?.name || "未知玩家"}
-                          <small className={role === "房主" ? "host-role" : ""}>
-                            {role}
-                          </small>
-                        </strong>
+                        <strong>{user?.name || "未知玩家"}</strong>
                       </button>
                     );
                   })}
