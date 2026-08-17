@@ -57,7 +57,7 @@
   gap: 24px;
   align-items: stretch;
   min-height: 380px;
-  margin-top: 14px;
+  margin-top: 0;
 }
 
 .shared-lobby-profile-info {
@@ -119,13 +119,13 @@
   justify-content: center;
   min-height: 0;
   overflow: hidden;
-  border-radius: 20px;
-  background: radial-gradient(circle at 50% 72%, rgba(139, 92, 246, 0.3), transparent 58%);
+  border-radius: 0;
+  background: transparent;
 }
 
 .shared-lobby-profile-avatar {
   width: min(208px, 80%);
-  transform: translateY(-22px);
+  transform: translateY(-48px);
 }
 
 @media (max-width: 520px) {

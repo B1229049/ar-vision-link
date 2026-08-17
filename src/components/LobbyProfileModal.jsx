@@ -34,7 +34,7 @@ function LobbyProfileModal({ user, onClose }) {
         className="shared-lobby-profile-modal"
         role="dialog"
         aria-modal="true"
-        aria-labelledby="shared-lobby-profile-title"
+        aria-label="玩家個人資料"
       >
         <button
           type="button"
@@ -44,10 +44,6 @@ function LobbyProfileModal({ user, onClose }) {
         >
           X
         </button>
-
-        <h2 id="shared-lobby-profile-title" className="shared-lobby-profile-label">
-          玩家資料
-        </h2>
 
         <div className="shared-lobby-profile-content">
           <div className="shared-lobby-profile-info">
