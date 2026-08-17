@@ -552,6 +552,38 @@
   background: var(--app-page-background);
 }
 
+.quick-joining-page {
+  align-items: center;
+}
+
+.quick-joining-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 18px 24px;
+  border: 1px solid rgba(192, 132, 252, 0.24);
+  border-radius: 16px;
+  background: #111827;
+  color: white;
+}
+
+.quick-joining-spinner {
+  width: 20px;
+  height: 20px;
+  box-sizing: border-box;
+  border: 2px solid rgba(255, 255, 255, 0.24);
+  border-top-color: #c084fc;
+  border-radius: 50%;
+  animation: quickJoiningSpin 0.8s linear infinite;
+}
+
+@keyframes quickJoiningSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .join-quiz-page:not(.waiting-room-page) .join-quiz-card {
   background: linear-gradient(180deg, rgba(24, 13, 48, 0.94), rgba(3, 7, 18, 0.92));
   border-color: rgba(192, 132, 252, 0.3);

@@ -42,7 +42,7 @@ function LobbyProfileModal({ user, onClose }) {
           onClick={onClose}
           aria-label="關閉個人資料"
         >
-          X
+          ×
         </button>
 
         <div className="shared-lobby-profile-content">

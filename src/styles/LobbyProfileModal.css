@@ -19,7 +19,7 @@
   box-sizing: border-box;
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 26px;
-  background: linear-gradient(160deg, rgba(30, 27, 75, 0.98), rgba(3, 7, 18, 0.98));
+  background: #1e1b4b;
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.58);
   color: white;
 }
@@ -37,8 +37,9 @@
   background: rgba(255, 255, 255, 0.1);
   color: white;
   cursor: pointer;
-  font-size: 25px;
-  font-weight: 800;
+  font-family: Arial, sans-serif;
+  font-size: 32px;
+  font-weight: 400;
   line-height: 1;
 }
 
@@ -99,8 +100,8 @@
 
 .shared-lobby-profile-info h4 {
   margin: 0 0 8px;
-  color: #d8b4fe;
-  font-size: 15px;
+  color: white;
+  font-size: 18px;
   font-weight: 900;
 }
 
@@ -169,7 +170,7 @@
   }
 
   .shared-lobby-profile-info h4 {
-    font-size: 14px;
+    font-size: 16px;
   }
 
   .shared-lobby-profile-bio {

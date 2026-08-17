@@ -9,6 +9,7 @@ import "../styles/JoinQuiz.css";
 function JoinQuiz() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const autoRoomCode = searchParams.get("room")?.trim().toUpperCase() || "";
 
   const BACKEND_URL =
     import.meta.env.VITE_API_URL || "https://ar-vision-link.onrender.com";
@@ -66,13 +67,11 @@ function JoinQuiz() {
   }, [joined, session?.session_id]);
 
   useEffect(() => {
-    const roomFromUrl = searchParams.get("room")?.trim().toUpperCase();
-
-    if (!currentUser || !roomFromUrl || autoJoinAttemptedRef.current) return;
+    if (!currentUser || !autoRoomCode || autoJoinAttemptedRef.current) return;
 
     autoJoinAttemptedRef.current = true;
-    handleJoinQuiz(roomFromUrl, currentUser);
-  }, [currentUser, searchParams]);
+    handleJoinQuiz(autoRoomCode, currentUser);
+  }, [autoRoomCode, currentUser]);
 
   function getFinalPlayMode(targetSession = session) {
     const gameMode = targetSession?.game_mode || "choice";
@@ -141,6 +140,7 @@ function JoinQuiz() {
       if (!joinResponse.ok || joinResult.error) {
         alert("加入失敗：" + (joinResult.error || "找不到房間"));
         setJoining(false);
+        if (roomCodeOverride) navigate("/quiz/join", { replace: true });
         return;
       }
 
@@ -165,6 +165,7 @@ function JoinQuiz() {
       if (!recordResponse.ok || recordResult.error) {
         alert("加入玩家紀錄失敗：" + (recordResult.error || "未知錯誤"));
         setJoining(false);
+        if (roomCodeOverride) navigate("/quiz/join", { replace: true });
         return;
       }
 
@@ -189,6 +190,7 @@ function JoinQuiz() {
     } catch (err) {
       console.error(err);
       alert("加入測驗時發生錯誤");
+      if (roomCodeOverride) navigate("/quiz/join", { replace: true });
     }
 
     setJoining(false);
@@ -511,6 +513,17 @@ function JoinQuiz() {
           <button className="join-btn secondary" onClick={leaveRoom}>
             離開房間
           </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (autoRoomCode) {
+    return (
+      <div className="join-quiz-page quick-joining-page">
+        <div className="quick-joining-status" role="status">
+          <span className="quick-joining-spinner" aria-hidden="true" />
+          <strong>正在加入房間...</strong>
         </div>
       </div>
     );
