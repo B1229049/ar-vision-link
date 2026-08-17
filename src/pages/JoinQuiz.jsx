@@ -14,6 +14,7 @@ function JoinQuiz() {
     import.meta.env.VITE_API_URL || "https://ar-vision-link.onrender.com";
 
   const socketRef = useRef(null);
+  const autoJoinAttemptedRef = useRef(false);
 
   const [currentUser, setCurrentUser] = useState(null);
   const [roomCode, setRoomCode] = useState("");
@@ -64,6 +65,15 @@ function JoinQuiz() {
     return () => window.removeEventListener("pagehide", handlePageHide);
   }, [joined, session?.session_id]);
 
+  useEffect(() => {
+    const roomFromUrl = searchParams.get("room")?.trim().toUpperCase();
+
+    if (!currentUser || !roomFromUrl || autoJoinAttemptedRef.current) return;
+
+    autoJoinAttemptedRef.current = true;
+    handleJoinQuiz(roomFromUrl, currentUser);
+  }, [currentUser, searchParams]);
+
   function getFinalPlayMode(targetSession = session) {
     const gameMode = targetSession?.game_mode || "choice";
 
@@ -106,10 +116,15 @@ function JoinQuiz() {
     localStorage.setItem("quizPlayMode", mode);
   }
 
-  async function handleJoinQuiz() {
-    if (!currentUser) return;
+  async function handleJoinQuiz(roomCodeOverride, userOverride) {
+    const joiningUser = userOverride || currentUser;
+    const targetRoomCode = String(roomCodeOverride || roomCode)
+      .trim()
+      .toUpperCase();
 
-    if (!roomCode.trim()) {
+    if (!joiningUser) return;
+
+    if (!targetRoomCode) {
       alert("請輸入房號");
       return;
     }
@@ -118,7 +133,7 @@ function JoinQuiz() {
 
     try {
       const joinResponse = await fetch(
-        `${BACKEND_URL}/api/game-sessions/join/${roomCode.trim()}`
+        `${BACKEND_URL}/api/game-sessions/join/${targetRoomCode}`
       );
 
       const joinResult = await joinResponse.json();
@@ -140,7 +155,7 @@ function JoinQuiz() {
           },
           body: JSON.stringify({
             session_id: joinedSession.session_id,
-            user_id: currentUser.id,
+            user_id: joiningUser.id,
           }),
         }
       );
@@ -170,7 +185,7 @@ function JoinQuiz() {
       setSession(joinedSession);
       setJoined(true);
 
-      connectSocket(joinedSession.session_id, currentUser.id);
+      connectSocket(joinedSession.session_id, joiningUser.id);
     } catch (err) {
       console.error(err);
       alert("加入測驗時發生錯誤");
@@ -241,6 +256,14 @@ function JoinQuiz() {
 
     socket.on("game-finished", ({ session }) => {
       navigate(`/quiz/leaderboard/${session.session_id}`);
+    });
+
+    socket.on("room-dissolved", () => {
+      localStorage.removeItem("currentGameSession");
+      localStorage.removeItem("currentPlayerRecord");
+      socket.disconnect();
+      socketRef.current = null;
+      navigate("/", { replace: true, state: { roomDissolved: true } });
     });
 
     socket.on("socket-error", (data) => {
@@ -391,7 +414,7 @@ function JoinQuiz() {
               className="waiting-room-list-toggle"
               onClick={() => setPlayerPanelOpen((open) => !open)}
             >
-              {playerPanelOpen ? "隱藏玩家名單" : "顯示玩家名單"}
+              玩家名單
             </button>
           </div>
 
@@ -523,7 +546,7 @@ function JoinQuiz() {
 
         <button
           className="join-btn primary"
-          onClick={handleJoinQuiz}
+          onClick={() => handleJoinQuiz()}
           disabled={joining}
         >
           {joining ? "加入中..." : "加入測驗"}

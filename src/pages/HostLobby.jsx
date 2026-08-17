@@ -28,6 +28,7 @@ function HostLobby() {
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [starting, setStarting] = useState(false);
+  const [dissolving, setDissolving] = useState(false);
   const [playerPanelOpen, setPlayerPanelOpen] = useState(false);
   const [profileUser, setProfileUser] = useState(null);
 
@@ -281,6 +282,41 @@ function HostLobby() {
     });
   }
 
+  async function dissolveRoom() {
+    if (!session?.session_id || !currentUser?.id || dissolving) return;
+
+    const confirmed = window.confirm(
+      "確定要解散此房間嗎？所有玩家都會立即返回主頁。"
+    );
+    if (!confirmed) return;
+
+    setDissolving(true);
+
+    try {
+      const response = await fetch(
+        `${BACKEND_URL}/api/game-sessions/${session.session_id}/dissolve`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ host_id: currentUser.id }),
+        }
+      );
+      const result = await response.json();
+
+      if (!response.ok || result.error) {
+        throw new Error(result.error || "無法解散房間");
+      }
+
+      socketRef.current?.disconnect();
+      socketRef.current = null;
+      localStorage.removeItem("hostGameSession");
+      navigate("/", { replace: true });
+    } catch (err) {
+      alert(`解散房間失敗：${err.message}`);
+      setDissolving(false);
+    }
+  }
+
   function getModeLabel(mode) {
     if (mode === "normal") return "普通模式";
     if (mode === "ar") return "AR 模式";
@@ -407,7 +443,7 @@ function HostLobby() {
               className="host-player-drawer-toggle"
               onClick={() => setPlayerPanelOpen((open) => !open)}
             >
-              {playerPanelOpen ? "關閉玩家名單" : "顯示玩家名單"}
+              玩家名單
             </button>
 
             <section className="wayground-join-board">
@@ -503,11 +539,35 @@ function HostLobby() {
               >
                 {starting ? "開始中..." : "開始遊戲"}
               </button>
+
+              <button
+                type="button"
+                className="host-btn lobby-dissolve-btn"
+                onClick={dissolveRoom}
+                disabled={dissolving}
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M10 5H5v14h5" />
+                  <path d="M13 8l4 4-4 4" />
+                  <path d="M17 12H9" />
+                </svg>
+                <span>{dissolving ? "解散中..." : "解散此房間"}</span>
+              </button>
             </div>
 
             {playerPanelOpen && (
               <aside className="host-player-side-panel">
-                <h3>玩家名單</h3>
+                <div className="host-player-side-header">
+                  <h3>玩家名單</h3>
+                  <button
+                    type="button"
+                    className="host-player-side-close"
+                    onClick={() => setPlayerPanelOpen(false)}
+                    aria-label="關閉玩家名單"
+                  >
+                    X
+                  </button>
+                </div>
 
                 {players.length === 0 ? (
                   <p className="host-player-hint">目前還沒有玩家加入。</p>
@@ -545,12 +605,14 @@ function HostLobby() {
           </div>
         )}
 
-        <button
-          className={session ? "host-btn ghost lobby-exit quiz-center-return" : "host-btn ghost quiz-center-return"}
-          onClick={() => navigate("/quiz")}
-        >
-          返回 Quiz Center
-        </button>
+        {!session && (
+          <button
+            className="host-btn ghost quiz-center-return"
+            onClick={() => navigate("/quiz")}
+          >
+            返回 Quiz Center
+          </button>
+        )}
       </div>
     </div>
   );

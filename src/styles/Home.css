@@ -32,6 +32,32 @@
   box-sizing: border-box;
 }
 
+.room-dissolved-notice-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  border: 0;
+  background: rgba(2, 6, 23, 0.2);
+  cursor: pointer;
+}
+
+.room-dissolved-notice {
+  min-width: min(320px, calc(100vw - 48px));
+  padding: 20px 26px;
+  box-sizing: border-box;
+  border: 1px solid rgba(192, 132, 252, 0.34);
+  border-radius: 18px;
+  background: rgba(15, 10, 32, 0.96);
+  color: white;
+  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.52);
+  font-size: 17px;
+  font-weight: 850;
+  text-align: center;
+}
+
 .section-title span,
 .showcase-label {
   display: inline-flex;

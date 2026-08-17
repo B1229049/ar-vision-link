@@ -29,17 +29,21 @@
   top: 14px;
   right: 14px;
   z-index: 2;
-  width: auto;
-  height: auto;
-  padding: 2px 4px;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
   color: white;
   cursor: pointer;
-  font-size: 24px;
+  font-size: 25px;
   font-weight: 800;
   line-height: 1;
+}
+
+.shared-lobby-profile-close:hover {
+  background: rgba(255, 255, 255, 0.16);
 }
 
 .shared-lobby-profile-label {

@@ -873,6 +873,45 @@
   z-index: 2;
 }
 
+.lobby-dissolve-btn {
+  position: fixed;
+  left: 24px;
+  bottom: 24px;
+  z-index: 30;
+  width: auto;
+  margin: 0;
+  padding: 12px 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  border: 1px solid rgba(239, 68, 68, 0.36);
+  border-radius: 999px;
+  background: rgba(239, 68, 68, 0.22);
+  color: #fecaca;
+  backdrop-filter: blur(12px);
+}
+
+.lobby-dissolve-btn:hover {
+  background: rgba(239, 68, 68, 0.36);
+}
+
+.lobby-dissolve-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+.lobby-dissolve-btn svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex: 0 0 auto;
+}
+
 .lobby-start-btn {
   width: 100%;
   border: none;
@@ -917,6 +956,38 @@
   margin: 0;
   background: rgba(3, 7, 18, 0.78);
   backdrop-filter: blur(16px);
+}
+
+.host-player-side-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.host-player-side-panel .host-player-side-header h3 {
+  margin: 0;
+}
+
+.host-player-side-close {
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  cursor: pointer;
+  font: inherit;
+  font-size: 23px;
+  font-weight: 900;
+  line-height: 1;
+  flex: 0 0 auto;
+}
+
+.host-player-side-close:hover {
+  background: rgba(255, 255, 255, 0.16);
 }
 
 .host-player-avatar-head {
@@ -1082,19 +1153,6 @@
   }
 }
 
-.host-lobby-page.active-room .lobby-exit {
-  position: fixed;
-  left: 24px;
-  bottom: 24px;
-  z-index: 30;
-  width: auto;
-  margin: 0;
-  padding: 12px 16px;
-  border-radius: 999px;
-  background: rgba(3, 7, 18, 0.58);
-  backdrop-filter: blur(12px);
-}
-
 @media (max-width: 900px) {
   .wayground-join-board {
     width: 100%;
@@ -1174,6 +1232,14 @@
 
   .lobby-avatar-stage {
     padding: 16px 12px 0;
+  }
+
+  .lobby-dissolve-btn {
+    position: static;
+    width: 100%;
+    margin-top: 12px;
+    border-radius: 12px;
+    padding: 15px 18px;
   }
 
   .wayground-lobby .host-player-side-panel {

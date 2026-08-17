@@ -1815,6 +1815,70 @@ app.put("/api/game-sessions/:sessionId/finish", async (req, res) => {
   }
 });
 
+app.put("/api/game-sessions/:sessionId/dissolve", async (req, res) => {
+  try {
+    const sessionId = Number(req.params.sessionId);
+    const hostId = Number(req.body.host_id);
+
+    if (!sessionId || !hostId) {
+      return res.status(400).json({
+        success: false,
+        error: "sessionId 和 host_id 為必填",
+      });
+    }
+
+    const { data: session, error: sessionError } = await supabase
+      .from("game_sessions")
+      .select("session_id, quiz_id, started_at")
+      .eq("session_id", sessionId)
+      .maybeSingle();
+
+    if (sessionError) throw new Error(sessionError.message);
+    if (!session) {
+      return res.status(404).json({ success: false, error: "找不到房間" });
+    }
+    if (session.started_at) {
+      return res.status(409).json({
+        success: false,
+        error: "遊戲開始後無法從 Lobby 解散房間",
+      });
+    }
+
+    const { data: quiz, error: quizError } = await supabase
+      .from("quizzes")
+      .select("host_id")
+      .eq("quiz_id", session.quiz_id)
+      .single();
+
+    if (quizError) throw new Error(quizError.message);
+    if (Number(quiz.host_id) !== hostId) {
+      return res.status(403).json({
+        success: false,
+        error: "只有房主可以解散房間",
+      });
+    }
+
+    const { error: recordError } = await supabase
+      .from("player_records")
+      .delete()
+      .eq("session_id", sessionId);
+
+    if (recordError) throw new Error(recordError.message);
+
+    const { error: deleteError } = await supabase
+      .from("game_sessions")
+      .delete()
+      .eq("session_id", sessionId);
+
+    if (deleteError) throw new Error(deleteError.message);
+
+    io.to(`session:${sessionId}`).emit("room-dissolved", { sessionId });
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 /* =========================
    Player API
 ========================= */

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import "../styles/Home.css";
 
 function ShopIcon() {
@@ -14,8 +14,12 @@ function ShopIcon() {
 
 function Home() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [currentUser, setCurrentUser] = useState(null);
   const [quickRoomCode, setQuickRoomCode] = useState("");
+  const [showRoomDissolvedNotice, setShowRoomDissolvedNotice] = useState(
+    Boolean(location.state?.roomDissolved)
+  );
 
   useEffect(() => {
     const savedUser = localStorage.getItem("currentUser");
@@ -29,6 +33,12 @@ function Home() {
     }
   }, []);
 
+  useEffect(() => {
+    if (!location.state?.roomDissolved) return;
+
+    navigate(location.pathname, { replace: true, state: null });
+  }, [location.pathname, location.state, navigate]);
+
   function handleQuickJoin(event) {
     event.preventDefault();
 
@@ -40,6 +50,17 @@ function Home() {
 
   return (
     <div className="home-page">
+      {showRoomDissolvedNotice && (
+        <button
+          type="button"
+          className="room-dissolved-notice-layer"
+          onClick={() => setShowRoomDissolvedNotice(false)}
+          aria-label="關閉房間解散通知"
+        >
+          <span className="room-dissolved-notice">房主已解散房間</span>
+        </button>
+      )}
+
       <section className="home-hero">
         <div className="hero-left">
           <h1>AR Vision Link</h1>
