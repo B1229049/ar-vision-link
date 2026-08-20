@@ -122,12 +122,6 @@ function Profile() {
             編輯 虛擬替身
           </button>
 
-          <button
-            className="profile-btn secondary"
-            onClick={() => navigate("/ar-selfie")}
-          >
-            AR 濾鏡自拍
-          </button>
         </div>
 
         <button

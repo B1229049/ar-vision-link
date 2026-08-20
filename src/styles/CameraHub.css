@@ -26,34 +26,22 @@
   border-radius: 32px;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
   justify-content: flex-end;
   gap: 24px;
   color: #fff;
-  text-align: left;
+  text-align: center;
   cursor: pointer;
   box-shadow: 0 24px 70px rgba(0, 0, 0, 0.32);
   transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
 }
 
-.camera-hub-panel::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to bottom, transparent 10%, rgba(2, 6, 23, 0.82) 100%);
-  pointer-events: none;
-}
-
 .camera-hub-recognition {
-  background:
-    radial-gradient(circle at 50% 28%, rgba(125, 211, 252, 0.34), transparent 27%),
-    linear-gradient(145deg, #164e63, #0f172a 68%);
+  background: linear-gradient(180deg, #1d5b6e 0%, #0b2b42 100%);
 }
 
 .camera-hub-selfie {
-  background:
-    radial-gradient(circle at 50% 28%, rgba(249, 168, 212, 0.34), transparent 27%),
-    linear-gradient(145deg, #701a75, #0f172a 68%);
+  background: linear-gradient(180deg, #76257f 0%, #351642 100%);
 }
 
 .camera-hub-panel:hover,
@@ -162,7 +150,7 @@
   }
 
   .camera-hub-action {
-    width: min(100%, 220px);
+    width: 80%;
     padding: 10px 8px;
     font-size: clamp(0.75rem, 3.2vw, 0.9rem);
     text-align: center;
