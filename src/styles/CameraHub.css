@@ -1,0 +1,152 @@
+.camera-hub-page {
+  min-height: 100vh;
+  padding: calc(var(--navbar-height) + 40px) clamp(20px, 5vw, 72px) 48px;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(circle at 18% 18%, rgba(56, 189, 248, 0.16), transparent 36%),
+    radial-gradient(circle at 82% 78%, rgba(244, 114, 182, 0.15), transparent 38%),
+    #020617;
+}
+
+.camera-hub-grid {
+  width: min(1180px, 100%);
+  min-height: min(640px, calc(100vh - var(--navbar-height) - 88px));
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(18px, 3vw, 32px);
+}
+
+.camera-hub-panel {
+  position: relative;
+  overflow: hidden;
+  min-height: 460px;
+  padding: clamp(28px, 5vw, 56px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-end;
+  gap: 24px;
+  color: #fff;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.32);
+  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.camera-hub-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, transparent 10%, rgba(2, 6, 23, 0.82) 100%);
+  pointer-events: none;
+}
+
+.camera-hub-recognition {
+  background:
+    radial-gradient(circle at 50% 28%, rgba(125, 211, 252, 0.34), transparent 27%),
+    linear-gradient(145deg, #164e63, #0f172a 68%);
+}
+
+.camera-hub-selfie {
+  background:
+    radial-gradient(circle at 50% 28%, rgba(249, 168, 212, 0.34), transparent 27%),
+    linear-gradient(145deg, #701a75, #0f172a 68%);
+}
+
+.camera-hub-panel:hover,
+.camera-hub-panel:focus-visible {
+  transform: translateY(-6px);
+  border-color: rgba(255, 255, 255, 0.46);
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.44);
+}
+
+.camera-hub-panel:focus-visible {
+  outline: 3px solid #f8fafc;
+  outline-offset: 4px;
+}
+
+.camera-hub-icon,
+.camera-hub-copy,
+.camera-hub-action {
+  position: relative;
+  z-index: 1;
+}
+
+.camera-hub-icon {
+  margin-bottom: auto;
+  font-size: clamp(72px, 9vw, 118px);
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.92);
+  text-shadow: 0 0 42px rgba(255, 255, 255, 0.22);
+}
+
+.camera-hub-copy {
+  display: grid;
+  gap: 12px;
+}
+
+.camera-hub-copy strong {
+  font-size: clamp(1.7rem, 3vw, 2.7rem);
+  line-height: 1.16;
+}
+
+.camera-hub-copy small {
+  max-width: 30rem;
+  color: rgba(226, 232, 240, 0.82);
+  font-size: clamp(0.95rem, 1.5vw, 1.12rem);
+  line-height: 1.7;
+}
+
+.camera-hub-action {
+  padding: 11px 18px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.13);
+  font-weight: 800;
+}
+
+@media (max-width: 760px) {
+  .camera-hub-page {
+    padding: calc(var(--navbar-height) + 24px) 16px calc(100px + env(safe-area-inset-bottom));
+    place-items: start stretch;
+  }
+
+  .camera-hub-grid {
+    min-height: auto;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .camera-hub-panel {
+    min-height: 390px;
+    padding: 20px 14px;
+    gap: 16px;
+    border-radius: 20px;
+  }
+
+  .camera-hub-icon {
+    font-size: 52px;
+  }
+
+  .camera-hub-copy {
+    gap: 8px;
+  }
+
+  .camera-hub-copy strong {
+    font-size: clamp(1.15rem, 5vw, 1.45rem);
+  }
+
+  .camera-hub-copy small {
+    font-size: 0.8rem;
+    line-height: 1.5;
+  }
+
+  .camera-hub-action {
+    width: 100%;
+    padding: 10px 8px;
+    font-size: 0.78rem;
+    text-align: center;
+  }
+}

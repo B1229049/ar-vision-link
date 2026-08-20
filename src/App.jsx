@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import Register from "./pages/Register";
 import Camera from "./pages/Camera";
+import CameraHub from "./pages/CameraHub";
 import FaceLogin from "./pages/FaceLogin";
 import Profile from "./pages/Profile";
 import EditProfile from "./pages/EditProfile";
@@ -52,6 +53,15 @@ function App() {
 
         <Route
           path="/camera"
+          element={
+            <ProtectedRoute>
+              <CameraHub />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/camera/recognition"
           element={
             <ProtectedRoute>
               <Camera />
