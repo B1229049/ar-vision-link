@@ -4,73 +4,27 @@ import AvatarRenderer from "../components/AvatarRenderer";
 import ProfileImage from "../components/ProfileImage";
 import "../styles/Profile.css";
 
-const BACKEND_URL = "https://ar-vision-link.onrender.com";
+function getStoredUser() {
+  try {
+    return JSON.parse(localStorage.getItem("currentUser") || "null");
+  } catch {
+    return null;
+  }
+}
 
 function Profile() {
   const navigate = useNavigate();
-  const [currentUser, setCurrentUser] = useState(null);
-  const [selfies, setSelfies] = useState([]);
-  const [openedSelfieUrl, setOpenedSelfieUrl] = useState(null);
+  const [currentUser] = useState(getStoredUser);
 
   useEffect(() => {
-    const savedUser = localStorage.getItem("currentUser");
-
-    if (!savedUser) {
+    if (!currentUser) {
       navigate("/face-login");
-      return;
     }
-
-    setCurrentUser(JSON.parse(savedUser));
-  }, [navigate]);
-
-  useEffect(() => {
-    if (!currentUser?.id) return;
-
-    async function loadSelfies() {
-      try {
-        const response = await fetch(`${BACKEND_URL}/api/users/${currentUser.id}/ar-selfies`);
-        const result = await response.json();
-        if (response.ok && result.success) setSelfies(result.photos || []);
-      } catch (error) {
-        console.error("AR 自拍載入失敗", error);
-      }
-    }
-
-    loadSelfies();
-  }, [currentUser?.id]);
+  }, [currentUser, navigate]);
 
   function logout() {
     localStorage.removeItem("currentUser");
     navigate("/");
-  }
-
-  async function deleteSelfie(selfieId) {
-    if (!currentUser?.id) return;
-    try {
-      const response = await fetch(
-        `${BACKEND_URL}/api/users/${currentUser.id}/ar-selfies/${selfieId}`,
-        { method: "DELETE" }
-      );
-      const result = await response.json();
-      if (!response.ok || !result.success) throw new Error(result.error || "照片刪除失敗");
-      setSelfies((previous) => previous.filter((selfie) => selfie.id !== selfieId));
-    } catch (error) {
-      alert(error.message || "照片刪除失敗");
-    }
-  }
-
-  async function openSelfie(selfieId) {
-    if (!currentUser?.id) return;
-    try {
-      const response = await fetch(
-        `${BACKEND_URL}/api/users/${currentUser.id}/ar-selfies/${selfieId}/image`
-      );
-      const result = await response.json();
-      if (!response.ok || !result.success) throw new Error(result.error || "照片載入失敗");
-      setOpenedSelfieUrl(result.url);
-    } catch (error) {
-      alert(error.message || "照片載入失敗");
-    }
   }
 
   function formatDate(dateString) {
@@ -115,7 +69,6 @@ function Profile() {
           </div>
 
           <div className="profile-avatar-stage">
-            <div className="profile-avatar-glow" />
             <AvatarRenderer
               config={currentUser.avatar_config}
               className="profile-avatar-renderer"
@@ -129,49 +82,6 @@ function Profile() {
           </div>
           <p>{currentUser.description?.trim() || ""}</p>
         </section>
-
-        <div className="profile-media-section">
-          <div className="profile-section-heading">
-            <h3>動態牆</h3>
-          </div>
-
-          <div className="profile-media-grid">
-            {Array.from({ length: 2 }).map((_, index) => (
-              <div className="profile-media-tile" key={index}>
-                {selfies[index] && (
-                  <>
-                    <button
-                      type="button"
-                      className="profile-media-open"
-                      onClick={() => openSelfie(selfies[index].id)}
-                      aria-label={`查看 AR 自拍 ${index + 1}`}
-                    >
-                      <img src={selfies[index].thumbnail_url} alt={`AR 自拍縮圖 ${index + 1}`} />
-                    </button>
-                    <button
-                      type="button"
-                      className="profile-media-delete"
-                      onClick={() => deleteSelfie(selfies[index].id)}
-                      aria-label={`刪除 AR 自拍 ${index + 1}`}
-                    >
-                      ×
-                    </button>
-                  </>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {openedSelfieUrl && (
-          <div className="profile-selfie-dialog" role="dialog" aria-modal="true" aria-label="AR 自拍照">
-            <button type="button" className="profile-selfie-backdrop" onClick={() => setOpenedSelfieUrl(null)} aria-label="關閉照片" />
-            <div className="profile-selfie-preview">
-              <img src={openedSelfieUrl} alt="AR 自拍照" />
-              <button type="button" onClick={() => setOpenedSelfieUrl(null)}>關閉</button>
-            </div>
-          </div>
-        )}
 
         <div className="profile-info-list">
           <div className="info-row">

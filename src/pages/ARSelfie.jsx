@@ -4,7 +4,6 @@ import { FaceLandmarker, FilesetResolver } from "@mediapipe/tasks-vision";
 import {
   AR_SELFIE_EFFECTS,
   createFilteredSnapshot,
-  createSelfieThumbnail,
   renderFaceEffect,
   smoothFaceLandmarks,
 } from "../utils/arSelfieEffects";
@@ -21,7 +20,6 @@ const FILTERS = [
   { id: "mono", label: "黑白", value: "grayscale(1) contrast(1.12)" },
 ];
 
-const BACKEND_URL = "https://ar-vision-link.onrender.com";
 const VISION_WASM_URL = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.35/wasm";
 const FACE_MODEL_URL = "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task";
 
@@ -36,11 +34,13 @@ function ARSelfie() {
   const smoothedLandmarksRef = useRef(null);
   const effectRef = useRef("sparkle");
   const threeRendererRef = useRef(null);
+  const capturedPhotoRef = useRef(null);
 
   const [filterId, setFilterId] = useState("natural");
   const [effectId, setEffectId] = useState("sparkle");
   const [status, setStatus] = useState("正在啟動相機...");
-  const [saving, setSaving] = useState(false);
+  const [capturing, setCapturing] = useState(false);
+  const [capturedPhoto, setCapturedPhoto] = useState(null);
 
   useEffect(() => {
     let mounted = true;
@@ -205,6 +205,10 @@ function ARSelfie() {
       smoothedLandmarksRef.current = null;
       threeRendererRef.current?.dispose();
       threeRendererRef.current = null;
+      if (capturedPhotoRef.current?.url) {
+        URL.revokeObjectURL(capturedPhotoRef.current.url);
+        capturedPhotoRef.current = null;
+      }
       document.body.style.overflow = previousBodyOverflow;
       document.documentElement.style.overflow = previousHtmlOverflow;
     };
@@ -225,30 +229,55 @@ function ARSelfie() {
     centerSelectedOption(element);
   }
 
-  async function saveSelfie() {
+  async function captureSelfie() {
     const canvas = canvasRef.current;
-    const user = JSON.parse(localStorage.getItem("currentUser") || "null");
-    if (!canvas || !user?.id || !canvas.width || saving) return;
+    if (!canvas || !canvas.width || capturing || capturedPhoto) return;
 
-    setSaving(true);
-    setStatus("正在套用效果並儲存照片...");
+    setCapturing(true);
+    setStatus("正在建立自拍預覽...");
     try {
       const snapshot = createFilteredSnapshot(canvas, threeCanvasRef.current, filterId);
-      const response = await fetch(`${BACKEND_URL}/api/users/${user.id}/ar-selfies`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          photo: snapshot.toDataURL("image/jpeg", 0.82),
-          thumbnail: createSelfieThumbnail(snapshot),
-        }),
+      const blob = await new Promise((resolve, reject) => {
+        snapshot.toBlob((result) => {
+          if (result) resolve(result);
+          else reject(new Error("無法建立自拍照片"));
+        }, "image/jpeg", 0.92);
       });
-      const result = await response.json();
-      if (!response.ok || !result.success) throw new Error(result.error || "照片儲存失敗");
-      navigate("/profile");
+      const photo = { blob, url: URL.createObjectURL(blob) };
+      capturedPhotoRef.current = photo;
+      setCapturedPhoto(photo);
+      setStatus("請確認照片，選擇取消或儲存到裝置。");
     } catch (error) {
-      setStatus(error.message || "照片儲存失敗，請再試一次。");
-      setSaving(false);
+      setStatus(error.message || "自拍建立失敗，請再試一次。");
+    } finally {
+      setCapturing(false);
     }
+  }
+
+  function cancelCapturedPhoto() {
+    if (capturedPhotoRef.current?.url) {
+      URL.revokeObjectURL(capturedPhotoRef.current.url);
+    }
+    capturedPhotoRef.current = null;
+    setCapturedPhoto(null);
+    setStatus("左右滑動選擇濾鏡與特效，按下快門拍照。");
+  }
+
+  function savePhotoToDevice() {
+    const photo = capturedPhotoRef.current;
+    if (!photo) return;
+
+    const link = document.createElement("a");
+    link.href = photo.url;
+    link.download = `ar-selfie-${new Date().toISOString().replace(/[:.]/g, "-")}.jpg`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    capturedPhotoRef.current = null;
+    setCapturedPhoto(null);
+    setStatus("照片已儲存到裝置。");
+    setTimeout(() => URL.revokeObjectURL(photo.url), 1500);
   }
 
   const activeFilter = FILTERS.find((filter) => filter.id === filterId)?.value || "none";
@@ -307,10 +336,23 @@ function ARSelfie() {
         </div>
 
         <div className="ar-selfie-capture-actions">
-          <button className="ar-selfie-shutter" type="button" onClick={saveSelfie} disabled={saving} aria-label="拍攝並儲存到動態牆"><span /></button>
+          <button className="ar-selfie-shutter" type="button" onClick={captureSelfie} disabled={capturing} aria-label="拍攝 AR 自拍"><span /></button>
           <button className="ar-selfie-back" type="button" onClick={() => navigate("/profile")}>返回</button>
         </div>
       </section>
+
+      {capturedPhoto && (
+        <section className="ar-selfie-confirm" role="dialog" aria-modal="true" aria-label="確認 AR 自拍">
+          <div className="ar-selfie-confirm-card">
+            <img src={capturedPhoto.url} alt="剛拍攝的 AR 自拍預覽" />
+            <p>要儲存這張照片嗎？</p>
+            <div className="ar-selfie-confirm-actions">
+              <button type="button" className="cancel" onClick={cancelCapturedPhoto}>取消</button>
+              <button type="button" className="save" onClick={savePhotoToDevice}>儲存到裝置</button>
+            </div>
+          </div>
+        </section>
+      )}
     </main>
   );
 }

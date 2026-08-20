@@ -266,6 +266,76 @@
   cursor: pointer;
 }
 
+.ar-selfie-confirm {
+  position: fixed;
+  inset: 0;
+  z-index: 12000;
+  padding: max(18px, env(safe-area-inset-top)) 18px max(18px, env(safe-area-inset-bottom));
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  background: rgba(2, 6, 23, 0.88);
+  backdrop-filter: blur(14px);
+}
+
+.ar-selfie-confirm-card {
+  width: min(100%, 620px);
+  max-height: 100%;
+  padding: 16px;
+  display: grid;
+  gap: 14px;
+  box-sizing: border-box;
+  overflow: auto;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 22px;
+  background: #10141c;
+  box-shadow: 0 26px 80px rgba(0, 0, 0, 0.55);
+}
+
+.ar-selfie-confirm-card img {
+  display: block;
+  width: 100%;
+  max-height: min(68dvh, 720px);
+  object-fit: contain;
+  border-radius: 14px;
+  background: #050607;
+}
+
+.ar-selfie-confirm-card p {
+  margin: 0;
+  color: #fff;
+  font-size: 17px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.ar-selfie-confirm-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.ar-selfie-confirm-actions button {
+  min-height: 44px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.ar-selfie-confirm-actions .cancel {
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.ar-selfie-confirm-actions .save {
+  border: 1px solid #fff;
+  background: #fff;
+  color: #111827;
+}
+
 @media (max-width: 640px) {
   .ar-selfie-control-group {
     width: 100%;

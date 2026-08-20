@@ -68,24 +68,26 @@
   outline-offset: 4px;
 }
 
-.camera-hub-icon,
+.camera-hub-content,
 .camera-hub-copy,
 .camera-hub-action {
   position: relative;
   z-index: 1;
 }
 
-.camera-hub-icon {
-  margin-bottom: auto;
-  font-size: clamp(72px, 9vw, 118px);
-  line-height: 1;
-  color: rgba(255, 255, 255, 0.92);
-  text-shadow: 0 0 42px rgba(255, 255, 255, 0.22);
+.camera-hub-content {
+  width: min(100%, 420px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
 }
 
 .camera-hub-copy {
+  width: 100%;
   display: grid;
   gap: 12px;
+  text-align: center;
 }
 
 .camera-hub-copy strong {
@@ -109,44 +111,66 @@
 
 @media (max-width: 760px) {
   .camera-hub-page {
-    padding: calc(var(--navbar-height) + 24px) 16px calc(100px + env(safe-area-inset-bottom));
-    place-items: start stretch;
+    position: fixed;
+    inset: var(--navbar-height) 0 var(--mobile-bottom-nav-height);
+    z-index: 1;
+    min-height: 0;
+    padding: 0;
+    display: block;
+    background: #020617;
   }
 
   .camera-hub-grid {
-    min-height: auto;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px;
+    gap: 0;
   }
 
   .camera-hub-panel {
-    min-height: 390px;
-    padding: 20px 14px;
-    gap: 16px;
-    border-radius: 20px;
-  }
-
-  .camera-hub-icon {
-    font-size: 52px;
+    width: 100%;
+    min-width: 0;
+    min-height: 0;
+    height: 100%;
+    padding: clamp(20px, 6vw, 32px) clamp(10px, 3vw, 18px);
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    text-align: center;
   }
 
   .camera-hub-copy {
     gap: 8px;
   }
 
+  .camera-hub-content {
+    width: min(100%, 240px);
+    gap: clamp(18px, 3.2dvh, 30px);
+  }
+
   .camera-hub-copy strong {
-    font-size: clamp(1.15rem, 5vw, 1.45rem);
+    font-size: clamp(1.12rem, 5.2vw, 1.55rem);
   }
 
   .camera-hub-copy small {
-    font-size: 0.8rem;
+    font-size: clamp(0.76rem, 3.4vw, 0.92rem);
     line-height: 1.5;
   }
 
   .camera-hub-action {
-    width: 100%;
+    width: min(100%, 220px);
     padding: 10px 8px;
-    font-size: 0.78rem;
+    font-size: clamp(0.75rem, 3.2vw, 0.9rem);
     text-align: center;
+  }
+
+  .camera-hub-panel:hover,
+  .camera-hub-panel:focus-visible {
+    transform: none;
+    box-shadow: none;
   }
 }
