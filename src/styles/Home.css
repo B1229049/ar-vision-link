@@ -7,7 +7,9 @@
   padding: 96px 24px 48px;
   box-sizing: border-box;
   color: white;
-  background: var(--app-page-background);
+  background:
+    radial-gradient(ellipse at 92% 82%, rgba(79, 99, 190, 0.3), transparent 58%),
+    var(--app-page-background);
 }
 
 .home-hero,
