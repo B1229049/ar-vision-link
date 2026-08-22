@@ -148,6 +148,16 @@ body,
 }
 
 @media (max-width: 640px) {
+  :root {
+    --app-page-background: #2b1b4b;
+  }
+
+  html,
+  body,
+  #root {
+    background: var(--app-page-background);
+  }
+
   .register-page,
   .face-login-page,
   .edit-profile-page,
