@@ -92,14 +92,6 @@
   width: 100%;
 }
 
-.profile-nickname {
-  margin-top: 10px;
-
-  color: rgba(255, 255, 255, 0.72);
-
-  font-size: 16px;
-}
-
 .profile-avatar-stage {
   position: relative;
   min-height: 250px;
@@ -329,11 +321,6 @@
 
   .profile-avatar-renderer {
     width: min(135px, 82.8%);
-  }
-
-  .profile-nickname {
-    font-size: 14px;
-    margin: 0;
   }
 
   .profile-btn {

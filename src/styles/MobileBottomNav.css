@@ -21,12 +21,16 @@
     padding: 8px 18px calc(8px + env(safe-area-inset-bottom));
     box-sizing: border-box;
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     align-items: center;
     background: rgba(8, 13, 31, 0.96);
     border-top: 1px solid rgba(255, 255, 255, 0.12);
     box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.24);
     backdrop-filter: blur(18px);
+  }
+
+  .mobile-bottom-nav.has-admin {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
   }
 
   .mobile-bottom-nav button {

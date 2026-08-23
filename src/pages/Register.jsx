@@ -67,7 +67,6 @@ function Register() {
   const [step, setStep] = useState(1);
 
   const [name, setName] = useState("");
-  const [nickname, setNickname] = useState("");
   const [description, setDescription] = useState("");
 
   const videoRef = useRef(null);
@@ -245,7 +244,6 @@ function Register() {
         },
         body: JSON.stringify({
           name: name.trim(),
-          nickname: nickname.trim(),
           description: description.trim(),
           is_active: true,
           face_embedding: embedding,
@@ -273,7 +271,6 @@ function Register() {
       stopCamera();
 
       setName("");
-      setNickname("");
       setDescription("");
       setCapturedImage(null);
       setMode("idle");
@@ -312,15 +309,6 @@ function Register() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="例如：陳小明"
-              />
-            </div>
-
-            <div className="field">
-              <label>暱稱（可選）</label>
-              <input
-                value={nickname}
-                onChange={(e) => setNickname(e.target.value)}
-                placeholder="例如：Simon"
               />
             </div>
 

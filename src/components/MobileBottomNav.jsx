@@ -87,8 +87,12 @@ function MobileBottomNav() {
     });
   }
 
+  const navClassName = currentUser.admin === true
+    ? "mobile-bottom-nav has-admin"
+    : "mobile-bottom-nav";
+
   return (
-    <nav className="mobile-bottom-nav" aria-label="手機版主要導覽">
+    <nav className={navClassName} aria-label="手機版主要導覽">
       {navItems.map((item) => {
         const isActive =
           item.path &&

@@ -61,11 +61,6 @@ function Profile() {
             <ProfileImage user={currentUser} className="avatar-circle" />
 
             <h2 className="profile-name">{currentUser.name || "未命名使用者"}</h2>
-
-            <p className="profile-nickname">
-              @{currentUser.nickname || "unknown"}
-            </p>
-
           </div>
 
           <div className="profile-avatar-stage">
