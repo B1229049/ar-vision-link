@@ -280,10 +280,9 @@
   box-sizing: border-box;
   border-radius: 12px;
   color: #ffffff;
-  background: linear-gradient(135deg, #7c3aed, #c026d3);
-  border: 1px solid rgba(240, 171, 252, 0.68);
+  background: rgba(185, 94, 255, 0.16);
+  border: 1px solid rgba(211, 145, 255, 0.24);
   text-align: center;
-  box-shadow: 0 8px 22px rgba(192, 38, 211, 0.28);
 }
 
 .news-badge strong {
@@ -314,12 +313,12 @@
 
 .home-shop-button:hover {
   transform: translateY(-2px);
-  background: rgba(168, 85, 247, 0.2);
-  border-color: rgba(240, 171, 252, 0.46);
+  background: rgba(185, 94, 255, 0.16);
+  border-color: rgba(211, 145, 255, 0.28);
 }
 
 .home-shop-button:focus-visible {
-  outline: 2px solid rgba(240, 171, 252, 0.88);
+  outline: 2px solid rgba(211, 145, 255, 0.75);
   outline-offset: 3px;
 }
 
@@ -329,10 +328,9 @@
   display: grid;
   place-items: center;
   border-radius: 15px;
-  color: #ffffff;
-  background: linear-gradient(145deg, #6d28d9, #a21caf);
-  border: 1px solid rgba(240, 171, 252, 0.58);
-  box-shadow: 0 8px 24px rgba(162, 28, 175, 0.26);
+  color: #f3ecff;
+  background: rgba(185, 94, 255, 0.14);
+  border: 1px solid rgba(211, 145, 255, 0.2);
 }
 
 .shop-icon-wrap svg {
