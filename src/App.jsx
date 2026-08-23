@@ -30,9 +30,12 @@ import MobileBottomNav from "./components/MobileBottomNav";
 import ProtectedRoute from "./components/ProtectedRoute";
 import "./styles/GlobalPageTheme.css";
 
+import AdminRoute from "./components/AdminRoute";
+import Admin from "./pages/Admin";
+
 function App() {
   return (
-    
+
     <BrowserRouter basename="/ar-vision-link">
       <Navbar />
       <MobileBottomNav />
@@ -166,10 +169,18 @@ function App() {
         <Route path="/store" element={<ProtectedRoute><Store /></ProtectedRoute>} />
         <Route path="/avatar-admin" element={<AvatarAdmin />} />
 
-        
+        <Route
+          path="/admin"
+          element={
+            <AdminRoute>
+              <Admin />
+            </AdminRoute>
+          }
+        />
+
       </Routes>
 
-      
+
     </BrowserRouter>
   );
 }

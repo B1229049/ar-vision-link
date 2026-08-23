@@ -35,7 +35,13 @@ function Navbar() {
             <button className="nav-quiz" onClick={() => go("/quiz")}>Quiz</button>
             <button className="nav-camera" onClick={() => go("/camera")}>ARcamera</button>
             <button className="nav-profile" onClick={() => go("/profile")}>個人頁面</button>
-            <button className="logout nav-logout" onClick={logout}>登出</button>
+
+            {/* for adminer */}
+            {currentUser.admin === true && (
+              <button onClick={() => go("/admin")}>管理員</button>
+              )}
+              <button className="logout nav-logout" onClick={logout}>登出</button>
+
           </>
         )}
       </div>

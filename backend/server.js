@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import express from "express";
 import cors from "cors";
 import http from "http";
@@ -5,6 +6,7 @@ import { Server } from "socket.io";
 import { createClient } from "@supabase/supabase-js";
 import { GoogleGenAI } from "@google/genai";
 import multer from "multer";
+import { registerAdminRoutes } from "./admin-server.js";
 
 const app = express();
 const server = http.createServer(app);
@@ -27,6 +29,8 @@ const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
+
+registerAdminRoutes(app, supabase);
 
 const io = new Server(server, {
   cors: {
@@ -76,7 +80,8 @@ const USER_PRIVATE_SELECT = `
   is_active,
   created_at,
   updated_at,
-  face_embedding
+  face_embedding,
+  admin
 `;
 
 const AVATAR_ITEMS = {
@@ -554,7 +559,7 @@ app.post("/api/users/register", async (req, res) => {
     if (error) {
       return res.status(500).json({ success: false, error: error.message });
     }
-    
+
     clearUserEmbeddingCache();
 
     res.json({ success: true, user: data });
@@ -685,6 +690,10 @@ app.post("/api/face-login", async (req, res) => {
         error: "找不到符合的人臉",
       });
     }
+
+
+    console.log("登入使用者:", bestUser);
+
 
     delete bestUser.face_embedding;
 

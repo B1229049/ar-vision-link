@@ -1,0 +1,391 @@
+.admin-page {
+  min-height: 100vh;
+  padding: 40px 50px;
+  background: #080b1a;
+  color: #ffffff;
+}
+
+.admin-page h1 {
+  margin: 0 0 35px;
+  font-size: 32px;
+  color: #ffffff;
+}
+
+.admin-section {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.admin-section h2 {
+  margin-bottom: 20px;
+  text-align: center;
+  font-size: 24px;
+  color: #ffffff;
+}
+
+.admin-count {
+  margin-bottom: 20px;
+  color: #d8dbea;
+  font-size: 16px;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #11162a;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.admin-table th,
+.admin-table td {
+  padding: 14px 18px;
+  text-align: left;
+  border-bottom: 1px solid #2a3048;
+  color: #ffffff;
+}
+
+.admin-table th {
+  background: #1b2138;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.admin-table tbody tr:hover {
+  background: #191f35;
+}
+
+.admin-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.admin-yes {
+  color: #6ee7b7 !important;
+  font-weight: 600;
+}
+
+.admin-no {
+  color: #fca5a5 !important;
+  font-weight: 600;
+}
+
+.admin-delete-btn {
+  padding: 7px 14px;
+  border: none;
+  border-radius: 6px;
+  background: #dc2626;
+  color: #ffffff;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.admin-delete-btn:hover {
+  background: #b91c1c;
+}
+
+.admin-cannot-delete {
+  color: #9ca3af;
+  font-size: 14px;
+}
+.admin-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  border: 1px solid #4b5563;
+  border-radius: 5px;
+  background: #0b1020;
+  color: #ffffff;
+  font-size: 14px;
+}
+
+.admin-input:focus {
+  outline: none;
+  border-color: #60a5fa;
+}
+
+.admin-edit-btn {
+  padding: 7px 14px;
+  margin-right: 8px;
+  border: none;
+  border-radius: 6px;
+  background: #2563eb;
+  color: #ffffff;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.admin-edit-btn:hover {
+  background: #1d4ed8;
+}
+
+.admin-save-btn {
+  padding: 7px 14px;
+  margin-right: 8px;
+  border: none;
+  border-radius: 6px;
+  background: #16a34a;
+  color: #ffffff;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.admin-save-btn:hover {
+  background: #15803d;
+}
+
+.admin-save-btn:disabled {
+  background: #6b7280;
+  cursor: not-allowed;
+}
+
+.admin-cancel-btn {
+  padding: 7px 14px;
+  margin-right: 8px;
+  border: none;
+  border-radius: 6px;
+  background: #6b7280;
+  color: #ffffff;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.admin-cancel-btn:hover {
+  background: #4b5563;
+}
+
+.admin-cancel-btn:disabled {
+  cursor: not-allowed;
+}
+.admin-detail-btn {
+  margin-right: 6px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+.admin-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.65);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  z-index: 9999;
+}
+
+.admin-modal {
+  width: 500px;
+  max-width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+
+  background: white;
+  color: #111;
+
+  padding: 30px;
+  border-radius: 12px;
+
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+}
+
+.admin-modal h2 {
+  margin-top: 0;
+  margin-bottom: 25px;
+}
+
+.admin-detail-list {
+  text-align: left;
+  line-height: 1.6;
+  word-break: break-word;
+}
+
+.admin-detail-list p {
+  margin: 10px 0;
+}
+
+.admin-detail-list strong {
+  display: inline-block;
+  width: 120px;
+}
+.admin-other-tables {
+  margin-top: 40px;
+}
+
+.admin-table-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.admin-table-btn {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.admin-table-btn:hover {
+  opacity: 0.8;
+}
+
+.admin-data-section {
+  margin-top: 30px;
+}
+
+.admin-data-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  margin-top: 15px;
+}
+
+.admin-data-table-wrapper .admin-table {
+  min-width: 800px;
+}
+
+/* =========================
+   Mobile Responsive
+   ========================= */
+
+@media (max-width: 640px) {
+  .admin-page {
+    min-height: 100vh;
+    padding: 24px 14px 90px;
+  }
+
+  .admin-page h1 {
+    margin: 0 0 24px;
+    font-size: 26px;
+    text-align: center;
+  }
+
+  .admin-section {
+    width: 100%;
+    max-width: none;
+  }
+
+  .admin-section h2 {
+    margin-bottom: 16px;
+    font-size: 21px;
+  }
+
+  .admin-count {
+    margin-bottom: 14px;
+    font-size: 14px;
+  }
+
+  /* User table */
+  .admin-table {
+    width: 100%;
+    font-size: 13px;
+  }
+
+  .admin-table th,
+  .admin-table td {
+    padding: 10px 8px;
+  }
+
+  /* 讓主要 User 表格可以左右滑動 */
+  .admin-section > .admin-table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  /* Buttons */
+  .admin-edit-btn,
+  .admin-save-btn,
+  .admin-cancel-btn,
+  .admin-delete-btn {
+    padding: 8px 10px;
+    margin-right: 4px;
+    font-size: 13px;
+    min-height: 36px;
+  }
+
+  .admin-detail-btn {
+    padding: 7px 9px;
+    margin-right: 4px;
+    font-size: 13px;
+  }
+
+  /* Input */
+  .admin-input {
+    min-width: 120px;
+    padding: 8px;
+    font-size: 14px;
+  }
+
+  /* Other tables selector */
+  .admin-other-tables {
+    margin-top: 30px;
+  }
+
+  .admin-table-buttons {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .admin-table-btn {
+    width: 100%;
+    padding: 10px 8px;
+    font-size: 13px;
+  }
+
+  /* Other table */
+  .admin-data-section {
+    margin-top: 24px;
+  }
+
+  .admin-data-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .admin-data-table-wrapper .admin-table {
+    min-width: 700px;
+  }
+
+  /* Modal */
+  .admin-modal-overlay {
+    padding: 16px;
+    box-sizing: border-box;
+  }
+
+  .admin-modal {
+    width: 100%;
+    max-width: none;
+    max-height: 85vh;
+    padding: 20px;
+    border-radius: 10px;
+    box-sizing: border-box;
+  }
+
+  .admin-modal h2 {
+    margin-bottom: 18px;
+    font-size: 21px;
+  }
+
+  .admin-detail-list {
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .admin-detail-list p {
+    margin: 9px 0;
+  }
+
+  .admin-detail-list strong {
+    display: block;
+    width: auto;
+    margin-bottom: 2px;
+  }
+}
