@@ -23,16 +23,19 @@ function Admin() {
   const [tableError, setTableError] = useState("");
 
   // 可以查看的資料表
-  const ADMIN_TABLES = [
+    const ADMIN_TABLES = [
     { key: "quizzes", name: "Quizzes" },
     { key: "questions", name: "Questions" },
     { key: "game_sessions", name: "Game Sessions" },
     { key: "player_records", name: "Player Records" },
     { key: "user_face_images", name: "User Face Images" },
+    { key: "user_face_embeddings", name: "User Face Embeddings" },
     { key: "vision_sessions", name: "Vision Sessions" },
     { key: "vision_detection_logs", name: "Vision Detection Logs" },
     { key: "player_answers", name: "Player Answers" },
-  ];
+    { key: "avatar_item_settings", name: "Avatar Item Settings" },
+    { key: "ar_selfies", name: "AR Selfies" },
+    ];
 
   // =========================
   // 取得 Users

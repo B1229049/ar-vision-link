@@ -4,9 +4,12 @@ const ADMIN_ALLOWED_TABLES = {
   game_sessions: "session_id",
   player_records: "record_id",
   user_face_images: "id",
+  user_face_embeddings: "id",
   vision_sessions: "id",
   vision_detection_logs: "id",
   player_answers: "answer_id",
+  avatar_item_settings: "id",
+  ar_selfies: "id",
 };
 
 export function registerAdminRoutes(app, supabase) {
