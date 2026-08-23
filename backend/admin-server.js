@@ -6,7 +6,7 @@ import { createClient } from "@supabase/supabase-js";
 dotenv.config();
 
 const app = express();
-const PORT = process.env.ADMIN_PORT || 3001;
+const PORT = process.env.PORT || process.env.ADMIN_PORT || 3001;
 const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
 
 app.use(
@@ -43,6 +43,7 @@ app.get("/", (req, res) => {
 });
 
 app.get("/api/admin/users", async (req, res) => {
+  console.log(">>> /api/admin/users 被呼叫了");
   try {
     const { data, error } = await supabase
       .from("users")
@@ -60,6 +61,9 @@ app.get("/api/admin/users", async (req, res) => {
       `)
       .order("id", { ascending: true });
 
+    console.log("Supabase data:", data);
+    console.log("Supabase error:", error);
+
     if (error) {
       return res.status(500).json({ success: false, error: error.message });
     }
@@ -73,6 +77,29 @@ app.get("/api/admin/users", async (req, res) => {
 app.put("/api/admin/users/:id", async (req, res) => {
   try {
     const { id } = req.params;
+
+    // 先確認要修改的 User 是否存在，以及是否為管理員
+    const { data: targetUser, error: findError } = await supabase
+      .from("users")
+      .select("id, name, admin")
+      .eq("id", id)
+      .single();
+
+    if (findError) {
+      return res.status(500).json({
+        success: false,
+        error: findError.message,
+      });
+    }
+
+    // 管理員不可被修改
+    if (targetUser.admin === true) {
+      return res.status(403).json({
+        success: false,
+        error: "管理員不可被修改",
+      });
+    }
+
     const {
       name,
       nickname,
@@ -87,13 +114,33 @@ app.put("/api/admin/users/:id", async (req, res) => {
       updated_at: new Date().toISOString(),
     };
 
-    if (name !== undefined) payload.name = name?.trim();
-    if (nickname !== undefined) payload.nickname = nickname?.trim() || null;
-    if (description !== undefined) payload.description = description?.trim() || null;
-    if (profile_url !== undefined) payload.profile_url = profile_url?.trim() || null;
-    if (is_active !== undefined) payload.is_active = !!is_active;
-    if (role !== undefined) payload.role = role;
-    if (admin !== undefined) payload.admin = !!admin;
+    if (name !== undefined) {
+      payload.name = name?.trim();
+    }
+
+    if (nickname !== undefined) {
+      payload.nickname = nickname?.trim() || null;
+    }
+
+    if (description !== undefined) {
+      payload.description = description?.trim() || null;
+    }
+
+    if (profile_url !== undefined) {
+      payload.profile_url = profile_url?.trim() || null;
+    }
+
+    if (is_active !== undefined) {
+      payload.is_active = !!is_active;
+    }
+
+    if (role !== undefined) {
+      payload.role = role;
+    }
+
+    if (admin !== undefined) {
+      payload.admin = !!admin;
+    }
 
     const { data, error } = await supabase
       .from("users")
@@ -114,12 +161,21 @@ app.put("/api/admin/users/:id", async (req, res) => {
       .single();
 
     if (error) {
-      return res.status(500).json({ success: false, error: error.message });
+      return res.status(500).json({
+        success: false,
+        error: error.message,
+      });
     }
 
-    res.json({ success: true, user: data });
+    res.json({
+      success: true,
+      user: data,
+    });
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({
+      success: false,
+      error: err.message,
+    });
   }
 });
 

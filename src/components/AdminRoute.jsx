@@ -7,7 +7,7 @@ function AdminRoute({ children }) {
     return <Navigate to="/face-login" replace />;
   }
 
-  if (currentUser.role !== "true") {
+  if (currentUser.admin !== true) {
     return <Navigate to="/" replace />;
   }
 

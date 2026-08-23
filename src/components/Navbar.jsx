@@ -37,7 +37,7 @@ function Navbar() {
             <button className="nav-profile" onClick={() => go("/profile")}>個人頁面</button>
 
             {/* for adminer */}
-            {currentUser.admin === "true" && (
+            {currentUser.admin === true && (
               <button onClick={() => go("/admin")}>管理員</button>
               )}
               <button className="logout nav-logout" onClick={logout}>登出</button>
