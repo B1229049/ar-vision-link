@@ -1,32 +1,3 @@
-import express from "express";
-import cors from "cors";
-import dotenv from "dotenv";
-import { createClient } from "@supabase/supabase-js";
-
-dotenv.config();
-
-const app = express();
-const PORT = process.env.PORT || process.env.ADMIN_PORT || 3001;
-const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
-
-app.use(
-  cors({
-    origin: CLIENT_URL,
-    credentials: true,
-  })
-);
-
-app.use(express.json());
-
-if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-  throw new Error("Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY");
-}
-
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
-
 const ADMIN_ALLOWED_TABLES = {
   quizzes: "quiz_id",
   questions: "question_id",
@@ -38,17 +9,57 @@ const ADMIN_ALLOWED_TABLES = {
   player_answers: "answer_id",
 };
 
-app.get("/", (req, res) => {
-  res.send("Admin server is running");
-});
+export function registerAdminRoutes(app, supabase) {
 
-app.get("/api/admin/users", async (req, res) => {
-  console.log(">>> /api/admin/users 被呼叫了");
-  try {
-    const { data, error } = await supabase
-      .from("users")
-      .select(`
-        id,
+  // =========================
+  // GET /api/admin/users
+  // =========================
+  app.get("/api/admin/users", async (req, res) => {
+    try {
+      const { data, error } = await supabase
+        .from("users")
+        .select(`
+          id,
+          name,
+          nickname,
+          description,
+          profile_url,
+          is_active,
+          role,
+          admin,
+          created_at,
+          updated_at
+        `)
+        .order("id", { ascending: true });
+
+      if (error) {
+        return res.status(500).json({
+          success: false,
+          error: error.message,
+        });
+      }
+
+      res.json({
+        success: true,
+        users: data || [],
+      });
+    } catch (err) {
+      res.status(500).json({
+        success: false,
+        error: err.message,
+      });
+    }
+  });
+
+
+  // =========================
+  // PUT /api/admin/users/:id
+  // =========================
+  app.put("/api/admin/users/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+
+      const {
         name,
         nickname,
         description,
@@ -56,176 +67,156 @@ app.get("/api/admin/users", async (req, res) => {
         is_active,
         role,
         admin,
-        created_at,
-        updated_at
-      `)
-      .order("id", { ascending: true });
+      } = req.body;
 
-    console.log("Supabase data:", data);
-    console.log("Supabase error:", error);
+      const payload = {
+        updated_at: new Date().toISOString(),
+      };
 
-    if (error) {
-      return res.status(500).json({ success: false, error: error.message });
-    }
+      if (name !== undefined) {
+        payload.name = name?.trim();
+      }
 
-    res.json({ success: true, users: data || [] });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
+      if (nickname !== undefined) {
+        payload.nickname = nickname?.trim() || null;
+      }
 
-app.put("/api/admin/users/:id", async (req, res) => {
-  try {
-    const { id } = req.params;
+      if (description !== undefined) {
+        payload.description =
+          description?.trim() || null;
+      }
 
-    // 先確認要修改的 User 是否存在，以及是否為管理員
-    const { data: targetUser, error: findError } = await supabase
-      .from("users")
-      .select("id, name, admin")
-      .eq("id", id)
-      .single();
+      if (profile_url !== undefined) {
+        payload.profile_url =
+          profile_url?.trim() || null;
+      }
 
-    if (findError) {
-      return res.status(500).json({
+      if (is_active !== undefined) {
+        payload.is_active = !!is_active;
+      }
+
+      if (role !== undefined) {
+        payload.role = role;
+      }
+
+      if (admin !== undefined) {
+        payload.admin = !!admin;
+      }
+
+      const { data, error } = await supabase
+        .from("users")
+        .update(payload)
+        .eq("id", id)
+        .select(`
+          id,
+          name,
+          nickname,
+          description,
+          profile_url,
+          is_active,
+          role,
+          admin,
+          created_at,
+          updated_at
+        `)
+        .single();
+
+      if (error) {
+        return res.status(500).json({
+          success: false,
+          error: error.message,
+        });
+      }
+
+      res.json({
+        success: true,
+        user: data,
+      });
+
+    } catch (err) {
+      res.status(500).json({
         success: false,
-        error: findError.message,
+        error: err.message,
       });
     }
+  });
 
-    // 管理員不可被修改
-    if (targetUser.admin === true) {
-      return res.status(403).json({
+
+  // =========================
+  // DELETE /api/admin/users/:id
+  // =========================
+  app.delete("/api/admin/users/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+
+      const { data, error } = await supabase
+        .from("users")
+        .delete()
+        .eq("id", id)
+        .select("id")
+        .single();
+
+      if (error) {
+        return res.status(500).json({
+          success: false,
+          error: error.message,
+        });
+      }
+
+      res.json({
+        success: true,
+        deleted: data,
+      });
+
+    } catch (err) {
+      res.status(500).json({
         success: false,
-        error: "管理員不可被修改",
+        error: err.message,
       });
     }
+  });
 
-    const {
-      name,
-      nickname,
-      description,
-      profile_url,
-      is_active,
-      role,
-      admin,
-    } = req.body;
 
-    const payload = {
-      updated_at: new Date().toISOString(),
-    };
+  // =========================
+  // GET /api/admin/:table
+  // =========================
+  app.get("/api/admin/:table", async (req, res) => {
+    try {
+      const { table } = req.params;
 
-    if (name !== undefined) {
-      payload.name = name?.trim();
-    }
+      if (!ADMIN_ALLOWED_TABLES[table]) {
+        return res.status(400).json({
+          success: false,
+          error: "Table not allowed",
+        });
+      }
 
-    if (nickname !== undefined) {
-      payload.nickname = nickname?.trim() || null;
-    }
+      const { data, error } = await supabase
+        .from(table)
+        .select("*")
+        .order(
+          ADMIN_ALLOWED_TABLES[table],
+          { ascending: true }
+        );
 
-    if (description !== undefined) {
-      payload.description = description?.trim() || null;
-    }
+      if (error) {
+        return res.status(500).json({
+          success: false,
+          error: error.message,
+        });
+      }
 
-    if (profile_url !== undefined) {
-      payload.profile_url = profile_url?.trim() || null;
-    }
+      res.json({
+        success: true,
+        rows: data || [],
+      });
 
-    if (is_active !== undefined) {
-      payload.is_active = !!is_active;
-    }
-
-    if (role !== undefined) {
-      payload.role = role;
-    }
-
-    if (admin !== undefined) {
-      payload.admin = !!admin;
-    }
-
-    const { data, error } = await supabase
-      .from("users")
-      .update(payload)
-      .eq("id", id)
-      .select(`
-        id,
-        name,
-        nickname,
-        description,
-        profile_url,
-        is_active,
-        role,
-        admin,
-        created_at,
-        updated_at
-      `)
-      .single();
-
-    if (error) {
-      return res.status(500).json({
+    } catch (err) {
+      res.status(500).json({
         success: false,
-        error: error.message,
+        error: err.message,
       });
     }
+  });
 
-    res.json({
-      success: true,
-      user: data,
-    });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      error: err.message,
-    });
-  }
-});
-
-app.delete("/api/admin/users/:id", async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const { data, error } = await supabase
-      .from("users")
-      .delete()
-      .eq("id", id)
-      .select("id")
-      .single();
-
-    if (error) {
-      return res.status(500).json({ success: false, error: error.message });
-    }
-
-    res.json({ success: true, deleted: data });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
-
-app.get("/api/admin/:table", async (req, res) => {
-  try {
-    const { table } = req.params;
-
-    if (!ADMIN_ALLOWED_TABLES[table]) {
-      return res.status(400).json({
-        success: false,
-        error: "Table not allowed",
-      });
-    }
-
-    const { data, error } = await supabase
-      .from(table)
-      .select("*")
-      .order(ADMIN_ALLOWED_TABLES[table], { ascending: true });
-
-    if (error) {
-      return res.status(500).json({ success: false, error: error.message });
-    }
-
-    res.json({ success: true, rows: data || [] });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
-
-app.listen(PORT, () => {
-  console.log(`Admin server running on port ${PORT}`);
-});
+}

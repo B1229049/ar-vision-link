@@ -6,6 +6,7 @@ import { Server } from "socket.io";
 import { createClient } from "@supabase/supabase-js";
 import { GoogleGenAI } from "@google/genai";
 import multer from "multer";
+import { registerAdminRoutes } from "./admin-server.js";
 
 const app = express();
 const server = http.createServer(app);
@@ -28,6 +29,8 @@ const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
+
+registerAdminRoutes(app, supabase);
 
 const io = new Server(server, {
   cors: {

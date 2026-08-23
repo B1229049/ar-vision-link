@@ -2,7 +2,7 @@ import "../styles/Admin.css";
 import { useEffect, useState } from "react";
 
 // const BACKEND_URL = "https://ar-vision-link.onrender.com";
-const BACKEND_URL = "http://localhost:3001";
+const BACKEND_URL = "http://localhost:3000";
 
 function Admin() {
   const [users, setUsers] = useState([]);
