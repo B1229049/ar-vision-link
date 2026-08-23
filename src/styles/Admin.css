@@ -247,3 +247,145 @@
 .admin-data-table-wrapper .admin-table {
   min-width: 800px;
 }
+
+/* =========================
+   Mobile Responsive
+   ========================= */
+
+@media (max-width: 640px) {
+  .admin-page {
+    min-height: 100vh;
+    padding: 24px 14px 90px;
+  }
+
+  .admin-page h1 {
+    margin: 0 0 24px;
+    font-size: 26px;
+    text-align: center;
+  }
+
+  .admin-section {
+    width: 100%;
+    max-width: none;
+  }
+
+  .admin-section h2 {
+    margin-bottom: 16px;
+    font-size: 21px;
+  }
+
+  .admin-count {
+    margin-bottom: 14px;
+    font-size: 14px;
+  }
+
+  /* User table */
+  .admin-table {
+    width: 100%;
+    font-size: 13px;
+  }
+
+  .admin-table th,
+  .admin-table td {
+    padding: 10px 8px;
+  }
+
+  /* 讓主要 User 表格可以左右滑動 */
+  .admin-section > .admin-table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  /* Buttons */
+  .admin-edit-btn,
+  .admin-save-btn,
+  .admin-cancel-btn,
+  .admin-delete-btn {
+    padding: 8px 10px;
+    margin-right: 4px;
+    font-size: 13px;
+    min-height: 36px;
+  }
+
+  .admin-detail-btn {
+    padding: 7px 9px;
+    margin-right: 4px;
+    font-size: 13px;
+  }
+
+  /* Input */
+  .admin-input {
+    min-width: 120px;
+    padding: 8px;
+    font-size: 14px;
+  }
+
+  /* Other tables selector */
+  .admin-other-tables {
+    margin-top: 30px;
+  }
+
+  .admin-table-buttons {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .admin-table-btn {
+    width: 100%;
+    padding: 10px 8px;
+    font-size: 13px;
+  }
+
+  /* Other table */
+  .admin-data-section {
+    margin-top: 24px;
+  }
+
+  .admin-data-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .admin-data-table-wrapper .admin-table {
+    min-width: 700px;
+  }
+
+  /* Modal */
+  .admin-modal-overlay {
+    padding: 16px;
+    box-sizing: border-box;
+  }
+
+  .admin-modal {
+    width: 100%;
+    max-width: none;
+    max-height: 85vh;
+    padding: 20px;
+    border-radius: 10px;
+    box-sizing: border-box;
+  }
+
+  .admin-modal h2 {
+    margin-bottom: 18px;
+    font-size: 21px;
+  }
+
+  .admin-detail-list {
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .admin-detail-list p {
+    margin: 9px 0;
+  }
+
+  .admin-detail-list strong {
+    display: block;
+    width: auto;
+    margin-bottom: 2px;
+  }
+}
