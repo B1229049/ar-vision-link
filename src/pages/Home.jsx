@@ -21,6 +21,13 @@ function RoomDissolvedNotice({ visible, onClose }) {
   );
 }
 
+const landingFeatures = [
+  ["Live AR Game", "多人即時同步、手勢答題競賽"],
+  ["AI Quiz Lab", "可用 AI 將文字、PDF、TXT 轉換成題目"],
+  ["AR Camera", "搭配濾鏡、3D 特效進行自拍"],
+  ["收集式要素", "收集各式各樣的'虛擬替身'造型"],
+];
+
 function LoggedOutLanding() {
   return (
     <main className="landing-page">
@@ -30,6 +37,13 @@ function LoggedOutLanding() {
           <h1>讓每一次學習，<em>都有身分與互動。</em></h1>
           <p>一個身分，連結 AI 出題、多人即時競賽、AR 鏡頭、自拍創作與虛擬替身。讓每一次參與，都能被看見、即時回應，也留下自己的學習足跡。</p>
           <Link className="landing-pill primary" to="/register">建立你的身分 →</Link>
+        </div>
+        <div className="landing-feature-list" aria-label="AR Vision Link 產品功能">
+          {landingFeatures.map(([title, description]) => (
+            <article className="landing-feature-card" key={title}>
+              <div><h2>{title}</h2><p>{description}</p></div>
+            </article>
+          ))}
         </div>
       </section>
 

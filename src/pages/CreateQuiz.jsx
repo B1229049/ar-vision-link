@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import "../styles/CreateQuiz.css";
 
 function CreateQuiz() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const BACKEND_URL = "https://ar-vision-link.onrender.com";
 
   const [currentUser, setCurrentUser] = useState(null);
@@ -16,7 +17,9 @@ function CreateQuiz() {
   const [questionCount, setQuestionCount] = useState(5);
   const [difficulty, setDifficulty] = useState("normal");
   const [aiGenerating, setAiGenerating] = useState(false);
-  const [showAiPanel, setShowAiPanel] = useState(false);
+  const [showAiPanel, setShowAiPanel] = useState(
+    searchParams.get("mode") === "ai"
+  );
 
   const [questions, setQuestions] = useState([
     {
