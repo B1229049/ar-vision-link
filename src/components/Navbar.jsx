@@ -22,12 +22,13 @@ function Navbar() {
 
   return (
     <nav className={`navbar ${currentUser ? "is-authenticated" : "is-guest"}`}>
-      <div className="nav-logo" onClick={() => go("/")}>
-        AR Vision Link
-      </div>
+      <div className="navbar-inner">
+        <div className="nav-logo" onClick={() => go("/")}>
+          AR Vision Link
+        </div>
 
-      <div className="nav-links">
-        {currentUser && <button className="nav-home" onClick={() => go("/")}>主頁</button>}
+        <div className="nav-links">
+          {currentUser && <button className="nav-home" onClick={() => go("/")}>主頁</button>}
 
         {!currentUser && (
           <>
@@ -50,6 +51,7 @@ function Navbar() {
 
           </>
         )}
+        </div>
       </div>
     </nav>
   );

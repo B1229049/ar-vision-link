@@ -16,6 +16,7 @@
   color: var(--landing-ink);
   background: var(--landing-paper);
   text-align: left;
+  font-family: Inter, "Noto Sans TC", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 .landing-page *,
@@ -125,6 +126,12 @@
   color: white;
   background: #171916;
   border: 1px solid rgba(255, 255, 255, 0.2);
+  text-align: left;
+}
+
+.landing-feature-card > div {
+  flex: 1;
+  min-width: 0;
 }
 
 .landing-feature-number {
@@ -150,6 +157,7 @@
   font-size: 14px;
   font-weight: 850;
   letter-spacing: 0;
+  text-align: left;
 }
 
 .landing-feature-card p {
@@ -157,6 +165,7 @@
   color: #8e918a;
   font-size: 10px;
   line-height: 1.5;
+  text-align: left;
 }
 
 .landing-section,
@@ -177,6 +186,11 @@
   font-weight: 900;
   line-height: 1.02;
   letter-spacing: -0.055em;
+  text-align: left;
+}
+
+.landing-copy {
+  text-align: left;
 }
 
 .landing-intro {
@@ -261,7 +275,7 @@
 .quiz-question > strong { font-size: 12px; }
 .quiz-question > div { margin-top: 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
 .quiz-question span { padding: 10px; background: #eceae2; font-size: 9px; }
-.quiz-question span.correct { background: #d9ceff; }
+.quiz-question span.correct { background: #def7a7; }
 
 .play-band {
   color: white;
