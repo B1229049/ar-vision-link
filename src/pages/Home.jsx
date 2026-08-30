@@ -25,7 +25,7 @@ const landingFeatures = [
   ["01", "Live AR Game", "多人即時同步、手勢答題競賽", "live"],
   ["02", "AI Quiz Lab", "可用 AI 將文字、PDF、TXT 轉換成題目", "ai"],
   ["03", "AR Camera", "搭配濾鏡、3D 特效進行自拍", "selfie"],
-  ["04", "Avatar 換裝", "收集各式各樣的'虛擬替身'造型", "avatar"],
+  ["04", "收集式要素", "收集各式各樣的'虛擬替身'造型", "avatar"],
 ];
 
 function LoggedOutLanding() {
