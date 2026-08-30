@@ -32,12 +32,16 @@ function ARSelfie() {
   const faceLandmarkerRef = useRef(null);
   const animationRef = useRef(null);
   const smoothedLandmarksRef = useRef(null);
-  const effectRef = useRef("sparkle");
+  const effectRef = useRef("none");
   const threeRendererRef = useRef(null);
   const capturedPhotoRef = useRef(null);
+  const filterRowRef = useRef(null);
+  const effectRowRef = useRef(null);
+  const scrollEndTimerRef = useRef(null);
 
   const [filterId, setFilterId] = useState("natural");
-  const [effectId, setEffectId] = useState("sparkle");
+  const [effectId, setEffectId] = useState("none");
+  const [activePicker, setActivePicker] = useState(null);
   const [status, setStatus] = useState("正在啟動相機...");
   const [capturing, setCapturing] = useState(false);
   const [capturedPhoto, setCapturedPhoto] = useState(null);
@@ -156,8 +160,9 @@ function ARSelfie() {
           audio: false,
           video: {
             facingMode: "user",
-            width: { ideal: 1280 },
-            height: { ideal: 720 },
+            width: { ideal: 900 },
+            height: { ideal: 1200 },
+            aspectRatio: { ideal: 0.75 },
           },
         });
         if (!mounted) {
@@ -187,7 +192,7 @@ function ARSelfie() {
           faceLandmarkerRef.current = await createFaceLandmarker(vision, "CPU");
         }
 
-        if (mounted) setStatus("左右滑動選擇濾鏡與特效，按下快門拍照。");
+        if (mounted) setStatus("點選色調或特效，左右滑動選擇後按下快門。");
       } catch (error) {
         console.error("AR 自拍啟動失敗", error);
         if (mounted) setStatus("無法啟動 AR 相機，請確認相機權限與網路連線。");
@@ -209,24 +214,71 @@ function ARSelfie() {
         URL.revokeObjectURL(capturedPhotoRef.current.url);
         capturedPhotoRef.current = null;
       }
+      if (scrollEndTimerRef.current) {
+        clearTimeout(scrollEndTimerRef.current);
+      }
       document.body.style.overflow = previousBodyOverflow;
       document.documentElement.style.overflow = previousHtmlOverflow;
     };
   }, []);
 
-  function centerSelectedOption(element) {
-    element?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+  useEffect(() => {
+    if (!activePicker) return undefined;
+
+    const row = activePicker === "filter" ? filterRowRef.current : effectRowRef.current;
+    const selectedId = activePicker === "filter" ? filterId : effectId;
+    const frameId = requestAnimationFrame(() => {
+      const selectedOption = Array.from(row?.querySelectorAll("[data-option-id]") || [])
+        .find((option) => option.dataset.optionId === selectedId);
+      centerSelectedOption(selectedOption, "auto");
+    });
+
+    return () => cancelAnimationFrame(frameId);
+  }, [activePicker, effectId, filterId]);
+
+  function centerSelectedOption(element, behavior = "smooth") {
+    element?.scrollIntoView({ behavior, block: "nearest", inline: "center" });
   }
 
-  function selectFilter(filter, element) {
+  function selectFilter(filter, element, shouldCenter = true) {
     setFilterId(filter.id);
-    centerSelectedOption(element);
+    if (shouldCenter) centerSelectedOption(element);
   }
 
-  function selectEffect(effect, element) {
+  function selectEffect(effect, element, shouldCenter = true) {
     effectRef.current = effect.id;
     setEffectId(effect.id);
-    centerSelectedOption(element);
+    if (shouldCenter) centerSelectedOption(element);
+  }
+
+  function selectCenteredOption(row, options, type) {
+    const rowRect = row.getBoundingClientRect();
+    const rowCenter = rowRect.left + rowRect.width / 2;
+    const optionElements = Array.from(row.querySelectorAll("[data-option-id]"));
+    const centeredElement = optionElements.reduce((closest, option) => {
+      if (!closest) return option;
+      const optionRect = option.getBoundingClientRect();
+      const closestRect = closest.getBoundingClientRect();
+      const optionDistance = Math.abs(optionRect.left + optionRect.width / 2 - rowCenter);
+      const closestDistance = Math.abs(closestRect.left + closestRect.width / 2 - rowCenter);
+      return optionDistance < closestDistance ? option : closest;
+    }, null);
+
+    const centeredOption = options.find(
+      (option) => option.id === centeredElement?.dataset.optionId
+    );
+    if (!centeredOption) return;
+
+    if (type === "filter") selectFilter(centeredOption, null, false);
+    else selectEffect(centeredOption, null, false);
+  }
+
+  function handleOptionScroll(event, options, type) {
+    const row = event.currentTarget;
+    if (scrollEndTimerRef.current) clearTimeout(scrollEndTimerRef.current);
+    scrollEndTimerRef.current = setTimeout(() => {
+      selectCenteredOption(row, options, type);
+    }, 90);
   }
 
   async function captureSelfie() {
@@ -236,7 +288,12 @@ function ARSelfie() {
     setCapturing(true);
     setStatus("正在建立自拍預覽...");
     try {
-      const snapshot = createFilteredSnapshot(canvas, threeCanvasRef.current, filterId);
+      const snapshot = createFilteredSnapshot(
+        canvas,
+        threeCanvasRef.current,
+        filterId,
+        3 / 4
+      );
       const blob = await new Promise((resolve, reject) => {
         snapshot.toBlob((result) => {
           if (result) resolve(result);
@@ -260,7 +317,7 @@ function ARSelfie() {
     }
     capturedPhotoRef.current = null;
     setCapturedPhoto(null);
-    setStatus("左右滑動選擇濾鏡與特效，按下快門拍照。");
+    setStatus("點選色調或特效，左右滑動選擇後按下快門。");
   }
 
   function savePhotoToDevice() {
@@ -281,63 +338,102 @@ function ARSelfie() {
   }
 
   const activeFilter = FILTERS.find((filter) => filter.id === filterId)?.value || "none";
+  const selectedFilterLabel = FILTERS.find((filter) => filter.id === filterId)?.label || "自然";
+  const selectedEffectLabel = AR_SELFIE_EFFECTS.find((effect) => effect.id === effectId)?.label || "無特效";
 
   return (
     <main className="ar-selfie-page">
-      <section className="ar-selfie-viewfinder" aria-label="AR 自拍預覽">
-        <video ref={videoRef} className="ar-selfie-video" autoPlay playsInline muted />
-        <canvas ref={canvasRef} className="ar-selfie-canvas" style={{ filter: activeFilter }} />
-        <canvas ref={threeCanvasRef} className="ar-selfie-three-canvas" aria-hidden="true" />
-        <p className="ar-selfie-status">{status}</p>
-      </section>
+      <header className="ar-selfie-topbar">
+        <button
+          className="ar-selfie-close"
+          type="button"
+          onClick={() => navigate("/camera")}
+          aria-label="關閉 AR 自拍"
+        >
+          <span aria-hidden="true" />
+        </button>
+      </header>
+
+      <div className="ar-selfie-stage">
+        <section className="ar-selfie-viewfinder" aria-label="AR 自拍預覽">
+          <video ref={videoRef} className="ar-selfie-video" autoPlay playsInline muted />
+          <canvas ref={canvasRef} className="ar-selfie-canvas" style={{ filter: activeFilter }} />
+          <canvas ref={threeCanvasRef} className="ar-selfie-three-canvas" aria-hidden="true" />
+          <p className="ar-selfie-status">{status}</p>
+        </section>
+      </div>
 
       <section className="ar-selfie-controls">
-        <div className="ar-selfie-control-group">
-          <div className="ar-selfie-control-heading">
-            <strong>整體色調</strong>
-            <span>左右滑動選擇</span>
-          </div>
-          <div className="ar-selfie-control-row" role="radiogroup" aria-label="選擇整體色調">
-            {FILTERS.map((filter) => (
-              <button
-                key={filter.id}
-                type="button"
-                role="radio"
-                aria-checked={filterId === filter.id}
-                className={`ar-selfie-option ar-selfie-filter-option${filterId === filter.id ? " is-selected" : ""}`}
-                onClick={(event) => selectFilter(filter, event.currentTarget)}
-              >
-                {filter.label}
-              </button>
-            ))}
-          </div>
-        </div>
+        <div className="ar-selfie-picker-area">
+          {activePicker === "filter" && (
+            <div
+              ref={filterRowRef}
+              className="ar-selfie-control-row"
+              role="radiogroup"
+              aria-label="選擇色調"
+              onScroll={(event) => handleOptionScroll(event, FILTERS, "filter")}
+            >
+              {FILTERS.map((filter) => (
+                <button
+                  key={filter.id}
+                  data-option-id={filter.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={filterId === filter.id}
+                  className={`ar-selfie-option${filterId === filter.id ? " is-selected" : ""}`}
+                  onClick={(event) => selectFilter(filter, event.currentTarget)}
+                >
+                  {filter.label}
+                </button>
+              ))}
+            </div>
+          )}
 
-        <div className="ar-selfie-control-group">
-          <div className="ar-selfie-control-heading">
-            <strong>臉部特效</strong>
-            <span>左右滑動選擇</span>
-          </div>
-          <div className="ar-selfie-control-row" role="radiogroup" aria-label="選擇臉部特效">
-            {AR_SELFIE_EFFECTS.map((effect) => (
-              <button
-                key={effect.id}
-                type="button"
-                role="radio"
-                aria-checked={effectId === effect.id}
-                className={`ar-selfie-option ar-selfie-effect-option${effectId === effect.id ? " is-selected" : ""}${isThreeEffect(effect.id) ? " is-3d" : ""}`}
-                onClick={(event) => selectEffect(effect, event.currentTarget)}
-              >
-                <span className="ar-selfie-option-preview">{effect.icon}</span>
-                <span className="ar-selfie-option-label">{effect.label}</span>
-              </button>
-            ))}
-          </div>
+          {activePicker === "effect" && (
+            <div
+              ref={effectRowRef}
+              className="ar-selfie-control-row"
+              role="radiogroup"
+              aria-label="選擇特效"
+              onScroll={(event) => handleOptionScroll(event, AR_SELFIE_EFFECTS, "effect")}
+            >
+              {AR_SELFIE_EFFECTS.map((effect) => (
+                <button
+                  key={effect.id}
+                  data-option-id={effect.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={effectId === effect.id}
+                  className={`ar-selfie-option${effectId === effect.id ? " is-selected" : ""}`}
+                  onClick={(event) => selectEffect(effect, event.currentTarget)}
+                >
+                  {effect.label}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="ar-selfie-capture-actions">
+          <button
+            className={`ar-selfie-mode-button${activePicker === "filter" ? " is-active" : ""}`}
+            type="button"
+            aria-expanded={activePicker === "filter"}
+            onClick={() => setActivePicker((current) => current === "filter" ? null : "filter")}
+          >
+            <strong>色調</strong>
+            <span>{selectedFilterLabel}</span>
+          </button>
           <button className="ar-selfie-shutter" type="button" onClick={captureSelfie} disabled={capturing} aria-label="拍攝 AR 自拍"><span /></button>
-          <button className="ar-selfie-back" type="button" onClick={() => navigate("/profile")}>返回</button>
+          <button
+            className={`ar-selfie-mode-button${activePicker === "effect" ? " is-active" : ""}`}
+            type="button"
+            aria-expanded={activePicker === "effect"}
+            onClick={() => setActivePicker((current) => current === "effect" ? null : "effect")}
+          >
+            <strong>特效</strong>
+            <span>{selectedEffectLabel}</span>
+          </button>
         </div>
       </section>
 

@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
 const ASSET_BASE = `${import.meta.env.BASE_URL}ar-assets`;
-const THREE_EFFECTS = new Set(["sunglasses", "cat", "hat"]);
+const THREE_EFFECTS = new Set(["sunglasses", "cat"]);
 
 function disposeObject(object) {
   object.traverse((child) => {
@@ -106,18 +106,6 @@ async function createOfficialDog() {
   return group;
 }
 
-async function createOfficialHat() {
-  const model = await loadGLTF(`${ASSET_BASE}/hat/scene.gltf`);
-  normalizeModel(model, 1.45);
-  model.traverse((child) => {
-    if (!child.isMesh) return;
-    child.frustumCulled = false;
-    child.material.roughness = Math.min(child.material.roughness ?? 0.7, 0.58);
-    child.material.needsUpdate = true;
-  });
-  return model;
-}
-
 function landmarkPoint(landmarks, index, width, height) {
   const item = landmarks[index];
   return new THREE.Vector3((1 - item.x) * width, (1 - item.y) * height, item.z || 0);
@@ -167,7 +155,6 @@ export class ARSelfie3DRenderer {
     const factories = {
       sunglasses: createOfficialGlasses,
       cat: createOfficialDog,
-      hat: createOfficialHat,
     };
     const results = await Promise.allSettled(Object.entries(factories).map(async ([id, factory]) => {
       const model = await factory();
@@ -230,10 +217,6 @@ export class ARSelfie3DRenderer {
     if (effectId === "sunglasses") {
       target.position.set(eyeCenter.x, eyeCenter.y, 20);
       target.scale.setScalar(eyeDistance);
-    } else if (effectId === "hat") {
-      target.position.set(forehead.x, forehead.y + eyeDistance * 0.48, 20);
-      target.scale.setScalar(eyeDistance * 1.05);
-      target.rotation.x = pitch - 0.08;
     } else {
       target.position.set(nose.x, nose.y + eyeDistance * 0.08, 20);
       target.scale.setScalar(eyeDistance * 0.96);

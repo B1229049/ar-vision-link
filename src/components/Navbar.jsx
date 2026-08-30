@@ -1,8 +1,9 @@
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import "../styles/Navbar.css";
 
 function Navbar() {
   const navigate = useNavigate();
+  const location = useLocation();
   let currentUser = null;
 
   try {
@@ -18,6 +19,10 @@ function Navbar() {
 
   function go(path) {
     navigate(path);
+  }
+
+  if (location.pathname === "/ar-selfie") {
+    return null;
   }
 
   return (

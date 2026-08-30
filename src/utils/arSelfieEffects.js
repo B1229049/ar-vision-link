@@ -6,7 +6,6 @@ export const AR_SELFIE_EFFECTS = [
   { id: "freckles", label: "雀斑", icon: "∴" },
   { id: "sunglasses", label: "墨鏡", icon: "▰" },
   { id: "crown", label: "皇冠", icon: "♛" },
-  { id: "hat", label: "3D 派對帽", icon: "△" },
   { id: "cat", label: "狗狗", icon: "ฅ" },
 ];
 
@@ -314,16 +313,54 @@ function clampColor(value) {
   return clamp(value, 0, 255);
 }
 
-export function createFilteredSnapshot(source, overlayOrFilterId, requestedFilterId) {
+export function createFilteredSnapshot(source, overlayOrFilterId, requestedFilterId, targetAspectRatio) {
   const overlay = typeof overlayOrFilterId === "string" ? null : overlayOrFilterId;
   const filterId = typeof overlayOrFilterId === "string" ? overlayOrFilterId : requestedFilterId;
   const snapshot = document.createElement("canvas");
-  snapshot.width = source.width;
-  snapshot.height = source.height;
+  let sourceX = 0;
+  let sourceY = 0;
+  let sourceWidth = source.width;
+  let sourceHeight = source.height;
+
+  if (targetAspectRatio > 0) {
+    const sourceAspectRatio = sourceWidth / sourceHeight;
+    if (sourceAspectRatio > targetAspectRatio) {
+      sourceWidth = Math.round(sourceHeight * targetAspectRatio);
+      sourceX = Math.round((source.width - sourceWidth) / 2);
+    } else if (sourceAspectRatio < targetAspectRatio) {
+      sourceHeight = Math.round(sourceWidth / targetAspectRatio);
+      sourceY = Math.round((source.height - sourceHeight) / 2);
+    }
+  }
+
+  snapshot.width = sourceWidth;
+  snapshot.height = sourceHeight;
   const ctx = snapshot.getContext("2d", { willReadFrequently: true });
-  ctx.drawImage(source, 0, 0);
+  ctx.drawImage(
+    source,
+    sourceX,
+    sourceY,
+    sourceWidth,
+    sourceHeight,
+    0,
+    0,
+    snapshot.width,
+    snapshot.height
+  );
   if (filterId === "natural") {
-    if (overlay) ctx.drawImage(overlay, 0, 0, snapshot.width, snapshot.height);
+    if (overlay) {
+      ctx.drawImage(
+        overlay,
+        sourceX,
+        sourceY,
+        sourceWidth,
+        sourceHeight,
+        0,
+        0,
+        snapshot.width,
+        snapshot.height
+      );
+    }
     return snapshot;
   }
 
@@ -361,7 +398,19 @@ export function createFilteredSnapshot(source, overlayOrFilterId, requestedFilte
     pixels[index + 2] = clampColor(blue);
   }
   ctx.putImageData(imageData, 0, 0);
-  if (overlay) ctx.drawImage(overlay, 0, 0, snapshot.width, snapshot.height);
+  if (overlay) {
+    ctx.drawImage(
+      overlay,
+      sourceX,
+      sourceY,
+      sourceWidth,
+      sourceHeight,
+      0,
+      0,
+      snapshot.width,
+      snapshot.height
+    );
+  }
   return snapshot;
 }
 
