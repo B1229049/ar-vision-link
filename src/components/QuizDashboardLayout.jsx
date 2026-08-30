@@ -24,6 +24,10 @@ function SidebarIcon({ name }) {
     return <svg {...shared}><path d="M4 19V9m5 10V5m5 14v-7m5 7V3" /></svg>;
   }
 
+  if (name === "host") {
+    return <svg {...shared}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" /></svg>;
+  }
+
   return <svg {...shared}><path d="M12 5v14M5 12h14" /></svg>;
 }
 
@@ -48,7 +52,6 @@ function QuizDashboardLayout() {
             Quiz Center
           </button>
 
-          <div className="quiz-sidebar-label">Workspace</div>
           <nav className="quiz-sidebar-nav">
             <button
               type="button"
@@ -86,7 +89,7 @@ function QuizDashboardLayout() {
               aria-current={isHost ? "page" : undefined}
               onClick={() => navigate("/quiz/host")}
             >
-              <SidebarIcon name="add" />
+              <SidebarIcon name="host" />
               <span>建立房間</span>
             </button>
           </nav>

@@ -45,7 +45,7 @@
 .quiz-create-panel {
   min-height: 238px;
   padding: clamp(26px, 3vw, 38px);
-  background: #9275ed;
+  background: #58468e;
   display: flex;
   flex-direction: column;
 }
@@ -161,7 +161,7 @@
   .quiz-create-panel p { font-size: 13px; line-height: 1.65; }
   .quiz-create-actions { display: grid; grid-template-columns: 1fr; }
   .quiz-create-actions button { padding-inline: 9px; font-size: 13px; }
-  .quiz-join-panel { min-height: 0; padding: 18px; }
+  .quiz-join-panel { display: none; }
   .quiz-join-panel h2 { margin-bottom: 12px; font-size: 18px; }
   .quiz-join-panel p { display: none; }
   .quiz-mobile-actions { margin: 12px 0 28px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }

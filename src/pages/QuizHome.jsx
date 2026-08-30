@@ -28,7 +28,7 @@ function DashboardIcon({ name }) {
     return <svg {...shared}><path d="M4 19V9m5 10V5m5 14v-7m5 7V3" /></svg>;
   }
   if (name === "host") {
-    return <svg {...shared}><rect x="4" y="7" width="16" height="12" rx="2" /><path d="M8 7V5h8v2M8 12h8" /></svg>;
+    return <svg {...shared}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" /></svg>;
   }
   if (name === "join") {
     return <svg {...shared}><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 19h14" /></svg>;
@@ -184,7 +184,7 @@ function QuizHome() {
           <section className="quiz-mobile-actions" aria-label="Quiz Center 快速操作">
             <button type="button" onClick={() => navigate("/quiz/host")}><DashboardIcon name="host" /><strong>建立房間</strong></button>
             <button type="button" onClick={() => navigate("/quiz/manage")}><DashboardIcon name="quizzes" /><strong>我的測驗</strong></button>
-            <button type="button" onClick={() => navigate("/quiz/join")}><DashboardIcon name="join" /><strong>加入測驗</strong></button>
+            <button type="button" onClick={() => navigate("/quiz/join")}><DashboardIcon name="add" /><strong>加入測驗</strong></button>
             <button type="button" onClick={() => navigate("/quiz/history")}><DashboardIcon name="history" /><strong>歷史紀錄</strong></button>
           </section>
 
