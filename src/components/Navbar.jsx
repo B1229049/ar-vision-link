@@ -3,7 +3,13 @@ import "../styles/Navbar.css";
 
 function Navbar() {
   const navigate = useNavigate();
-  const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+  let currentUser = null;
+
+  try {
+    currentUser = JSON.parse(localStorage.getItem("currentUser"));
+  } catch {
+    localStorage.removeItem("currentUser");
+  }
 
   function logout() {
     localStorage.removeItem("currentUser");
@@ -15,18 +21,18 @@ function Navbar() {
   }
 
   return (
-    <nav className="navbar">
+    <nav className={`navbar ${currentUser ? "is-authenticated" : "is-guest"}`}>
       <div className="nav-logo" onClick={() => go("/")}>
         AR Vision Link
       </div>
 
       <div className="nav-links">
-        <button className="nav-home" onClick={() => go("/")}>主頁</button>
+        {currentUser && <button className="nav-home" onClick={() => go("/")}>主頁</button>}
 
         {!currentUser && (
           <>
-            <button onClick={() => go("/register")}>註冊</button>
-            <button onClick={() => go("/face-login")}>登入</button>
+            <button className="nav-login" onClick={() => go("/face-login")}>登入</button>
+            <button className="nav-register" onClick={() => go("/register")}>註冊</button>
           </>
         )}
 
