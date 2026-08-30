@@ -28,6 +28,7 @@ import Store from "./pages/Store";
 import Navbar from "./components/Navbar";
 import MobileBottomNav from "./components/MobileBottomNav";
 import ProtectedRoute from "./components/ProtectedRoute";
+import QuizDashboardLayout from "./components/QuizDashboardLayout";
 import "./styles/GlobalPageTheme.css";
 
 import AdminRoute from "./components/AdminRoute";
@@ -103,37 +104,17 @@ function App() {
           path="/quiz"
           element={
             <ProtectedRoute>
-              <QuizHome />
+              <QuizDashboardLayout />
             </ProtectedRoute>
           }
-        />
-
-        <Route
-          path="/quiz/create"
-          element={
-            <ProtectedRoute>
-              <CreateQuiz />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/quiz/join"
-          element={
-            <ProtectedRoute>
-              <JoinQuiz />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/quiz/host"
-          element={
-            <ProtectedRoute>
-              <HostLobby />
-            </ProtectedRoute>
-          }
-        />
+        >
+          <Route index element={<QuizHome />} />
+          <Route path="create" element={<CreateQuiz />} />
+          <Route path="join" element={<JoinQuiz />} />
+          <Route path="host" element={<HostLobby />} />
+          <Route path="manage" element={<ManageQuizzes />} />
+          <Route path="history" element={<QuizHistory />} />
+        </Route>
 
         <Route
           path="/quiz/game/:sessionId"
@@ -162,8 +143,6 @@ function App() {
           }
         />
 
-        <Route path="/quiz/manage" element={<ProtectedRoute><ManageQuizzes /></ProtectedRoute>} />
-        <Route path="/quiz/history" element={<ProtectedRoute><QuizHistory /></ProtectedRoute>} />
         <Route path="/ar-quiz/:sessionId" element={<ProtectedRoute><ARQuizGame /></ProtectedRoute>} />
         <Route path="/avatar-dressup" element={<ProtectedRoute><AvatarDressup /></ProtectedRoute>} />
         <Route path="/store" element={<ProtectedRoute><Store /></ProtectedRoute>} />

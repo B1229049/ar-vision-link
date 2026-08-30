@@ -422,7 +422,6 @@ function ManageQuizzes() {
                     onClick={() => selectQuiz(quiz)}
                   >
                     <div className="quiz-item-title">{quiz.title}</div>
-                    <div className="quiz-item-id">ID：{quiz.quiz_id}</div>
                   </button>
                 ))}
               </div>

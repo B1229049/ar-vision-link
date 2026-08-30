@@ -5,7 +5,7 @@ import "../styles/QuizHome.css";
 const BACKEND_URL =
   import.meta.env.VITE_API_URL || "https://ar-vision-link.onrender.com";
 
-const QUIZ_COLORS = ["#ffd84d", "#53d4ff", "#ff79b0", "#a78bfa", "#43d98c"];
+const QUIZ_COLORS = ["#ffd84d", "#53d4ff", "#ff79b0", "#43d98c", "#ff9f43", "#5b9dff"];
 
 function DashboardIcon({ name }) {
   const shared = {
@@ -156,46 +156,13 @@ function QuizHome() {
 
   return (
     <div className="quiz-home-page">
-      <div className="quiz-dashboard-shell">
-        <aside className="quiz-dashboard-sidebar" aria-label="Quiz Center 功能導覽">
-          <div className="quiz-dashboard-title">Quiz Center</div>
-          <button type="button" className="quiz-sidebar-create" onClick={() => navigate("/quiz/create")}>
-            <span aria-hidden="true">＋</span>
-            <span className="quiz-sidebar-create-label">建立測驗</span>
-          </button>
-
-          <div className="quiz-sidebar-label">Workspace</div>
-          <nav className="quiz-sidebar-nav">
-            <button type="button" className="active" aria-current="page">
-              <DashboardIcon name="overview" /><span>總覽</span>
-            </button>
-            <button type="button" onClick={() => navigate("/quiz/manage")}>
-              <DashboardIcon name="quizzes" /><span>我的測驗</span>
-            </button>
-            <button type="button" onClick={() => navigate("/quiz/history")}>
-              <DashboardIcon name="history" /><span>歷史紀錄</span>
-            </button>
-          </nav>
-
-          <div className="quiz-sidebar-label">Quick actions</div>
-          <nav className="quiz-sidebar-nav">
-            <button type="button" onClick={() => navigate("/quiz/host")}>
-              <DashboardIcon name="host" /><span>建立房間</span>
-            </button>
-            <button type="button" onClick={() => navigate("/quiz/join")}>
-              <DashboardIcon name="join" /><span>加入房間</span>
-            </button>
-          </nav>
-        </aside>
-
-        <main className="quiz-dashboard-main">
+      <main className="quiz-dashboard-main">
           <section className="quiz-dashboard-primary-grid" aria-label="建立或加入測驗">
             <article className="quiz-create-panel">
-              <h1>建立測驗</h1>
+              <h1>出題目</h1>
               <p>貼上文字或上傳 PDF、TXT，讓 AI 產生題目；也可以直接建立並自由編輯。</p>
               <div className="quiz-create-actions">
-                <button type="button" className="quiz-create-ai" onClick={() => navigate("/quiz/create?mode=ai")}>使用 AI 建立</button>
-                <button type="button" className="quiz-create-direct" onClick={() => navigate("/quiz/create")}>直接建立</button>
+                <button type="button" className="quiz-create-ai" onClick={() => navigate("/quiz/create")}>建立測驗</button>
               </div>
             </article>
 
@@ -270,8 +237,7 @@ function QuizHome() {
               </div>
             )}
           </section>
-        </main>
-      </div>
+      </main>
     </div>
   );
 }
