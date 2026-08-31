@@ -13,11 +13,6 @@ function OutfitIcon() {
   );
 }
 
-function visibleOutfitName(outfit) {
-  const name = String(outfit?.name || "").trim();
-  return name && !/^(套裝|造型)\s*\d+$/u.test(name) ? name : "未命名造型";
-}
-
 function Store() {
   const currentAvatarConfig = useMemo(() => {
     try {
@@ -72,9 +67,8 @@ function Store() {
                     style={{ "--outfit-accent": outfit.accent || "#8b5cf6" }}
                     onClick={() => setPreviewOutfitId(outfit.id)}
                     aria-pressed={active}
-                    aria-label={`預覽 ${visibleOutfitName(outfit)}`}
+                    aria-label={`預覽造型 ${outfit.id.replace("outfit-", "")}`}
                   >
-                    <span className="store-card-badge">NEW</span>
                     <span className="store-card-avatar">
                       <AvatarRenderer
                         config={outfit.config}
@@ -82,9 +76,6 @@ function Store() {
                         templateSettings={outfit.templates}
                       />
                     </span>
-                    <strong className="store-card-name">
-                      {visibleOutfitName(outfit)}
-                    </strong>
                   </button>
                 );
               })}

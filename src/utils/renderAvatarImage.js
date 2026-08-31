@@ -97,6 +97,10 @@ export async function renderAvatarImage(
     }
   }
 
+  const hasStoreBase = Boolean(activeTemplateSettings?.["template-03"]);
+  const storeBaseTemplateSetting = hasStoreBase
+    ? getTemplateSetting("template-03", activeTemplateSettings)
+    : null;
   const baseTemplateSetting = getTemplateSetting(
     "template-00",
     activeTemplateSettings
@@ -112,6 +116,10 @@ export async function renderAvatarImage(
 
   if (baseTemplateSetting.visible !== false) {
     await drawLayer(stageCtx, AVATAR_TEMPLATE.base, baseTemplateSetting);
+  }
+
+  if (storeBaseTemplateSetting && storeBaseTemplateSetting.visible !== false) {
+    await drawLayer(stageCtx, AVATAR_TEMPLATE.storeBase, storeBaseTemplateSetting);
   }
 
   if (headTemplateSetting.visible !== false) {

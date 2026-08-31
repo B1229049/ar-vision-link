@@ -34,7 +34,7 @@
       .stage-panel { display: grid; place-items: center; min-height: calc(100vh - 44px); background: linear-gradient(180deg, #20133d 0%, #111827 100%); }
       .stage { position: relative; width: min(420px, 92%); aspect-ratio: 408 / 612; }
       .layer { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; object-position: center bottom; transform-origin: center; pointer-events: none; }
-      .layer-back { z-index: 1; } .template-00 { z-index: 2; } .template-01 { z-index: 3; } .hair-front { z-index: 4; } .face-front { z-index: 5; } .template-02 { z-index: 6; } .bottoms-front { z-index: 7; } .top-front { z-index: 8; } .bottoms-overlay { z-index: 9; }
+      .layer-back { z-index: 1; } .template-00, .template-03 { z-index: 2; } .template-01 { z-index: 3; } .hair-front { z-index: 4; } .face-front { z-index: 5; } .template-02 { z-index: 6; } .bottoms-front { z-index: 7; } .top-front { z-index: 8; } .bottoms-overlay { z-index: 9; }
       .range-row { margin-top: 14px; }
       .range-row label { display: flex; justify-content: space-between; gap: 10px; }
       .actions { grid-template-columns: repeat(2,1fr); margin-top: 18px; }
@@ -58,12 +58,13 @@
         <div id="scan-status" class="status">正在讀取素材…</div>
 
         <details class="template-tools">
-          <summary>調整目前套裝的模板（進階）</summary>
-          <div id="template-outfit-label" class="target">尚未選擇套裝</div>
-          <label>套裝</label>
+          <summary>調整目前上衣的模板（進階）</summary>
+          <div id="template-outfit-label" class="target">尚未選擇上衣</div>
+          <label>上衣</label>
           <select id="template-outfit"></select>
           <label>模板</label>
           <select id="template-target">
+            <option value="template-03">模板03</option>
             <option value="template-00">模板00</option>
             <option value="template-01">模板01</option>
             <option value="template-02">模板02</option>
@@ -96,9 +97,6 @@
           <h2>相對位置與大小</h2>
           <div id="target-label" class="target">尚未選擇素材</div>
 
-          <label>商城造型名稱（同編號四個部位共用）</label>
-          <input id="outfit-name" type="text" maxlength="30" placeholder="例如：荒野牛仔" />
-
           <label>圖層</label>
           <select id="layer-select">
             <option value="front">前層</option>
@@ -116,7 +114,7 @@
             上半身：<code>top/上衣01.png</code><br />
             下半身：<code>bottoms/褲裝01-1.png</code>（上衣下層）＋<code>褲裝01-2.png</code>（上衣上層）；單張 <code>褲裝01.png</code> 仍可使用
           </p>
-          <p>模板使用原本 Avatar 的 <code>模板00.png</code>、<code>模板01.png</code> 與 <code>模板02.png</code>；可在左側進階功能中為每套造型分別調整。</p>
+          <p>商城模板可使用 <code>模板03.png</code>、<code>模板00.png</code>、<code>模板01.png</code> 與 <code>模板02.png</code>；預設只顯示模板03，並可在左側進階功能中為每件上衣分別調整。</p>
           <textarea id="export-output" class="output" readonly></textarea>
         </div>
       </section>
@@ -126,7 +124,6 @@
       const STORE_BASE = "public/store";
       const AVATAR_TEMPLATE_BASE = "public/avatar-assets/templates";
       const STORAGE_KEY = "arvl_store_relative_settings_v3";
-      const NAME_STORAGE_KEY = "arvl_store_outfit_names_v1";
       const TEMPLATE_STORAGE_KEY = "arvl_store_template_settings_v1";
       const categories = [
         { key: "template", label: "模板" },
@@ -143,10 +140,8 @@
         items: { template: [], hair: [], face: [], top: [], bottoms: [] },
         preview: { hair: "", face: "", top: "", bottoms: "" },
         settings: loadSettings(),
-        names: loadNames(),
         templateSettings: loadTemplateSettings(),
-        templateTarget: "template-00",
-        templateOutfitNumber: "",
+        templateTarget: "template-03",
         draftKey: "",
         draftSetting: null,
       };
@@ -156,24 +151,32 @@
         catch { return {}; }
       }
 
-      function loadNames() {
-        try { return JSON.parse(localStorage.getItem(NAME_STORAGE_KEY) || "{}"); }
-        catch { return {}; }
-      }
-
       function loadTemplateSettings() {
-        try { return JSON.parse(localStorage.getItem(TEMPLATE_STORAGE_KEY) || "{}"); }
+        try {
+          const settings = JSON.parse(localStorage.getItem(TEMPLATE_STORAGE_KEY) || "{}");
+          let migrated = false;
+          Object.values(settings).forEach((templates) => {
+            if (templates?.["template-00"] && !templates["template-03"]) {
+              templates["template-03"] = templates["template-00"];
+              delete templates["template-00"];
+              migrated = true;
+            }
+          });
+          if (migrated) localStorage.setItem(TEMPLATE_STORAGE_KEY, JSON.stringify(settings));
+          return settings;
+        }
         catch { return {}; }
       }
 
       function defaultTemplateSetting(templateId) {
-        if (templateId === "template-00") return { scale: 1, x_pct: 0, y_pct: -0.7, visible: true };
+        if (templateId === "template-03") return { scale: 1, x_pct: 0, y_pct: -24.8, visible: true };
+        if (templateId === "template-00") return { scale: 1, x_pct: 0, y_pct: -0.7, visible: false };
         if (templateId === "template-01") return { scale: 1, x_pct: 0, y_pct: 0, visible: false };
-        return { scale: 1, x_pct: 0, y_pct: 0.3, visible: true };
+        return { scale: 1, x_pct: 0, y_pct: 0.3, visible: false };
       }
 
       function defaultSetting(itemId = "") {
-        if (itemId === "template-00") return { scale: 1, x_pct: 0, y_pct: -0.7 };
+        if (itemId === "template-03") return { scale: 1, x_pct: 0, y_pct: -24.8 };
         if (itemId === "template-02") return { scale: 1, x_pct: 0, y_pct: 0.3 };
         return { scale: 1, x_pct: 0, y_pct: 0 };
       }
@@ -197,6 +200,7 @@
 
       async function discoverTemplates() {
         const definitions = [
+          ["template-03", "模板03", "模板03.png", "template-03"],
           ["template-00", "模板00", "模板00.png", "template-00"],
           ["template-01", "模板01", "模板01.png", "template-01"],
           ["template-02", "模板02", "模板02.png", "template-02"],
@@ -284,10 +288,6 @@
         if (!state.items[state.category].some((item) => item.id === state.targetId)) {
           state.targetId = state.items[state.category][0]?.id || "";
         }
-        const availableOutfits = completeNumbers();
-        if (!availableOutfits.includes(state.templateOutfitNumber)) {
-          state.templateOutfitNumber = availableOutfits[0] || "";
-        }
         state.layer = "front";
         startDraft();
 
@@ -299,7 +299,9 @@
 
       function currentList() { return state.items[state.category] || []; }
       function currentItem() { return currentList().find((item) => item.id === state.targetId) || null; }
-      function currentOutfitNumber() { return state.templateOutfitNumber || currentItem()?.number || completeNumbers()[0] || ""; }
+      function currentTopNumber() {
+        return state.items.top.find((item) => item.id === state.preview.top)?.number || "";
+      }
       function outfitTemplateSetting(number, templateId) {
         return {
           ...defaultTemplateSetting(templateId),
@@ -340,20 +342,18 @@
           const item = state.items[category].find((entry) => entry.id === state.preview[category]);
           if (item?.backImg) appendImage(stage, item.backImg, "layer layer-back", displaySetting(item.id, "back"));
         });
+        const storeBase = state.items.template.find((item) => item.id === "template-03");
         const base = state.items.template.find((item) => item.id === "template-00");
         const body = state.items.template.find((item) => item.id === "template-02");
         const head = state.items.template.find((item) => item.id === "template-01");
         const selectedTop = state.items.top.find((item) => item.id === state.preview.top);
-        const currentNumber = currentOutfitNumber();
-        const outfitNumber = selectedTop?.number === "06"
-          ? "06"
-          : currentNumber === "06"
-            ? ""
-            : currentNumber;
-        const baseSetting = outfitTemplateSetting(outfitNumber, "template-00");
-        const headSetting = outfitTemplateSetting(outfitNumber, "template-01");
-        const bodySetting = outfitTemplateSetting(outfitNumber, "template-02");
+        const topNumber = selectedTop?.number || "";
+        const storeBaseSetting = outfitTemplateSetting(topNumber, "template-03");
+        const baseSetting = outfitTemplateSetting(topNumber, "template-00");
+        const headSetting = outfitTemplateSetting(topNumber, "template-01");
+        const bodySetting = outfitTemplateSetting(topNumber, "template-02");
         if (base && baseSetting.visible !== false) appendImage(stage, base.img, "layer template-00", baseSetting);
+        if (storeBase && storeBaseSetting.visible !== false) appendImage(stage, storeBase.img, "layer template-03", storeBaseSetting);
         if (head && headSetting.visible !== false) appendImage(stage, head.img, "layer template-01", headSetting);
         const hair = state.items.hair.find((item) => item.id === state.preview.hair);
         const face = state.items.face.find((item) => item.id === state.preview.face);
@@ -387,7 +387,13 @@
           });
           select.value = state.preview[category];
           select.disabled = state.items[category].length === 0;
-          select.onchange = () => { state.preview[category] = select.value; renderStage(); renderGrid(); exportCode(); };
+          select.onchange = () => {
+            state.preview[category] = select.value;
+            renderStage();
+            renderGrid();
+            if (category === "top") renderTemplateControls();
+            exportCode();
+          };
           box.append(label, select);
           wrap.appendChild(box);
         });
@@ -433,7 +439,6 @@
           button.onclick = () => {
             state.targetId = item.id;
             if (state.category !== "template") {
-              state.templateOutfitNumber = item.number;
               state.preview[state.category] =
                 state.preview[state.category] === item.id ? "" : item.id;
             }
@@ -447,7 +452,6 @@
 
       function renderControls() {
         const item = currentItem();
-        const outfitNameInput = document.getElementById("outfit-name");
         const select = document.getElementById("layer-select");
         const layers = state.category === "template"
           ? [{ value: "front", label: "模板" }]
@@ -470,9 +474,6 @@
         document.getElementById("target-label").textContent = item
           ? `目前校準：${item.label}${state.category === "template" ? "" : ` / ${selectedLayerLabel}`}`
           : "尚未選擇素材";
-        const canNameOutfit = state.category !== "template" && Boolean(item?.number);
-        outfitNameInput.disabled = !canNameOutfit;
-        outfitNameInput.value = canNameOutfit ? state.names[item.number] || "" : "";
         const value = item ? displaySetting(item.id, state.layer) : defaultSetting();
         [["scale", "scale-value", value.scale], ["x-pct", "x-value", value.x_pct], ["y-pct", "y-value", value.y_pct]].forEach(([inputId, valueId, next]) => {
           const input = document.getElementById(inputId);
@@ -483,21 +484,21 @@
       }
 
       function renderTemplateControls() {
-        const number = currentOutfitNumber();
+        const number = currentTopNumber();
         const setting = outfitTemplateSetting(number, state.templateTarget);
         const outfitSelect = document.getElementById("template-outfit");
         outfitSelect.innerHTML = "";
-        completeNumbers().forEach((outfitNumber) => {
+        state.items.top.forEach((topItem) => {
           const option = document.createElement("option");
-          option.value = outfitNumber;
-          option.textContent = `套裝 ${outfitNumber}`;
+          option.value = topItem.id;
+          option.textContent = topItem.label;
           outfitSelect.appendChild(option);
         });
-        outfitSelect.value = number;
-        outfitSelect.disabled = !number;
+        outfitSelect.value = state.preview.top;
+        outfitSelect.disabled = state.items.top.length === 0;
         document.getElementById("template-outfit-label").textContent = number
-          ? `套裝 ${number} 的專用模板設定`
-          : "尚未選擇套裝";
+          ? `上衣 ${number} 的專用模板設定`
+          : "尚未選擇上衣（預設只使用模板03）";
         document.getElementById("template-target").value = state.templateTarget;
         document.getElementById("template-visible").checked = setting.visible !== false;
         [
@@ -515,7 +516,7 @@
       }
 
       function updateTemplateSetting(patch) {
-        const number = currentOutfitNumber();
+        const number = currentTopNumber();
         if (!number) return;
         state.templateSettings[number] ||= {};
         state.templateSettings[number][state.templateTarget] = {
@@ -539,13 +540,12 @@
 
       function catalogSource() {
         return completeNumbers().map((number) => {
-          const outfitName = String(state.names[number] || "").trim();
           const pieces = {};
           ["hair", "face", "top", "bottoms"].forEach((category) => {
             const item = state.items[category].find((entry) => entry.number === number);
             pieces[category] = {
               id: item.id,
-              label: `${outfitName || `套裝 ${number}`}・${categories.find((entry) => entry.key === category).label}`,
+              label: `套裝 ${number}・${categories.find((entry) => entry.key === category).label}`,
               front: relativeStorePath(item.frontImg),
               ...(item.backImg ? { back: relativeStorePath(item.backImg) } : {}),
               ...(item.overlayImg ? { overlay: relativeStorePath(item.overlayImg) } : {}),
@@ -553,12 +553,10 @@
           });
           return {
             id: `outfit-${number}`,
-            name: outfitName,
-            badge: "NEW",
             published: true,
             pieces,
             templates: Object.fromEntries(
-              ["template-00", "template-01", "template-02"].map((templateId) => [
+              ["template-03", "template-00", "template-01", "template-02"].map((templateId) => [
                 templateId,
                 outfitTemplateSetting(number, templateId),
               ])
@@ -603,13 +601,8 @@
         renderTemplateControls();
       };
       document.getElementById("template-outfit").onchange = (event) => {
-        state.templateOutfitNumber = event.target.value;
-        ["hair", "face", "top", "bottoms"].forEach((category) => {
-          const item = state.items[category].find((entry) => entry.number === state.templateOutfitNumber);
-          state.preview[category] = item?.id || "";
-        });
-        const target = state.items[state.category].find((item) => item.number === state.templateOutfitNumber);
-        if (target) state.targetId = target.id;
+        state.preview.top = event.target.value;
+        if (state.category === "top") state.targetId = event.target.value;
         state.layer = "front";
         startDraft();
         renderAll();
@@ -619,26 +612,19 @@
       document.getElementById("template-x").oninput = (event) => updateTemplateSetting({ x_pct: Number(event.target.value) });
       document.getElementById("template-y").oninput = (event) => updateTemplateSetting({ y_pct: Number(event.target.value) });
       document.getElementById("reset-template").onclick = () => {
-        const number = currentOutfitNumber();
+        const number = currentTopNumber();
         if (!number) return;
         state.templateSettings[number] ||= {};
         state.templateSettings[number][state.templateTarget] = defaultTemplateSetting(state.templateTarget);
         localStorage.setItem(TEMPLATE_STORAGE_KEY, JSON.stringify(state.templateSettings));
         renderAll();
       };
-      document.getElementById("outfit-name").addEventListener("input", (event) => {
-        const item = currentItem();
-        if (state.category === "template" || !item?.number) return;
-        state.names[item.number] = event.target.value;
-        exportCode();
-      });
       ["scale", "x-pct", "y-pct"].forEach((id) => document.getElementById(id).addEventListener("input", updateDraft));
       document.getElementById("rescan").onclick = scanAssets;
       document.getElementById("save-target").onclick = () => {
         if (!currentItem()) return;
         state.settings[settingKey()] = { ...state.draftSetting };
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state.settings));
-        localStorage.setItem(NAME_STORAGE_KEY, JSON.stringify(state.names));
         startDraft();
         renderAll();
         alert("已儲存目前素材設定。");

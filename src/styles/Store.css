@@ -128,7 +128,7 @@
   min-width: 0;
   aspect-ratio: 0.82;
   display: grid;
-  grid-template-rows: 1fr auto;
+  grid-template-rows: 1fr;
   align-items: center;
   padding: 12px 12px 10px;
   box-sizing: border-box;
@@ -161,20 +161,6 @@
     rgba(51, 65, 85, 0.48);
 }
 
-.store-card-badge {
-  position: absolute;
-  top: 14px;
-  left: 14px;
-  z-index: 3;
-  padding: 7px 10px;
-  border-radius: 10px;
-  color: white;
-  background: linear-gradient(135deg, #b91c1c, #ef4444);
-  font-size: 10px;
-  font-weight: 900;
-  letter-spacing: 0.1em;
-}
-
 .store-card-avatar {
   min-height: 0;
   display: grid;
@@ -186,16 +172,6 @@
 .store-card-avatar .avatar-renderer {
   width: min(70%, 150px);
   filter: drop-shadow(0 16px 18px rgba(0, 0, 0, 0.32));
-}
-
-.store-card-name {
-  display: block;
-  width: 100%;
-  overflow: hidden;
-  font-size: 14px;
-  line-height: 1.35;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 @media (min-width: 761px) and (max-width: 1100px) {
@@ -268,20 +244,10 @@
     border-radius: 16px;
   }
 
-  .store-card-badge {
-    top: 10px;
-    left: 10px;
-    padding: 6px 8px;
-    font-size: 8px;
-  }
-
   .store-card-avatar .avatar-renderer {
     width: 82%;
   }
 
-  .store-card-name {
-    font-size: 13px;
-  }
 }
 
 @media (max-width: 380px) {

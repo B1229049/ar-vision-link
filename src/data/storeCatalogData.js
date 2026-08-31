@@ -3,37 +3,41 @@
 export const STORE_CATALOG_SOURCE = [
   {
     "id": "outfit-01",
-    "name": "牛仔很忙",
-    "badge": "NEW",
     "published": true,
     "pieces": {
       "hair": {
         "id": "store-outfit-01-hair",
-        "label": "牛仔很忙・頭部",
+        "label": "套裝 01・頭部",
         "front": "store/hair/頭髮01.png"
       },
       "face": {
         "id": "store-outfit-01-face",
-        "label": "牛仔很忙・臉部",
+        "label": "套裝 01・臉部",
         "front": "store/face/表情01.png"
       },
       "top": {
         "id": "store-outfit-01-top",
-        "label": "牛仔很忙・上半身",
+        "label": "套裝 01・上半身",
         "front": "store/top/上衣01.png"
       },
       "bottoms": {
         "id": "store-outfit-01-bottoms",
-        "label": "牛仔很忙・下半身",
+        "label": "套裝 01・下半身",
         "front": "store/bottoms/褲裝01.png"
       }
     },
     "templates": {
+      "template-03": {
+        "scale": 1,
+        "x_pct": 0,
+        "y_pct": -24.8,
+        "visible": true
+      },
       "template-00": {
         "scale": 1,
         "x_pct": 0,
         "y_pct": -0.7,
-        "visible": true
+        "visible": false
       },
       "template-01": {
         "scale": 1,
@@ -45,7 +49,7 @@ export const STORE_CATALOG_SOURCE = [
         "scale": 1,
         "x_pct": 0,
         "y_pct": 0.3,
-        "visible": true
+        "visible": false
       }
     },
     "settings": {
@@ -73,37 +77,41 @@ export const STORE_CATALOG_SOURCE = [
   },
   {
     "id": "outfit-02",
-    "name": "傑克伯爵",
-    "badge": "NEW",
     "published": true,
     "pieces": {
       "hair": {
         "id": "store-outfit-02-hair",
-        "label": "傑克伯爵・頭部",
+        "label": "套裝 02・頭部",
         "front": "store/hair/頭髮02.png"
       },
       "face": {
         "id": "store-outfit-02-face",
-        "label": "傑克伯爵・臉部",
+        "label": "套裝 02・臉部",
         "front": "store/face/表情02.png"
       },
       "top": {
         "id": "store-outfit-02-top",
-        "label": "傑克伯爵・上半身",
+        "label": "套裝 02・上半身",
         "front": "store/top/上衣02.png"
       },
       "bottoms": {
         "id": "store-outfit-02-bottoms",
-        "label": "傑克伯爵・下半身",
+        "label": "套裝 02・下半身",
         "front": "store/bottoms/褲裝02.png"
       }
     },
     "templates": {
+      "template-03": {
+        "scale": 1,
+        "x_pct": 0,
+        "y_pct": -24.8,
+        "visible": true
+      },
       "template-00": {
         "scale": 1,
         "x_pct": 0,
         "y_pct": -0.7,
-        "visible": true
+        "visible": false
       },
       "template-01": {
         "scale": 1,
@@ -115,7 +123,7 @@ export const STORE_CATALOG_SOURCE = [
         "scale": 1,
         "x_pct": 0,
         "y_pct": 0.3,
-        "visible": true
+        "visible": false
       }
     },
     "settings": {
@@ -143,38 +151,42 @@ export const STORE_CATALOG_SOURCE = [
   },
   {
     "id": "outfit-03",
-    "name": "魔王再臨",
-    "badge": "NEW",
     "published": true,
     "pieces": {
       "hair": {
         "id": "store-outfit-03-hair",
-        "label": "魔王再臨・頭部",
+        "label": "套裝 03・頭部",
         "front": "store/hair/頭髮03-1.png",
         "back": "store/hair/頭髮03-2.png"
       },
       "face": {
         "id": "store-outfit-03-face",
-        "label": "魔王再臨・臉部",
+        "label": "套裝 03・臉部",
         "front": "store/face/表情03.png"
       },
       "top": {
         "id": "store-outfit-03-top",
-        "label": "魔王再臨・上半身",
+        "label": "套裝 03・上半身",
         "front": "store/top/上衣03.png"
       },
       "bottoms": {
         "id": "store-outfit-03-bottoms",
-        "label": "魔王再臨・下半身",
+        "label": "套裝 03・下半身",
         "front": "store/bottoms/褲裝03.png"
       }
     },
     "templates": {
+      "template-03": {
+        "scale": 1,
+        "x_pct": 0,
+        "y_pct": -24.8,
+        "visible": true
+      },
       "template-00": {
         "scale": 1,
         "x_pct": 0,
         "y_pct": -0.7,
-        "visible": true
+        "visible": false
       },
       "template-01": {
         "scale": 1,
@@ -186,7 +198,7 @@ export const STORE_CATALOG_SOURCE = [
         "scale": 1,
         "x_pct": 0,
         "y_pct": 0.3,
-        "visible": true
+        "visible": false
       }
     },
     "settings": {
@@ -219,37 +231,41 @@ export const STORE_CATALOG_SOURCE = [
   },
   {
     "id": "outfit-04",
-    "name": "街邊boy",
-    "badge": "NEW",
     "published": true,
     "pieces": {
       "hair": {
         "id": "store-outfit-04-hair",
-        "label": "街邊boy・頭部",
+        "label": "套裝 04・頭部",
         "front": "store/hair/頭髮04.png"
       },
       "face": {
         "id": "store-outfit-04-face",
-        "label": "街邊boy・臉部",
+        "label": "套裝 04・臉部",
         "front": "store/face/表情04.png"
       },
       "top": {
         "id": "store-outfit-04-top",
-        "label": "街邊boy・上半身",
+        "label": "套裝 04・上半身",
         "front": "store/top/上衣04.png"
       },
       "bottoms": {
         "id": "store-outfit-04-bottoms",
-        "label": "街邊boy・下半身",
+        "label": "套裝 04・下半身",
         "front": "store/bottoms/褲裝04.png"
       }
     },
     "templates": {
+      "template-03": {
+        "scale": 1,
+        "x_pct": 0,
+        "y_pct": -24.8,
+        "visible": true
+      },
       "template-00": {
         "scale": 1,
         "x_pct": 0,
         "y_pct": -0.7,
-        "visible": true
+        "visible": false
       },
       "template-01": {
         "scale": 1,
@@ -261,7 +277,7 @@ export const STORE_CATALOG_SOURCE = [
         "scale": 1,
         "x_pct": 0,
         "y_pct": 0.3,
-        "visible": true
+        "visible": false
       }
     },
     "settings": {
@@ -289,38 +305,42 @@ export const STORE_CATALOG_SOURCE = [
   },
   {
     "id": "outfit-05",
-    "name": "夜真主",
-    "badge": "NEW",
     "published": true,
     "pieces": {
       "hair": {
         "id": "store-outfit-05-hair",
-        "label": "夜真主・頭部",
+        "label": "套裝 05・頭部",
         "front": "store/hair/頭髮05-1.png",
         "back": "store/hair/頭髮05-2.png"
       },
       "face": {
         "id": "store-outfit-05-face",
-        "label": "夜真主・臉部",
+        "label": "套裝 05・臉部",
         "front": "store/face/表情05.png"
       },
       "top": {
         "id": "store-outfit-05-top",
-        "label": "夜真主・上半身",
+        "label": "套裝 05・上半身",
         "front": "store/top/上衣05.png"
       },
       "bottoms": {
         "id": "store-outfit-05-bottoms",
-        "label": "夜真主・下半身",
+        "label": "套裝 05・下半身",
         "front": "store/bottoms/褲裝05.png"
       }
     },
     "templates": {
+      "template-03": {
+        "scale": 1,
+        "x_pct": 0,
+        "y_pct": -24.8,
+        "visible": true
+      },
       "template-00": {
         "scale": 1,
         "x_pct": 0,
         "y_pct": -0.7,
-        "visible": true
+        "visible": false
       },
       "template-01": {
         "scale": 1,
@@ -365,33 +385,37 @@ export const STORE_CATALOG_SOURCE = [
   },
   {
     "id": "outfit-06",
-    "name": "薇薇安",
-    "badge": "NEW",
     "published": true,
     "pieces": {
       "hair": {
         "id": "store-outfit-06-hair",
-        "label": "薇薇安・頭部",
+        "label": "套裝 06・頭部",
         "front": "store/hair/頭髮06-1.png",
         "back": "store/hair/頭髮06-2.png"
       },
       "face": {
         "id": "store-outfit-06-face",
-        "label": "薇薇安・臉部",
+        "label": "套裝 06・臉部",
         "front": "store/face/表情06.png"
       },
       "top": {
         "id": "store-outfit-06-top",
-        "label": "薇薇安・上半身",
+        "label": "套裝 06・上半身",
         "front": "store/top/上衣06.png"
       },
       "bottoms": {
         "id": "store-outfit-06-bottoms",
-        "label": "薇薇安・下半身",
+        "label": "套裝 06・下半身",
         "front": "store/bottoms/褲裝06.png"
       }
     },
     "templates": {
+      "template-03": {
+        "scale": 1,
+        "x_pct": 0,
+        "y_pct": -24.75,
+        "visible": false
+      },
       "template-00": {
         "scale": 1,
         "x_pct": 0,
@@ -415,7 +439,7 @@ export const STORE_CATALOG_SOURCE = [
       "store-outfit-06-hair_front": {
         "scale": 1,
         "x_pct": 3.6,
-        "y_pct": -1.65
+        "y_pct": 2.95
       },
       "store-outfit-06-hair_back": {
         "scale": 1,
@@ -441,6 +465,165 @@ export const STORE_CATALOG_SOURCE = [
         "scale": 0.77,
         "x_pct": -0.65,
         "y_pct": 17.65
+      }
+    }
+  },
+  {
+    "id": "outfit-07",
+    "published": true,
+    "pieces": {
+      "hair": {
+        "id": "store-outfit-07-hair",
+        "label": "套裝 07・頭部",
+        "front": "store/hair/頭髮07.png"
+      },
+      "face": {
+        "id": "store-outfit-07-face",
+        "label": "套裝 07・臉部",
+        "front": "store/face/表情07.png"
+      },
+      "top": {
+        "id": "store-outfit-07-top",
+        "label": "套裝 07・上半身",
+        "front": "store/top/上衣07.png"
+      },
+      "bottoms": {
+        "id": "store-outfit-07-bottoms",
+        "label": "套裝 07・下半身",
+        "front": "store/bottoms/褲裝07.png"
+      }
+    },
+    "templates": {
+      "template-03": {
+        "scale": 1,
+        "x_pct": 0,
+        "y_pct": -0.7,
+        "visible": false
+      },
+      "template-00": {
+        "scale": 1,
+        "x_pct": 0,
+        "y_pct": -0.7,
+        "visible": false
+      },
+      "template-01": {
+        "scale": 1,
+        "x_pct": 0.55,
+        "y_pct": -0.5,
+        "visible": true
+      },
+      "template-02": {
+        "scale": 0.5,
+        "x_pct": -0.75,
+        "y_pct": 2.6,
+        "visible": true
+      }
+    },
+    "settings": {
+      "store-outfit-07-face_front": {
+        "scale": 0.85,
+        "x_pct": -2.6,
+        "y_pct": -5.9
+      },
+      "store-outfit-07-top_front": {
+        "scale": 0.47,
+        "x_pct": -1,
+        "y_pct": 15.05
+      },
+      "store-outfit-07-bottoms_front": {
+        "scale": 1,
+        "x_pct": 0.15,
+        "y_pct": 0.8
+      },
+      "store-outfit-07-hair_front": {
+        "scale": 1.16,
+        "x_pct": 2.6,
+        "y_pct": 4.6
+      },
+      "store-outfit-07-bottoms_overlay": {
+        "scale": 0.82,
+        "x_pct": -0.65,
+        "y_pct": 17.65
+      }
+    }
+  },
+  {
+    "id": "outfit-08",
+    "published": true,
+    "pieces": {
+      "hair": {
+        "id": "store-outfit-08-hair",
+        "label": "套裝 08・頭部",
+        "front": "store/hair/頭髮08-1.png",
+        "back": "store/hair/頭髮08-2.png"
+      },
+      "face": {
+        "id": "store-outfit-08-face",
+        "label": "套裝 08・臉部",
+        "front": "store/face/表情08.png"
+      },
+      "top": {
+        "id": "store-outfit-08-top",
+        "label": "套裝 08・上半身",
+        "front": "store/top/上衣08.png"
+      },
+      "bottoms": {
+        "id": "store-outfit-08-bottoms",
+        "label": "套裝 08・下半身",
+        "front": "store/bottoms/褲裝08.png"
+      }
+    },
+    "templates": {
+      "template-03": {
+        "scale": 1,
+        "x_pct": 0,
+        "y_pct": -0.7,
+        "visible": false
+      },
+      "template-00": {
+        "scale": 1,
+        "x_pct": 0,
+        "y_pct": -0.7,
+        "visible": false
+      },
+      "template-01": {
+        "scale": 1,
+        "x_pct": 0.55,
+        "y_pct": -0.5,
+        "visible": true
+      },
+      "template-02": {
+        "scale": 0.5,
+        "x_pct": -0.5,
+        "y_pct": 2.85,
+        "visible": true
+      }
+    },
+    "settings": {
+      "store-outfit-08-face_front": {
+        "scale": 0.76,
+        "x_pct": -2.45,
+        "y_pct": -3.95
+      },
+      "store-outfit-08-hair_front": {
+        "scale": 1.09,
+        "x_pct": 0.3,
+        "y_pct": -2.95
+      },
+      "store-outfit-08-hair_back": {
+        "scale": 1.1,
+        "x_pct": -1.65,
+        "y_pct": -1.65
+      },
+      "store-outfit-08-top_front": {
+        "scale": 0.53,
+        "x_pct": -1,
+        "y_pct": 19.95
+      },
+      "store-outfit-08-bottoms_front": {
+        "scale": 0.67,
+        "x_pct": -0.65,
+        "y_pct": 11.75
       }
     }
   }

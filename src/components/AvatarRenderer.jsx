@@ -39,6 +39,10 @@ function AvatarRenderer({ config, itemSettings, templateSettings, className = ""
     normalizedConfig,
     templateSettings
   );
+  const hasStoreBase = Boolean(activeTemplateSettings?.["template-03"]);
+  const storeBaseTemplateSetting = hasStoreBase
+    ? getTemplateSetting("template-03", activeTemplateSettings)
+    : null;
   const baseTemplateSetting = getTemplateSetting(
     "template-00",
     activeTemplateSettings
@@ -81,6 +85,15 @@ function AvatarRenderer({ config, itemSettings, templateSettings, className = ""
             src={AVATAR_TEMPLATE.base}
             alt=""
             style={layerStyle(baseTemplateSetting)}
+          />
+        )}
+
+        {storeBaseTemplateSetting && storeBaseTemplateSetting.visible !== false && (
+          <img
+            className="avatar-layer avatar-base"
+            src={AVATAR_TEMPLATE.storeBase}
+            alt=""
+            style={layerStyle(storeBaseTemplateSetting)}
           />
         )}
 
