@@ -176,6 +176,17 @@ function AvatarRenderer({ config, itemSettings, templateSettings, className = ""
             )}
           />
         )}
+
+        {resolvedItems.face?.overlayImg && (
+          <img
+            className="avatar-layer avatar-layer-face-overlay"
+            src={resolvedItems.face.overlayImg}
+            alt=""
+            style={layerStyle(
+              getItemSetting(itemSettings, resolvedItems.face.id, "overlay")
+            )}
+          />
+        )}
       </div>
     </div>
   );

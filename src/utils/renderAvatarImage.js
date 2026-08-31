@@ -160,6 +160,14 @@ export async function renderAvatarImage(
     );
   }
 
+  if (resolvedItems.face?.overlayImg) {
+    await drawLayer(
+      stageCtx,
+      resolvedItems.face.overlayImg,
+      getItemSetting(itemSettings, resolvedItems.face.id, "overlay")
+    );
+  }
+
   const crop = DEFAULT_AVATAR_CROP_SETTINGS;
   const cropSize = ((Number(crop.size_pct) || 46) / 100) * STAGE_WIDTH;
   const cropScale = Number(crop.scale) || 1;

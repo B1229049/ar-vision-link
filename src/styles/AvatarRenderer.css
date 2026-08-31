@@ -61,3 +61,7 @@
 .avatar-layer-bottoms-overlay {
   z-index: 9;
 }
+
+.avatar-layer-face-overlay {
+  z-index: 10;
+}

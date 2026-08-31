@@ -34,7 +34,7 @@
       .stage-panel { display: grid; place-items: center; min-height: calc(100vh - 44px); background: linear-gradient(180deg, #20133d 0%, #111827 100%); }
       .stage { position: relative; width: min(420px, 92%); aspect-ratio: 408 / 612; }
       .layer { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; object-position: center bottom; transform-origin: center; pointer-events: none; }
-      .layer-back { z-index: 1; } .template-00, .template-03 { z-index: 2; } .template-01 { z-index: 3; } .hair-front { z-index: 4; } .face-front { z-index: 5; } .template-02 { z-index: 6; } .bottoms-front { z-index: 7; } .top-front { z-index: 8; } .bottoms-overlay { z-index: 9; }
+      .layer-back { z-index: 1; } .template-00, .template-03 { z-index: 2; } .template-01 { z-index: 3; } .hair-front { z-index: 4; } .face-front { z-index: 5; } .template-02 { z-index: 6; } .bottoms-front { z-index: 7; } .top-front { z-index: 8; } .bottoms-overlay { z-index: 9; } .face-overlay { z-index: 10; }
       .range-row { margin-top: 14px; }
       .range-row label { display: flex; justify-content: space-between; gap: 10px; }
       .actions { grid-template-columns: repeat(2,1fr); margin-top: 18px; }
@@ -110,7 +110,7 @@
           <h3 style="margin-top:24px">讀取規則</h3>
           <p>
             頭部：<code>hair/頭髮01.png</code>，或 <code>頭髮01-1.png</code>＋<code>頭髮01-2.png</code><br />
-            臉部：<code>face/表情01.png</code><br />
+            臉部：<code>face/表情01-1.png</code>（下層）＋<code>表情01-2.png</code>（上層）；單張 <code>表情01.png</code> 仍可使用<br />
             上半身：<code>top/上衣01.png</code><br />
             下半身：<code>bottoms/褲裝01-1.png</code>（上衣下層）＋<code>褲裝01-2.png</code>（上衣上層）；單張 <code>褲裝01.png</code> 仍可使用
           </p>
@@ -234,16 +234,16 @@
               `${STORE_BASE}/hair/${prefix}${number}-2.png`,
               `${STORE_BASE}/hair/${number}-2.png`,
             ]);
-          } else if (category === "bottoms") {
+          } else if (category === "face" || category === "bottoms") {
             front = await firstExisting([
-              `${STORE_BASE}/bottoms/${prefix}${number}-1.png`,
-              `${STORE_BASE}/bottoms/${number}-1.png`,
-              `${STORE_BASE}/bottoms/${prefix}${number}.png`,
-              `${STORE_BASE}/bottoms/${number}.png`,
+              `${STORE_BASE}/${category}/${prefix}${number}-1.png`,
+              `${STORE_BASE}/${category}/${number}-1.png`,
+              `${STORE_BASE}/${category}/${prefix}${number}.png`,
+              `${STORE_BASE}/${category}/${number}.png`,
             ]);
             overlay = await firstExisting([
-              `${STORE_BASE}/bottoms/${prefix}${number}-2.png`,
-              `${STORE_BASE}/bottoms/${number}-2.png`,
+              `${STORE_BASE}/${category}/${prefix}${number}-2.png`,
+              `${STORE_BASE}/${category}/${number}-2.png`,
             ]);
           } else {
             front = await firstExisting([
@@ -365,6 +365,7 @@
         if (bottoms) appendImage(stage, bottoms.frontImg, "layer bottoms-front", displaySetting(bottoms.id));
         if (top) appendImage(stage, top.frontImg, "layer top-front", displaySetting(top.id));
         if (bottoms?.overlayImg) appendImage(stage, bottoms.overlayImg, "layer bottoms-overlay", displaySetting(bottoms.id, "overlay"));
+        if (face?.overlayImg) appendImage(stage, face.overlayImg, "layer face-overlay", displaySetting(face.id, "overlay"));
       }
 
       function renderPreviewSelectors() {
@@ -456,9 +457,17 @@
         const layers = state.category === "template"
           ? [{ value: "front", label: "模板" }]
           : [
-              { value: "front", label: state.category === "bottoms" && item?.overlayImg ? "衣服下層（-1）" : "前層" },
+              {
+                value: "front",
+                label: item?.overlayImg
+                  ? state.category === "face" ? "表情下層（-1）" : "衣服下層（-1）"
+                  : "前層",
+              },
               ...(item?.backImg ? [{ value: "back", label: "後層" }] : []),
-              ...(item?.overlayImg ? [{ value: "overlay", label: "衣服上層（-2）" }] : []),
+              ...(item?.overlayImg ? [{
+                value: "overlay",
+                label: state.category === "face" ? "表情上層（-2）" : "衣服上層（-2）",
+              }] : []),
             ];
         if (!layers.some((layer) => layer.value === state.layer)) state.layer = "front";
         select.innerHTML = "";
