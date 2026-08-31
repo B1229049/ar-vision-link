@@ -107,6 +107,12 @@
           <div class="range-row"><label>水平位置 <span id="x-value">0.00</span></label><input id="x-pct" type="range" min="-60" max="60" step="0.05" /></div>
           <div class="range-row"><label>垂直位置 <span id="y-value">0.00</span></label><input id="y-pct" type="range" min="-60" max="60" step="0.05" /></div>
 
+          <h3 style="margin-top:24px">縮圖位置與大小</h3>
+          <p id="thumb-hint">沒有 -0 時，各圖層可分別調整縮圖；有 -0 時由前層設定控制縮圖。</p>
+          <div class="range-row"><label>縮圖大小 <span id="thumb-scale-value">1.00</span></label><input id="thumb-scale" type="range" min="0.2" max="3" step="0.01" /></div>
+          <div class="range-row"><label>縮圖水平位置 <span id="thumb-x-value">0.00</span></label><input id="thumb-x-pct" type="range" min="-120" max="120" step="0.05" /></div>
+          <div class="range-row"><label>縮圖垂直位置 <span id="thumb-y-value">0.00</span></label><input id="thumb-y-pct" type="range" min="-120" max="120" step="0.05" /></div>
+
           <h3 style="margin-top:24px">讀取規則</h3>
           <p>
             頭部：<code>hair/頭髮01.png</code>，或 <code>頭髮01-1.png</code>＋<code>頭髮01-2.png</code><br />
@@ -114,6 +120,7 @@
             上半身：<code>top/上衣01.png</code><br />
             下半身：<code>bottoms/褲裝01-1.png</code>（上衣下層）＋<code>褲裝01-2.png</code>（上衣上層）；單張 <code>褲裝01.png</code> 仍可使用
           </p>
+          <p>各物件皆可使用 <code>XX-0.png</code> 作為專用縮圖，例如 <code>top/上衣07-0.png</code>；沒有 <code>-0</code> 時會使用原本的前後／上下圖層組合。</p>
           <p>商城模板可使用 <code>模板03.png</code>、<code>模板00.png</code>、<code>模板01.png</code> 與 <code>模板02.png</code>；預設只顯示模板03，並可在左側進階功能中為每件上衣分別調整。</p>
           <textarea id="export-output" class="output" readonly></textarea>
         </div>
@@ -176,9 +183,10 @@
       }
 
       function defaultSetting(itemId = "") {
-        if (itemId === "template-03") return { scale: 1, x_pct: 0, y_pct: -24.8 };
-        if (itemId === "template-02") return { scale: 1, x_pct: 0, y_pct: 0.3 };
-        return { scale: 1, x_pct: 0, y_pct: 0 };
+        const thumb = { thumb_scale: 1, thumb_x_pct: 0, thumb_y_pct: 0 };
+        if (itemId === "template-03") return { scale: 1, x_pct: 0, y_pct: -24.8, ...thumb };
+        if (itemId === "template-02") return { scale: 1, x_pct: 0, y_pct: 0.3, ...thumb };
+        return { scale: 1, x_pct: 0, y_pct: 0, ...thumb };
       }
       function fileUrl(path) { return path; }
 
@@ -222,6 +230,10 @@
           let front = "";
           let back = "";
           let overlay = "";
+          const thumb = await firstExisting([
+            `${STORE_BASE}/${category}/${prefix}${number}-0.png`,
+            `${STORE_BASE}/${category}/${number}-0.png`,
+          ]);
 
           if (category === "hair") {
             front = await firstExisting([
@@ -260,6 +272,7 @@
               frontImg: front,
               ...(back ? { backImg: back } : {}),
               ...(overlay ? { overlayImg: overlay } : {}),
+              ...(thumb ? { thumbImg: thumb } : {}),
             });
             misses = 0;
           } else {
@@ -326,12 +339,23 @@
       function applyStyle(element, setting) {
         element.style.transform = `translate(${Number(setting.x_pct) || 0}%, ${Number(setting.y_pct) || 0}%) scale(${Number(setting.scale) || 1})`;
       }
+      function applyThumbStyle(element, setting) {
+        element.style.transform = `translate(${Number(setting.thumb_x_pct) || 0}%, ${Number(setting.thumb_y_pct) || 0}%) scale(${Number(setting.thumb_scale) || 1})`;
+      }
       function appendImage(parent, src, className, setting) {
         if (!src) return;
         const image = document.createElement("img");
         image.className = className;
         image.src = src;
         applyStyle(image, setting);
+        parent.appendChild(image);
+      }
+      function appendThumbImage(parent, src, setting) {
+        if (!src) return;
+        const image = document.createElement("img");
+        image.className = "thumb-layer";
+        image.src = src;
+        applyThumbStyle(image, setting);
         parent.appendChild(image);
       }
 
@@ -432,10 +456,12 @@
           button.className = `item-card ${state.targetId === item.id ? "active" : ""} ${equipped ? "equipped" : ""}`;
           if (state.category === "template") {
             appendImage(button, item.img, "thumb-layer", displaySetting(item.id));
+          } else if (item.thumbImg) {
+            appendThumbImage(button, item.thumbImg, displaySetting(item.id, "front"));
           } else {
-            if (item.backImg) appendImage(button, item.backImg, "thumb-layer", displaySetting(item.id, "back"));
-            appendImage(button, item.frontImg, "thumb-layer", displaySetting(item.id, "front"));
-            if (item.overlayImg) appendImage(button, item.overlayImg, "thumb-layer", displaySetting(item.id, "overlay"));
+            if (item.backImg) appendThumbImage(button, item.backImg, displaySetting(item.id, "back"));
+            appendThumbImage(button, item.frontImg, displaySetting(item.id, "front"));
+            if (item.overlayImg) appendThumbImage(button, item.overlayImg, displaySetting(item.id, "overlay"));
           }
           button.onclick = () => {
             state.targetId = item.id;
@@ -490,6 +516,25 @@
           input.disabled = !item;
           document.getElementById(valueId).textContent = Number(next).toFixed(2);
         });
+        const thumbValue = item?.thumbImg && state.layer !== "front"
+          ? displaySetting(item.id, "front")
+          : value;
+        const canAdjustThumb = Boolean(item) && state.category !== "template" && (!item.thumbImg || state.layer === "front");
+        [
+          ["thumb-scale", "thumb-scale-value", thumbValue.thumb_scale],
+          ["thumb-x-pct", "thumb-x-value", thumbValue.thumb_x_pct],
+          ["thumb-y-pct", "thumb-y-value", thumbValue.thumb_y_pct],
+        ].forEach(([inputId, valueId, next]) => {
+          const input = document.getElementById(inputId);
+          input.value = next;
+          input.disabled = !canAdjustThumb;
+          document.getElementById(valueId).textContent = Number(next).toFixed(2);
+        });
+        document.getElementById("thumb-hint").textContent = item?.thumbImg
+          ? state.layer === "front"
+            ? "目前使用 -0 專用縮圖；這組數值控制整張縮圖。"
+            : "目前使用 -0 專用縮圖；請切換到前層調整縮圖。"
+          : "沒有 -0 專用縮圖；目前數值只控制所選圖層的縮圖。";
       }
 
       function renderTemplateControls() {
@@ -558,6 +603,7 @@
               front: relativeStorePath(item.frontImg),
               ...(item.backImg ? { back: relativeStorePath(item.backImg) } : {}),
               ...(item.overlayImg ? { overlay: relativeStorePath(item.overlayImg) } : {}),
+              ...(item.thumbImg ? { thumb: relativeStorePath(item.thumbImg) } : {}),
             };
           });
           return {
@@ -597,6 +643,9 @@
           scale: Number(document.getElementById("scale").value),
           x_pct: Number(document.getElementById("x-pct").value),
           y_pct: Number(document.getElementById("y-pct").value),
+          thumb_scale: Number(document.getElementById("thumb-scale").value),
+          thumb_x_pct: Number(document.getElementById("thumb-x-pct").value),
+          thumb_y_pct: Number(document.getElementById("thumb-y-pct").value),
         };
         renderControls();
         renderGrid();
@@ -628,7 +677,7 @@
         localStorage.setItem(TEMPLATE_STORAGE_KEY, JSON.stringify(state.templateSettings));
         renderAll();
       };
-      ["scale", "x-pct", "y-pct"].forEach((id) => document.getElementById(id).addEventListener("input", updateDraft));
+      ["scale", "x-pct", "y-pct", "thumb-scale", "thumb-x-pct", "thumb-y-pct"].forEach((id) => document.getElementById(id).addEventListener("input", updateDraft));
       document.getElementById("rescan").onclick = scanAssets;
       document.getElementById("save-target").onclick = () => {
         if (!currentItem()) return;
