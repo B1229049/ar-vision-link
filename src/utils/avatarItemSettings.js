@@ -3,70 +3,71 @@
 // These settings use relative percentages, so item placement scales with any avatar container.
 export const DEFAULT_AVATAR_ITEM_SETTINGS = {
   "top-1_front": {
-    "scale": 0.57,
-    "x_pct": -1.65,
-    "y_pct": 15.8,
-    "thumb_scale": 1.3,
+    "scale": 0.55,
+    "x_pct": -1.3,
+    "y_pct": 15.7,
+    "thumb_scale": 1.2,
     "thumb_x_pct": 0,
-    "thumb_y_pct": 2.6,
+    "thumb_y_pct": 0.65,
     "show_thumb": true
   },
   "bottoms-1_front": {
-    "scale": 0.81,
-    "x_pct": -0.7,
-    "y_pct": 13.4,
-    "thumb_scale": 1.83,
+    "scale": 0.84,
+    "x_pct": -0.9,
+    "y_pct": 12.65,
+    "thumb_scale": 1.7,
     "thumb_x_pct": 0,
-    "thumb_y_pct": -33.8
+    "thumb_y_pct": -26.85,
+    "show_thumb": true
   },
   "hair-1_front": {
-    "scale": 1.01,
+    "scale": 0.97,
     "x_pct": -0.9,
     "y_pct": -7,
-    "thumb_scale": 1.13,
+    "thumb_scale": 1,
     "thumb_x_pct": 0,
-    "thumb_y_pct": 8.5
+    "thumb_y_pct": 0,
+    "show_thumb": true
   },
   "face-1_front": {
-    "scale": 0.67,
-    "x_pct": -2.65,
-    "y_pct": -4.55,
-    "thumb_scale": 1.3,
+    "scale": 0.65,
+    "x_pct": -3.05,
+    "y_pct": -3.95,
+    "thumb_scale": 1,
     "thumb_x_pct": 0,
     "thumb_y_pct": 0,
     "show_thumb": true
   },
   "face-2_front": {
-    "scale": 0.65,
-    "x_pct": -3.6,
-    "y_pct": -5.55,
-    "thumb_scale": 1.3,
+    "scale": 0.63,
+    "x_pct": -3.5,
+    "y_pct": -6.1,
+    "thumb_scale": 1,
+    "thumb_x_pct": 0,
+    "thumb_y_pct": 0,
+    "show_thumb": true
+  },
+  "face-3_front": {
+    "scale": 0.67,
+    "x_pct": -3.05,
+    "y_pct": -5.25,
+    "thumb_scale": 1,
     "thumb_x_pct": 0,
     "thumb_y_pct": 0
   },
-  "face-3_front": {
-    "scale": 0.7,
-    "x_pct": -2.65,
-    "y_pct": -6.5,
-    "thumb_scale": 1.3,
-    "thumb_x_pct": 0,
-    "thumb_y_pct": 0,
-    "show_thumb": true
-  },
   "face-4_front": {
     "scale": 0.66,
-    "x_pct": -3.1,
+    "x_pct": -3.5,
     "y_pct": -7.4,
-    "thumb_scale": 1.3,
+    "thumb_scale": 1,
     "thumb_x_pct": 0,
-    "thumb_y_pct": 0,
-    "show_thumb": true
+    "thumb_y_pct": 0
   },
   "face-5_front": {
     "scale": 0.7,
-    "x_pct": -2.65,
-    "y_pct": -7,
-    "thumb_scale": 1.3,
+    "x_pct": -3.05,
+    "y_pct": -7.4,
+    "thumb_scale": 1,
     "thumb_x_pct": 0,
     "thumb_y_pct": 0,
     "show_thumb": true
@@ -75,75 +76,74 @@ export const DEFAULT_AVATAR_ITEM_SETTINGS = {
     "scale": 1.03,
     "x_pct": 0,
     "y_pct": -12.2,
-    "thumb_scale": 1.14,
+    "thumb_scale": 1,
     "thumb_x_pct": 0,
-    "thumb_y_pct": 5.25
+    "thumb_y_pct": 0
   },
   "hair-3_front": {
     "scale": 0.88,
     "x_pct": -2.6,
     "y_pct": -12.65,
-    "thumb_scale": 1.12,
+    "thumb_scale": 1,
     "thumb_x_pct": 0,
-    "thumb_y_pct": 7.2
+    "thumb_y_pct": 0
   },
   "hair-4_front": {
-    "scale": 1.02,
-    "x_pct": -0.7,
-    "y_pct": -17.65,
-    "thumb_scale": 1.09,
+    "scale": 1,
+    "x_pct": -2.2,
+    "y_pct": -17,
+    "thumb_scale": 1,
     "thumb_x_pct": 0,
-    "thumb_y_pct": 2.6
+    "thumb_y_pct": 0
   },
   "hair-5_front": {
-    "scale": 0.96,
-    "x_pct": -2.15,
+    "scale": 0.98,
+    "x_pct": -2.2,
     "y_pct": -10.45,
-    "thumb_scale": 1.09,
+    "thumb_scale": 1,
     "thumb_x_pct": 0,
-    "thumb_y_pct": 7.85,
-    "show_thumb": true
+    "thumb_y_pct": 0
   },
   "hair-6_front": {
-    "scale": 0.87,
-    "x_pct": -2.15,
-    "y_pct": -16.7,
-    "thumb_scale": 1.04,
+    "scale": 0.88,
+    "x_pct": -1.3,
+    "y_pct": -16.15,
+    "thumb_scale": 1,
     "thumb_x_pct": 0,
-    "thumb_y_pct": 4.05,
+    "thumb_y_pct": 0,
     "show_thumb": true
   },
   "hair-6_back": {
-    "scale": 0.9,
+    "scale": 0.97,
     "x_pct": 0,
-    "y_pct": -4.1,
-    "thumb_scale": 0.88,
+    "y_pct": 4.8,
+    "thumb_scale": 1,
     "thumb_x_pct": 0,
     "thumb_y_pct": 0
   },
   "hair-7_front": {
-    "scale": 0.77,
+    "scale": 0.75,
     "x_pct": 1.75,
-    "y_pct": -17.65,
-    "thumb_scale": 0.91,
+    "y_pct": -16.6,
+    "thumb_scale": 1,
     "thumb_x_pct": 0,
     "thumb_y_pct": 0,
     "show_thumb": true
   },
   "hair-7_back": {
-    "scale": 0.73,
-    "x_pct": -0.2,
-    "y_pct": -11.35,
-    "thumb_scale": 1.1,
-    "thumb_x_pct": 0.45,
-    "thumb_y_pct": 7,
-    "show_thumb": false
+    "scale": 0.69,
+    "x_pct": 1.3,
+    "y_pct": -10.45,
+    "thumb_scale": 0.91,
+    "thumb_x_pct": -2.6,
+    "thumb_y_pct": 5.25,
+    "show_thumb": true
   },
   "hair-8_front": {
-    "scale": 0.93,
-    "x_pct": 0.75,
-    "y_pct": -11.35,
-    "thumb_scale": 1.01,
+    "scale": 0.9,
+    "x_pct": 0.85,
+    "y_pct": -11.8,
+    "thumb_scale": 1,
     "thumb_x_pct": 0,
     "thumb_y_pct": 0,
     "show_thumb": true
@@ -151,35 +151,34 @@ export const DEFAULT_AVATAR_ITEM_SETTINGS = {
   "top-2_front": {
     "scale": 0.5,
     "x_pct": -0.9,
-    "y_pct": 14.35,
-    "thumb_scale": 1.12,
+    "y_pct": 15,
+    "thumb_scale": 1,
     "thumb_x_pct": 0,
-    "thumb_y_pct": 0,
-    "show_thumb": true
+    "thumb_y_pct": 0
   },
   "top-3_front": {
     "scale": 0.52,
-    "x_pct": -0.2,
-    "y_pct": 14.85,
-    "thumb_scale": 1.24,
+    "x_pct": -0.9,
+    "y_pct": 15.4,
+    "thumb_scale": 1.06,
     "thumb_x_pct": 0,
-    "thumb_y_pct": 0,
+    "thumb_y_pct": 1.95,
     "show_thumb": true
   },
   "top-4_front": {
-    "scale": 0.5,
-    "x_pct": -1.65,
-    "y_pct": 16.8,
-    "thumb_scale": 1.02,
+    "scale": 0.49,
+    "x_pct": -1.75,
+    "y_pct": 17,
+    "thumb_scale": 0.92,
     "thumb_x_pct": 0,
-    "thumb_y_pct": 1.15,
+    "thumb_y_pct": 1.95,
     "show_thumb": true
   },
   "top-5_front": {
     "scale": 0.78,
     "x_pct": -0.55,
-    "y_pct": 14.35,
-    "thumb_scale": 1.8,
+    "y_pct": 14.8,
+    "thumb_scale": 1.5,
     "thumb_x_pct": 0,
     "thumb_y_pct": 0,
     "show_thumb": true
@@ -187,87 +186,91 @@ export const DEFAULT_AVATAR_ITEM_SETTINGS = {
   "top-6_front": {
     "scale": 0.49,
     "x_pct": -0.3,
-    "y_pct": 14.35,
-    "thumb_scale": 1.08,
+    "y_pct": 14.8,
+    "thumb_scale": 1,
     "thumb_x_pct": 0,
     "thumb_y_pct": 0,
     "show_thumb": true
   },
   "top-7_front": {
-    "scale": 0.47,
-    "x_pct": -0.7,
-    "y_pct": 16.3,
-    "thumb_scale": 1.02,
+    "scale": 0.44,
+    "x_pct": -0.9,
+    "y_pct": 15.7,
+    "thumb_scale": 0.91,
     "thumb_x_pct": 0,
-    "thumb_y_pct": 3.35,
+    "thumb_y_pct": 2.6,
     "show_thumb": true
   },
   "top-8_front": {
     "scale": 0.68,
-    "x_pct": -0.7,
-    "y_pct": 13.85,
-    "thumb_scale": 1.51,
+    "x_pct": -0.55,
+    "y_pct": 14.4,
+    "thumb_scale": 1.16,
     "thumb_x_pct": 0,
     "thumb_y_pct": 0,
     "show_thumb": true
   },
   "bottoms-2_front": {
-    "scale": 0.82,
-    "x_pct": -0.7,
-    "y_pct": 12.9,
-    "thumb_scale": 1.83,
-    "thumb_x_pct": 0,
-    "thumb_y_pct": -33.05
-  },
-  "bottoms-3_front": {
-    "scale": 0.81,
-    "x_pct": -0.7,
-    "y_pct": 13.4,
-    "thumb_scale": 1.83,
-    "thumb_x_pct": 0,
-    "thumb_y_pct": -33.8
-  },
-  "bottoms-4_front": {
-    "scale": 0.81,
-    "x_pct": -0.7,
-    "y_pct": 13.4,
-    "thumb_scale": 1.83,
-    "thumb_x_pct": 0,
-    "thumb_y_pct": -33.05
-  },
-  "bottoms-5_front": {
-    "scale": 0.82,
-    "x_pct": -0.7,
-    "y_pct": 12.9,
+    "scale": 0.84,
+    "x_pct": -0.9,
+    "y_pct": 12.65,
     "thumb_scale": 1.7,
     "thumb_x_pct": 0,
-    "thumb_y_pct": -31.6,
+    "thumb_y_pct": -26.85,
+    "show_thumb": true
+  },
+  "bottoms-3_front": {
+    "scale": 0.84,
+    "x_pct": -0.9,
+    "y_pct": 12.65,
+    "thumb_scale": 1.7,
+    "thumb_x_pct": 0,
+    "thumb_y_pct": -26.85,
+    "show_thumb": true
+  },
+  "bottoms-4_front": {
+    "scale": 0.84,
+    "x_pct": -0.9,
+    "y_pct": 12.65,
+    "thumb_scale": 1.7,
+    "thumb_x_pct": 0,
+    "thumb_y_pct": -26.85,
+    "show_thumb": true
+  },
+  "bottoms-5_front": {
+    "scale": 0.84,
+    "x_pct": -0.9,
+    "y_pct": 12.65,
+    "thumb_scale": 1.7,
+    "thumb_x_pct": 0,
+    "thumb_y_pct": -26.85,
     "show_thumb": true
   },
   "bottoms-6_front": {
     "scale": 0.45,
     "x_pct": -0.9,
-    "y_pct": 25.05,
-    "thumb_scale": 0.93,
+    "y_pct": 25.3,
+    "thumb_scale": 1,
     "thumb_x_pct": 0,
-    "thumb_y_pct": -5.4,
+    "thumb_y_pct": 0,
     "show_thumb": true
   },
   "bottoms-7_front": {
     "scale": 0.81,
     "x_pct": -0.9,
-    "y_pct": 13.4,
-    "thumb_scale": 1.84,
+    "y_pct": 13.5,
+    "thumb_scale": 1.72,
     "thumb_x_pct": 0,
-    "thumb_y_pct": -30.15
+    "thumb_y_pct": -23.55,
+    "show_thumb": true
   },
   "bottoms-8_front": {
-    "scale": 0.72,
-    "x_pct": -0.45,
-    "y_pct": 14.35,
-    "thumb_scale": 1.69,
+    "scale": 0.8,
+    "x_pct": -0.9,
+    "y_pct": 11.75,
+    "thumb_scale": 1.7,
     "thumb_x_pct": 0,
-    "thumb_y_pct": -30.15,
+    "thumb_y_pct": -26.15,
     "show_thumb": true
   },
   "hair-11_front": {
@@ -291,7 +294,7 @@ export const DEFAULT_AVATAR_ITEM_SETTINGS = {
   "face-6_front": {
     "scale": 0.68,
     "x_pct": -3.1,
-    "y_pct": -7.5,
+    "y_pct": -7.4,
     "thumb_scale": 1.44,
     "thumb_x_pct": 0,
     "thumb_y_pct": 0,
@@ -525,21 +528,14 @@ export const DEFAULT_AVATAR_ITEM_SETTINGS = {
 export const DEFAULT_AVATAR_BODY_Y = "0";
 
 export const DEFAULT_AVATAR_TEMPLATE_SETTINGS = {
-  "template-02": {
+  "template-03": {
     "scale": 1,
     "x_pct": 0,
-    "y_pct": 0.3,
+    "y_pct": -24.8,
     "thumb_scale": 1,
     "thumb_x_pct": 0,
-    "thumb_y_pct": 0
-  },
-  "template-00": {
-    "scale": 1,
-    "x_pct": 0,
-    "y_pct": -0.7,
-    "thumb_scale": 1,
-    "thumb_x_pct": 0,
-    "thumb_y_pct": 0
+    "thumb_y_pct": 0,
+    "visible": true
   }
 };
 

@@ -133,7 +133,7 @@ export function getTemplateSetting(templateId, templateSettings) {
     scale: 1,
     x_pct: 0,
     y_pct: 0,
-    visible: templateId !== "template-01",
+    visible: templateId === "template-03",
   };
 
   return {

@@ -39,10 +39,10 @@ function AvatarRenderer({ config, itemSettings, templateSettings, className = ""
     normalizedConfig,
     templateSettings
   );
-  const hasStoreBase = Boolean(activeTemplateSettings?.["template-03"]);
-  const storeBaseTemplateSetting = hasStoreBase
-    ? getTemplateSetting("template-03", activeTemplateSettings)
-    : null;
+  const storeBaseTemplateSetting = getTemplateSetting(
+    "template-03",
+    activeTemplateSettings
+  );
   const baseTemplateSetting = getTemplateSetting(
     "template-00",
     activeTemplateSettings
