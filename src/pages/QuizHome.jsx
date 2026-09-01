@@ -171,10 +171,10 @@ function QuizHome() {
           </section>
 
           <section className="quiz-mobile-actions" aria-label="Quiz Center 快速操作">
-            <button type="button" onClick={() => navigate("/quiz/host")}><DashboardIcon name="host" /><strong>建立房間</strong></button>
             <button type="button" onClick={() => navigate("/quiz/manage")}><DashboardIcon name="quizzes" /><strong>我的測驗</strong></button>
-            <button type="button" onClick={() => navigate("/quiz/join")}><DashboardIcon name="add" /><strong>加入測驗</strong></button>
             <button type="button" onClick={() => navigate("/quiz/history")}><DashboardIcon name="history" /><strong>歷史紀錄</strong></button>
+            <button type="button" onClick={() => navigate("/quiz/host")}><DashboardIcon name="host" /><strong>建立房間</strong></button>
+            <button type="button" onClick={() => navigate("/quiz/join")}><DashboardIcon name="add" /><strong>加入測驗</strong></button>
           </section>
 
           <section className="quiz-dashboard-stats" aria-label="Quiz Center 統計">

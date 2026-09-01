@@ -127,7 +127,7 @@ function Leaderboard() {
         )}
 
         <button
-          className="leaderboard-btn secondary"
+          className="leaderboard-btn secondary quiz-center-return"
           onClick={() => navigate("/quiz")}
         >
           返回 Quiz Center

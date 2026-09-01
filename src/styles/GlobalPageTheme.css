@@ -44,6 +44,22 @@ body,
   color: white;
 }
 
+.quiz-center-return {
+  width: 100%;
+  min-height: 56px;
+  border: 2px solid #465166 !important;
+  border-radius: 18px !important;
+  color: white !important;
+  background: #252d3d !important;
+  box-shadow: none !important;
+  font-weight: 800;
+}
+
+.quiz-center-return:hover {
+  background: #303a4d !important;
+  border-color: #59657a !important;
+}
+
 #root {
   max-width: none;
   border-inline: 0;

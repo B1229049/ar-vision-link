@@ -751,26 +751,73 @@
 
 @media (max-width: 700px) {
   .history-container {
-    padding: 8px 4px 28px;
+    padding: 8px 4px 22px;
   }
 
   .history-header {
     padding-inline: 4px;
+    margin-bottom: 14px;
+  }
+
+  .history-header h1 {
+    font-size: 28px;
+  }
+
+  .history-header p {
+    font-size: 13px;
+    line-height: 1.55;
   }
 
   .history-tabs {
     width: 100%;
+    margin-bottom: 14px;
     box-sizing: border-box;
     flex-direction: row;
   }
 
   .history-tabs button {
     flex: 1;
+    padding-block: 9px;
     padding-inline: 8px;
+    font-size: 13px;
+  }
+
+  .history-layout {
+    gap: 14px;
   }
 
   .history-sidebar,
   .history-detail {
     border-radius: 16px;
+    padding: 14px;
+  }
+
+  .history-sidebar-heading {
+    margin-bottom: 10px;
+    padding-bottom: 12px;
+  }
+
+  .history-sidebar .history-sidebar-heading h2 {
+    font-size: 18px;
+  }
+
+  .history-list-search {
+    min-height: 40px;
+    margin-bottom: 10px;
+  }
+
+  .history-detail {
+    min-height: 190px;
+  }
+
+  .history-detail-empty {
+    height: auto;
+    min-height: 160px;
+  }
+
+  .history-detail-empty-icon {
+    width: 42px;
+    height: 42px;
+    margin-bottom: 12px;
   }
 }

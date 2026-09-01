@@ -822,15 +822,59 @@
 
 @media (max-width: 700px) {
   .manage-quizzes-container {
-    padding: 8px 4px 28px;
+    padding: 8px 4px 22px;
   }
 
   .manage-quizzes-header {
     padding-inline: 4px;
+    margin-bottom: 16px;
+  }
+
+  .manage-quizzes-header h1 {
+    font-size: 28px;
+  }
+
+  .manage-quizzes-header p {
+    font-size: 13px;
+    line-height: 1.55;
+  }
+
+  .manage-layout {
+    gap: 14px;
   }
 
   .quiz-sidebar,
   .quiz-editor {
     border-radius: 16px;
+    padding: 14px;
+  }
+
+  .quiz-sidebar-heading {
+    margin-bottom: 10px;
+    padding-bottom: 12px;
+  }
+
+  .quiz-sidebar .quiz-sidebar-heading h2 {
+    font-size: 18px;
+  }
+
+  .quiz-list-search {
+    min-height: 40px;
+    margin-bottom: 10px;
+  }
+
+  .quiz-item {
+    padding: 11px 12px;
+  }
+
+  .quiz-editor-empty {
+    min-height: 170px;
+    padding: 24px 12px;
+  }
+
+  .quiz-editor-empty-icon {
+    width: 42px;
+    height: 42px;
+    margin-bottom: 12px;
   }
 }
