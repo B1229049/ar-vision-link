@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { getQuizColor, getQuizInitial } from "../utils/quizVisuals";
 import "../styles/ManageQuizzes.css";
 
 function ManageQuizzes() {
@@ -11,6 +12,7 @@ function ManageQuizzes() {
   const [selectedQuiz, setSelectedQuiz] = useState(null);
   const [title, setTitle] = useState("");
   const [questions, setQuestions] = useState([]);
+  const [quizSearch, setQuizSearch] = useState("");
 
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -380,6 +382,14 @@ function ManageQuizzes() {
     }
   }
 
+  const visibleQuizzes = useMemo(() => {
+    const keyword = quizSearch.trim().toLocaleLowerCase("zh-TW");
+    if (!keyword) return quizzes;
+    return quizzes.filter((quiz) =>
+      String(quiz.title || "").toLocaleLowerCase("zh-TW").includes(keyword)
+    );
+  }, [quizSearch, quizzes]);
+
   if (!currentUser) {
     return (
       <div className="create-quiz-page">
@@ -395,23 +405,39 @@ function ManageQuizzes() {
       <div className="manage-quizzes-container">
         <div className="manage-quizzes-header">
           <div>
-            <h1>編輯題目</h1>
-            <p>選擇測驗後，可以編輯題目、刪除題目，或用 AI 新增題目。</p>
+            <h1>我的測驗</h1>
+            <p>從測驗清單選擇內容，集中管理標題、題目與答案設定。</p>
           </div>
 
         </div>
 
         <div className="manage-layout">
           <aside className="quiz-sidebar">
-            <h2>我的測驗</h2>
+            <div className="quiz-sidebar-heading">
+              <h2>測驗清單</h2>
+              <span>{quizzes.length}</span>
+            </div>
+
+            <label className="quiz-list-search">
+              <span aria-hidden="true">⌕</span>
+              <input
+                type="search"
+                value={quizSearch}
+                onChange={(event) => setQuizSearch(event.target.value)}
+                placeholder="搜尋測驗"
+                aria-label="搜尋測驗"
+              />
+            </label>
 
             {loading && quizzes.length === 0 ? (
               <p className="loading-text">載入中...</p>
             ) : quizzes.length === 0 ? (
               <p className="empty-text">目前沒有已建立的測驗。</p>
+            ) : visibleQuizzes.length === 0 ? (
+              <p className="empty-text">找不到符合的測驗。</p>
             ) : (
               <div className="quiz-list">
-                {quizzes.map((quiz) => (
+                {visibleQuizzes.map((quiz) => (
                   <button
                     key={quiz.quiz_id}
                     className={
@@ -421,7 +447,18 @@ function ManageQuizzes() {
                     }
                     onClick={() => selectQuiz(quiz)}
                   >
-                    <div className="quiz-item-title">{quiz.title}</div>
+                    <span
+                      className="quiz-item-initial"
+                      style={{ backgroundColor: getQuizColor(quiz.title, quiz.quiz_id) }}
+                      aria-hidden="true"
+                    >
+                      {getQuizInitial(quiz.title)}
+                    </span>
+                    <span className="quiz-item-copy">
+                      <strong className="quiz-item-title">{quiz.title}</strong>
+                      <small>開啟並編輯題目</small>
+                    </span>
+                    <span className="quiz-item-arrow" aria-hidden="true">›</span>
                   </button>
                 ))}
               </div>
@@ -431,15 +468,17 @@ function ManageQuizzes() {
           <main className="quiz-editor">
             {!selectedQuiz ? (
               <div className="quiz-editor-empty">
-                <h2>請選擇左側測驗</h2>
-                <p>選擇後即可預覽、編輯、新增或刪除題目。</p>
+                <span className="quiz-editor-empty-icon" aria-hidden="true">✓</span>
+                <h2>選擇一份測驗開始編輯</h2>
+                <p>你可以修改標題與題目，也能使用 AI 繼續補充內容。</p>
               </div>
             ) : (
               <>
                 <div className="quiz-editor-top">
                   <div>
-                    <h2>編輯題目</h2>
-                    <p>目前共 {questions.length} 題</p>
+                    <span className="quiz-editor-kicker">正在編輯</span>
+                    <h2>{selectedQuiz.title || "未命名測驗"}</h2>
+                    <p>共 {questions.length} 題，可直接修改下方內容。</p>
                   </div>
 
                   <button className="manage-btn danger" onClick={deleteSelectedQuiz}>
@@ -550,7 +589,10 @@ function ManageQuizzes() {
                   {questions.map((q, index) => (
                     <div className="question-card" key={q.question_id || index}>
                       <div className="question-header">
-                        <h3>第 {index + 1} 題</h3>
+                        <div className="question-heading-copy">
+                          <span>{index + 1}</span>
+                          <h3>第 {index + 1} 題</h3>
+                        </div>
 
                         <button
                           className="manage-btn danger"

@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { getQuizColor, getQuizInitial } from "../utils/quizVisuals";
 import "../styles/QuizHome.css";
 
 const BACKEND_URL =
   import.meta.env.VITE_API_URL || "https://ar-vision-link.onrender.com";
-
-const QUIZ_COLORS = ["#ffd84d", "#53d4ff", "#ff79b0", "#43d98c", "#ff9f43", "#5b9dff"];
 
 function DashboardIcon({ name }) {
   const shared = {
@@ -34,16 +33,6 @@ function DashboardIcon({ name }) {
     return <svg {...shared}><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 19h14" /></svg>;
   }
   return <svg {...shared}><path d="M12 5v14M5 12h14" /></svg>;
-}
-
-function getQuizInitial(title) {
-  return Array.from(String(title || "測驗").trim())[0] || "測";
-}
-
-function getQuizColor(title, index) {
-  const firstCharacter = getQuizInitial(title);
-  const characterCode = firstCharacter.codePointAt(0) || index;
-  return QUIZ_COLORS[(characterCode + index) % QUIZ_COLORS.length];
 }
 
 function getStoredUser() {
@@ -215,11 +204,11 @@ function QuizHome() {
               </div>
             ) : (
               <div className="quiz-recent-list">
-                {recentQuizzes.map((quiz, index) => (
+                {recentQuizzes.map((quiz) => (
                   <article className="quiz-recent-item" key={quiz.quiz_id}>
                     <div
                       className="quiz-recent-initial"
-                      style={{ backgroundColor: getQuizColor(quiz.title, index) }}
+                      style={{ backgroundColor: getQuizColor(quiz.title, quiz.quiz_id) }}
                       aria-hidden="true"
                     >
                       {getQuizInitial(quiz.title)}

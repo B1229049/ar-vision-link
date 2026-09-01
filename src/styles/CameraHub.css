@@ -1,164 +1,180 @@
 .camera-hub-page {
-  min-height: 100vh;
-  padding: calc(var(--navbar-height) + 40px) clamp(20px, 5vw, 72px) 48px;
-  display: grid;
-  place-items: center;
-  background:
-    radial-gradient(circle at 18% 18%, rgba(56, 189, 248, 0.16), transparent 36%),
-    radial-gradient(circle at 82% 78%, rgba(244, 114, 182, 0.15), transparent 38%),
-    #020617;
+  position: fixed;
+  inset: var(--navbar-height) 0 0;
+  z-index: 1;
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+  background: #05070d;
 }
 
 .camera-hub-grid {
-  width: min(1180px, 100%);
-  min-height: min(640px, calc(100vh - var(--navbar-height) - 88px));
+  width: 100%;
+  height: 100%;
+  min-height: 0;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: clamp(18px, 3vw, 32px);
 }
 
 .camera-hub-panel {
   position: relative;
+  min-width: 0;
+  min-height: 0;
+  padding: clamp(24px, 5vw, 72px);
+  border: 0;
+  border-radius: 0;
   overflow: hidden;
-  min-height: 460px;
-  padding: clamp(28px, 5vw, 56px);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 32px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 24px;
-  color: #fff;
+  color: white;
+  display: grid;
+  place-items: center;
   text-align: center;
   cursor: pointer;
-  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.32);
-  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+  isolation: isolate;
+}
+
+.camera-hub-panel::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  opacity: 0.9;
+  transition: transform 260ms ease, opacity 260ms ease;
 }
 
 .camera-hub-recognition {
-  background: linear-gradient(180deg, #1d5b6e 0%, #0b2b42 100%);
+  background:
+    radial-gradient(circle at 28% 28%, rgba(64, 172, 255, 0.54), transparent 36%),
+    linear-gradient(145deg, #08214c 0%, #0b4f91 58%, #062b55 100%);
+}
+
+.camera-hub-recognition::before {
+  background: radial-gradient(circle at 52% 48%, rgba(118, 204, 255, 0.2), transparent 54%);
 }
 
 .camera-hub-selfie {
-  background: linear-gradient(180deg, #76257f 0%, #351642 100%);
+  background:
+    radial-gradient(circle at 72% 27%, rgba(255, 132, 197, 0.5), transparent 36%),
+    linear-gradient(215deg, #a92f70 0%, #6f1d53 56%, #3d0b2d 100%);
 }
 
-.camera-hub-panel:hover,
+.camera-hub-selfie::before {
+  background: radial-gradient(circle at 48% 50%, rgba(255, 182, 218, 0.19), transparent 55%);
+}
+
+.camera-hub-panel:hover::before,
+.camera-hub-panel:focus-visible::before {
+  opacity: 1;
+  transform: scale(1.05);
+}
+
 .camera-hub-panel:focus-visible {
-  transform: translateY(-6px);
-  border-color: rgba(255, 255, 255, 0.46);
-  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.44);
-}
-
-.camera-hub-panel:focus-visible {
-  outline: 3px solid #f8fafc;
-  outline-offset: 4px;
-}
-
-.camera-hub-content,
-.camera-hub-copy,
-.camera-hub-action {
-  position: relative;
-  z-index: 1;
+  z-index: 2;
+  outline: 3px solid white;
+  outline-offset: -3px;
 }
 
 .camera-hub-content {
-  width: min(100%, 420px);
+  width: min(100%, 480px);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 24px;
+  justify-content: center;
+  gap: clamp(24px, 4dvh, 38px);
 }
 
 .camera-hub-copy {
   width: 100%;
-  display: grid;
-  gap: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
   text-align: center;
 }
 
 .camera-hub-copy strong {
-  font-size: clamp(1.7rem, 3vw, 2.7rem);
-  line-height: 1.16;
+  display: block;
+  font-size: clamp(2rem, 4.1vw, 4.6rem);
+  line-height: 1.02;
+  letter-spacing: -0.045em;
+  text-wrap: balance;
 }
 
 .camera-hub-copy small {
-  max-width: 30rem;
-  color: rgba(226, 232, 240, 0.82);
-  font-size: clamp(0.95rem, 1.5vw, 1.12rem);
-  line-height: 1.7;
+  display: block;
+  max-width: 28rem;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: clamp(0.92rem, 1.35vw, 1.12rem);
+  line-height: 1.65;
+  text-wrap: balance;
 }
 
 .camera-hub-action {
-  padding: 11px 18px;
+  min-width: 132px;
+  padding: 12px 20px;
+  border: 1px solid rgba(255, 255, 255, 0.48);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.13);
-  font-weight: 800;
+  color: white;
+  background: rgba(0, 0, 0, 0.16);
+  font-size: 0.9rem;
+  font-weight: 850;
 }
 
 @media (max-width: 760px) {
   .camera-hub-page {
-    position: fixed;
-    inset: var(--navbar-height) 0 var(--mobile-bottom-nav-height);
-    z-index: 1;
-    min-height: 0;
-    padding: 0;
-    display: block;
-    background: #020617;
-  }
-
-  .camera-hub-grid {
-    width: 100%;
-    height: 100%;
-    min-height: 0;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0;
+    bottom: var(--mobile-bottom-nav-height);
   }
 
   .camera-hub-panel {
-    width: 100%;
-    min-width: 0;
-    min-height: 0;
-    height: 100%;
-    padding: clamp(20px, 6vw, 32px) clamp(10px, 3vw, 18px);
-    align-items: center;
-    justify-content: center;
-    gap: 0;
-    border: 0;
-    border-radius: 0;
-    box-shadow: none;
-    text-align: center;
-  }
-
-  .camera-hub-copy {
-    gap: 8px;
+    padding: clamp(16px, 5vw, 28px) clamp(9px, 3vw, 18px);
   }
 
   .camera-hub-content {
-    width: min(100%, 240px);
-    gap: clamp(18px, 3.2dvh, 30px);
+    width: min(100%, 230px);
+    gap: clamp(18px, 3dvh, 28px);
+  }
+
+  .camera-hub-copy {
+    gap: 10px;
   }
 
   .camera-hub-copy strong {
-    font-size: clamp(1.12rem, 5.2vw, 1.55rem);
+    font-size: clamp(1.18rem, 5.3vw, 1.65rem);
+    line-height: 1.12;
   }
 
   .camera-hub-copy small {
-    font-size: clamp(0.76rem, 3.4vw, 0.92rem);
+    max-width: 10.5rem;
+    font-size: clamp(0.72rem, 3vw, 0.88rem);
     line-height: 1.5;
   }
 
   .camera-hub-action {
-    width: 80%;
+    min-width: 0;
+    width: min(100%, 142px);
     padding: 10px 8px;
-    font-size: clamp(0.75rem, 3.2vw, 0.9rem);
-    text-align: center;
+    font-size: clamp(0.72rem, 2.9vw, 0.86rem);
+  }
+}
+
+@media (max-height: 560px) {
+  .camera-hub-content {
+    gap: 14px;
   }
 
-  .camera-hub-panel:hover,
-  .camera-hub-panel:focus-visible {
-    transform: none;
-    box-shadow: none;
+  .camera-hub-copy {
+    gap: 7px;
+  }
+
+  .camera-hub-copy strong {
+    font-size: clamp(1.05rem, 4.5vw, 1.6rem);
+  }
+
+  .camera-hub-copy small {
+    font-size: 0.72rem;
+    line-height: 1.35;
+  }
+
+  .camera-hub-action {
+    padding-block: 8px;
   }
 }

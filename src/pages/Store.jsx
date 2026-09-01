@@ -8,8 +8,8 @@ const OUTFIT_PRICE = 100;
 const OUTFIT_CATEGORIES = [
   { key: "hair", label: "頭部" },
   { key: "face", label: "臉部" },
-  { key: "top", label: "上衣" },
-  { key: "bottoms", label: "下身" },
+  { key: "top", label: "上半身" },
+  { key: "bottoms", label: "下半身" },
 ];
 
 function OutfitIcon() {
@@ -17,14 +17,6 @@ function OutfitIcon() {
     <svg viewBox="0 0 24 24" aria-hidden="true">
       <path d="M8 4 4.5 6.2 3 11l3 1.2V20h12v-7.8l3-1.2-1.5-4.8L16 4l-4 2.2L8 4Z" />
       <path d="M9 4c.6 1.4 1.6 2.1 3 2.1S14.4 5.4 15 4" />
-    </svg>
-  );
-}
-
-function MenuIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M5 7h14M5 12h14M5 17h14" />
     </svg>
   );
 }
@@ -45,6 +37,11 @@ function CoinIcon() {
       <path d="M14.7 9.1c-.6-.5-1.4-.8-2.5-.8-1.3 0-2.2.6-2.2 1.6 0 .9.7 1.3 2.3 1.7 1.5.4 2.2.8 2.2 1.8 0 1.1-1 1.8-2.4 1.8-1.1 0-2.1-.4-2.9-1M12 6.9v10.2" />
     </svg>
   );
+}
+
+function getOutfitName(outfit) {
+  const pieceLabel = outfit?.items?.top?.label || outfit?.items?.hair?.label;
+  return pieceLabel?.split("・")[0]?.trim() || `造型 ${outfit?.id?.replace("outfit-", "") || ""}`;
 }
 
 function thumbStyle(setting) {
@@ -132,6 +129,10 @@ function Store() {
     <main className="store-page">
       <header className="store-header">
         <h1>商城</h1>
+        <div className="store-price-note" aria-label="持有 0 金幣">
+          <CoinIcon />
+          <strong>0</strong>
+        </div>
       </header>
 
       {STORE_CATALOG.length === 0 ? (
@@ -143,13 +144,15 @@ function Store() {
         <div className="store-layout">
           <aside className="store-tryon-panel" aria-label="Avatar 試穿預覽">
             <div className="store-tryon-stage">
-              <div className="store-tryon-platform" aria-hidden="true" />
-              <AvatarRenderer
-                config={previewConfig}
-                itemSettings={previewSettings}
-                templateSettings={previewOutfit?.templates}
-                className="store-tryon-avatar"
-              />
+              <div className="store-tryon-character">
+                <div className="store-tryon-platform" aria-hidden="true" />
+                <AvatarRenderer
+                  config={previewConfig}
+                  itemSettings={previewSettings}
+                  templateSettings={previewOutfit?.templates}
+                  className="store-tryon-avatar"
+                />
+              </div>
             </div>
           </aside>
 
@@ -171,25 +174,29 @@ function Store() {
                       aria-pressed={active}
                       aria-label={`預覽造型 ${outfit.id.replace("outfit-", "")}`}
                     >
-                      <span className="store-card-avatar">
+                      <span className="store-card-visual">
+                        <span className="store-card-avatar">
                         <AvatarRenderer
                           config={outfit.config}
                           itemSettings={outfit.settings}
                           templateSettings={outfit.templates}
                         />
+                        </span>
                       </span>
                     </button>
-                    <button
-                      type="button"
-                      className="store-card-menu-button"
-                      onClick={() => setDetailOutfitId(outfit.id)}
-                      aria-label={`查看造型 ${outfit.id.replace("outfit-", "")} 詳細內容`}
-                    >
-                      <MenuIcon />
-                    </button>
-                    <div className="store-card-price" aria-label={`${OUTFIT_PRICE} 金幣`}>
-                      <CoinIcon />
-                      <strong>{OUTFIT_PRICE}</strong>
+                    <div className="store-card-actions">
+                      <button
+                        type="button"
+                        className="store-card-menu-button"
+                        onClick={() => setDetailOutfitId(outfit.id)}
+                        aria-label={`查看 ${getOutfitName(outfit)} 詳情`}
+                      >
+                        <span aria-hidden="true">i</span>
+                      </button>
+                      <div className="store-card-price" aria-label={`${OUTFIT_PRICE} 金幣`}>
+                        <CoinIcon />
+                        <strong>{OUTFIT_PRICE}</strong>
+                      </div>
                     </div>
                   </article>
                 );
@@ -221,25 +228,46 @@ function Store() {
               <CloseIcon />
             </button>
 
-            <div className="store-detail-outfit">
-              <AvatarRenderer
-                config={detailOutfit.config}
-                itemSettings={detailOutfit.settings}
-                templateSettings={detailOutfit.templates}
-              />
-            </div>
-
-            <div className="store-detail-pieces">
-              {OUTFIT_CATEGORIES.map((category) => (
-                <div className="store-piece-card" key={category.key}>
-                  <span className="store-piece-thumbnail">
-                    <OutfitPieceThumbnail
-                      outfit={detailOutfit}
-                      category={category.key}
-                    />
-                  </span>
+            <div className="store-detail-main">
+              <div className="store-detail-visual">
+                <div className="store-detail-character">
+                  <div className="store-detail-platform" aria-hidden="true" />
+                  <AvatarRenderer
+                    config={detailOutfit.config}
+                    itemSettings={detailOutfit.settings}
+                    templateSettings={detailOutfit.templates}
+                  />
                 </div>
-              ))}
+              </div>
+
+              <div className="store-detail-copy">
+                <h3>包含以下內容：</h3>
+
+                <div className="store-detail-pieces">
+                  {OUTFIT_CATEGORIES.map((category) => (
+                    <div className="store-piece-card" key={category.key}>
+                      <span className="store-piece-thumbnail">
+                        <OutfitPieceThumbnail
+                          outfit={detailOutfit}
+                          category={category.key}
+                        />
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                <button
+                  type="button"
+                  className="store-detail-try-button"
+                  onClick={() => {
+                    setPreviewOutfitId(detailOutfit.id);
+                    setDetailOutfitId("");
+                  }}
+                >
+                  <CoinIcon />
+                  <span>{OUTFIT_PRICE}</span>
+                </button>
+              </div>
             </div>
           </section>
         </div>

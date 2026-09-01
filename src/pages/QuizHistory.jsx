@@ -52,6 +52,7 @@ function QuizHistory() {
 
   const [loadingList, setLoadingList] = useState(false);
   const [loadingDetail, setLoadingDetail] = useState(false);
+  const [historySearch, setHistorySearch] = useState("");
 
   useEffect(() => {
     const savedUser = localStorage.getItem("currentUser");
@@ -156,6 +157,15 @@ function QuizHistory() {
     return tab === "player" ? playerSessions : hostSessions;
   }, [tab, playerSessions, hostSessions]);
 
+  const visibleSessions = useMemo(() => {
+    const keyword = historySearch.trim().toLocaleLowerCase("zh-TW");
+    if (!keyword) return activeSessions;
+    return activeSessions.filter((session) =>
+      [session.quiz_title, session.room_code]
+        .some((value) => String(value || "").toLocaleLowerCase("zh-TW").includes(keyword))
+    );
+  }, [activeSessions, historySearch]);
+
   if (!currentUser) {
     return (
       <div className="quiz-history-page">
@@ -207,7 +217,21 @@ function QuizHistory() {
 
         <div className="history-layout">
           <aside className="history-sidebar">
-            <h2>{tab === "player" ? "參加場次" : "主持場次"}</h2>
+            <div className="history-sidebar-heading">
+              <h2>{tab === "player" ? "參加場次" : "主持場次"}</h2>
+              <span>{activeSessions.length}</span>
+            </div>
+
+            <label className="history-list-search">
+              <span aria-hidden="true">⌕</span>
+              <input
+                type="search"
+                value={historySearch}
+                onChange={(event) => setHistorySearch(event.target.value)}
+                placeholder="搜尋名稱或房號"
+                aria-label="搜尋歷史場次"
+              />
+            </label>
 
             {loadingList ? (
               <p className="history-empty">載入中...</p>
@@ -217,9 +241,11 @@ function QuizHistory() {
                   ? "目前沒有參加紀錄。"
                   : "目前沒有主持紀錄。"}
               </p>
+            ) : visibleSessions.length === 0 ? (
+              <p className="history-empty">找不到符合的場次。</p>
             ) : (
               <div className="history-session-list">
-                {activeSessions.map((session) => (
+                {visibleSessions.map((session) => (
                   <button
                     key={session.session_id}
                     className={
@@ -233,13 +259,17 @@ function QuizHistory() {
                         : openHostDetail(session)
                     }
                   >
-                    <strong>{session.quiz_title || "未命名測驗"}</strong>
-                    <span>房號：{session.room_code}</span>
-                    <span>場次 ID：{session.session_id}</span>
-                    <span>
-                      {tab === "player"
-                        ? `分數：${session.score ?? 0}`
-                        : `玩家人數：${session.player_count ?? 0}`}
+                    <span className="history-session-topline">
+                      <strong>{session.quiz_title || "未命名測驗"}</strong>
+                      <small>›</small>
+                    </span>
+                    <span className="history-session-meta">
+                      <span>房號 {session.room_code}</span>
+                      <span>
+                        {tab === "player"
+                          ? `${session.score ?? 0} 分`
+                          : `${session.player_count ?? 0} 位玩家`}
+                      </span>
                     </span>
                   </button>
                 ))}
@@ -250,8 +280,9 @@ function QuizHistory() {
           <main className="history-detail">
             {!selectedSession ? (
               <div className="history-detail-empty">
-                <h2>請選擇左側場次</h2>
-                <p>選擇後即可查看排行榜、分數與答題紀錄。</p>
+                <span className="history-detail-empty-icon" aria-hidden="true">↗</span>
+                <h2>選擇一筆場次紀錄</h2>
+                <p>查看成績摘要、排行榜與每一題的作答結果。</p>
               </div>
             ) : loadingDetail ? (
               <div className="history-detail-empty">
