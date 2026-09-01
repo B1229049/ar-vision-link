@@ -149,7 +149,7 @@
 .history-session-card.active {
   border-color: rgba(167, 139, 250, 0.7);
 
-  background: #8b5cf6;
+  background: #30283e;
 }
 
 .history-session-card strong {
@@ -615,7 +615,7 @@
 
 .history-session-card.active {
   border-color: rgba(167, 139, 250, 0.52);
-  background: #8b5cf6;
+  background: #30283e;
 }
 
 .history-session-card.active::before {

@@ -74,7 +74,7 @@
 
 .quiz-item.active {
   border-color: #a78bfa;
-  background: #8b5cf6;
+  background: #30283e;
 }
 
 .quiz-item-title {
@@ -637,7 +637,7 @@
 
 .quiz-item.active {
   border-color: rgba(167, 139, 250, 0.52);
-  background: #8b5cf6;
+  background: #30283e;
 }
 
 .quiz-item.active::before {
