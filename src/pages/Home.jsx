@@ -95,7 +95,12 @@ function LoggedOutLanding() {
       <section className="landing-band expression-band">
         <div className="landing-split">
           <div className="landing-copy"><h2 className="landing-heading">留下自己的風格。</h2><p className="landing-intro">可為自己的虛擬替身搭配各種服裝，各式各樣的造型等你來收集。</p></div>
-          <div className="landing-media-placeholder light" aria-label="Avatar 圖片預留區" />
+          <figure className="expression-showcase">
+            <img
+              src={`${import.meta.env.BASE_URL}generated/avatar-style-showcase.png`}
+              alt="九套虛擬替身時裝的角色群像"
+            />
+          </figure>
         </div>
       </section>
 

@@ -335,7 +335,21 @@
 .identity-data span { margin-top: 15px; padding-bottom: 10px; border-bottom: 1px solid rgba(12, 13, 12, 0.2); font-size: 9px; }
 
 .expression-band { background: #d7d7d5; }
-.expression-band .landing-media-placeholder { min-height: 560px; }
+
+.expression-showcase {
+  aspect-ratio: 865 / 539;
+  margin: 0;
+  overflow: hidden;
+  background: white;
+  border: 1px solid rgba(12, 13, 12, 0.2);
+}
+
+.expression-showcase img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
 
 .progress-band { background: var(--landing-cyan); }
 
