@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getQuizColor, getQuizInitial } from "../utils/quizVisuals";
+import "../styles/QuizVisuals.css";
 import "../styles/ManageQuizzes.css";
 
 function ManageQuizzes() {
@@ -448,7 +449,7 @@ function ManageQuizzes() {
                     onClick={() => selectQuiz(quiz)}
                   >
                     <span
-                      className="quiz-item-initial"
+                      className="quiz-item-initial quiz-visual-initial"
                       style={{ backgroundColor: getQuizColor(quiz.title, quiz.quiz_id) }}
                       aria-hidden="true"
                     >

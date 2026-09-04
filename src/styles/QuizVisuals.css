@@ -1,0 +1,10 @@
+/* Shared by the overview and quiz library, independent of button typography. */
+.quiz-visual-initial {
+  color: #17121e;
+  font-family: "Times New Roman", serif;
+  font-size: 21px;
+  font-weight: 950;
+  font-style: normal;
+  line-height: normal;
+  letter-spacing: normal;
+}

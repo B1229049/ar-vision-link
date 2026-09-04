@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getQuizColor, getQuizInitial } from "../utils/quizVisuals";
 import "../styles/QuizHome.css";
+import "../styles/QuizVisuals.css";
 
 const BACKEND_URL =
   import.meta.env.VITE_API_URL || "https://ar-vision-link.onrender.com";
@@ -207,7 +208,7 @@ function QuizHome() {
                 {recentQuizzes.map((quiz) => (
                   <article className="quiz-recent-item" key={quiz.quiz_id}>
                     <div
-                      className="quiz-recent-initial"
+                      className="quiz-recent-initial quiz-visual-initial"
                       style={{ backgroundColor: getQuizColor(quiz.title, quiz.quiz_id) }}
                       aria-hidden="true"
                     >

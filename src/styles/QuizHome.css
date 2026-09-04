@@ -122,7 +122,7 @@
   transition: border-color 0.18s ease, transform 0.18s ease;
 }
 .quiz-recent-item:hover { border-color: rgba(167, 139, 250, 0.28); transform: translateY(-1px); }
-.quiz-recent-initial { width: 54px; height: 54px; border-radius: 13px; color: #17121e; display: grid; place-items: center; font-size: 21px; font-weight: 950; }
+.quiz-recent-initial { width: 54px; height: 54px; border-radius: 13px; display: grid; place-items: center; }
 .quiz-recent-info { min-width: 0; }
 .quiz-recent-info strong,
 .quiz-recent-info span { display: block; }

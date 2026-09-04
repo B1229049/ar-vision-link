@@ -5,14 +5,11 @@ body,
   min-height: 100%;
   margin: 0;
   overflow-x: hidden;
-  background: #050816;
+  background: var(--app-page-background);
 }
 
 :root {
-  --app-page-background:
-    radial-gradient(circle at 18% 12%, rgba(168, 85, 247, 0.18), transparent 32rem),
-    radial-gradient(circle at 82% 18%, rgba(59, 130, 246, 0.12), transparent 28rem),
-    linear-gradient(180deg, #150a2e 0%, #111827 46%, #050816 100%);
+  --app-page-background: #2b1b4b;
   --app-glass-surface: rgba(3, 7, 18, 0.72);
   --app-glass-subtle: rgba(71, 85, 105, 0.46);
   --app-glass-border: rgba(255, 255, 255, 0.1);
@@ -92,6 +89,21 @@ body,
   overflow-x: hidden;
 }
 
+/* Share the same flat page canvas on desktop and mobile, including room states. */
+.join-quiz-page,
+.waiting-room-page,
+.host-lobby-page,
+.host-lobby-page.active-room,
+.host-console-page,
+.quiz-game-page {
+  background: var(--app-page-background);
+}
+
+.wayground-lobby::before,
+.wayground-lobby::after {
+  content: none;
+}
+
 .register-page .card,
 .face-login-card,
 .edit-profile-card,
@@ -164,16 +176,6 @@ body,
 }
 
 @media (max-width: 640px) {
-  :root {
-    --app-page-background: #2b1b4b;
-  }
-
-  html,
-  body,
-  #root {
-    background: var(--app-page-background);
-  }
-
   .register-page,
   .face-login-page,
   .edit-profile-page,
