@@ -469,7 +469,6 @@ function ManageQuizzes() {
           <main className="quiz-editor">
             {!selectedQuiz ? (
               <div className="quiz-editor-empty">
-                <span className="quiz-editor-empty-icon" aria-hidden="true">✓</span>
                 <h2>選擇一份測驗開始編輯</h2>
                 <p>你可以修改標題與題目，也能使用 AI 繼續補充內容。</p>
               </div>

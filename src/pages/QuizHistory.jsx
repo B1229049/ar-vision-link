@@ -280,7 +280,6 @@ function QuizHistory() {
           <main className="history-detail">
             {!selectedSession ? (
               <div className="history-detail-empty">
-                <span className="history-detail-empty-icon" aria-hidden="true">↗</span>
                 <h2>選擇一筆場次紀錄</h2>
                 <p>查看成績摘要、排行榜與每一題的作答結果。</p>
               </div>

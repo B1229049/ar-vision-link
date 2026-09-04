@@ -261,4 +261,68 @@
   .quiz-dashboard-content .lobby-dissolve-btn {
     left: auto;
   }
+
+  /* Give the library and history breathing room without nested outer cards. */
+  .quiz-dashboard-content > .manage-quizzes-page,
+  .quiz-dashboard-content > .quiz-history-page {
+    padding: 26px 16px 32px;
+  }
+
+  .quiz-dashboard-content .manage-quizzes-container,
+  .quiz-dashboard-content .history-container {
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+  }
+
+  .quiz-dashboard-content .manage-quizzes-header,
+  .quiz-dashboard-content .history-header {
+    padding: 0 4px;
+    margin-bottom: 24px;
+  }
+
+  .quiz-dashboard-content .manage-quizzes-header p,
+  .quiz-dashboard-content .history-header p {
+    margin-top: 12px;
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+  .quiz-dashboard-content .manage-layout,
+  .quiz-dashboard-content .history-layout {
+    gap: 20px;
+  }
+
+  .quiz-dashboard-content .quiz-sidebar,
+  .quiz-dashboard-content .quiz-editor,
+  .quiz-dashboard-content .history-sidebar,
+  .quiz-dashboard-content .history-detail {
+    padding: 18px;
+    box-sizing: border-box;
+  }
+
+  .quiz-dashboard-content .quiz-editor-empty,
+  .quiz-dashboard-content .history-detail-empty {
+    height: auto;
+    min-height: 150px;
+    padding: 20px 0;
+    box-sizing: border-box;
+  }
+
+  .quiz-dashboard-content .quiz-editor-empty h2,
+  .quiz-dashboard-content .history-detail-empty h2 {
+    margin: 0 0 12px;
+    font-size: 18px;
+    line-height: 1.5;
+  }
+
+  .quiz-dashboard-content .quiz-editor-empty p,
+  .quiz-dashboard-content .history-detail-empty p {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.7;
+  }
 }
