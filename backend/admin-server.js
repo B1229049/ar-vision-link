@@ -1,4 +1,6 @@
 const ADMIN_ALLOWED_TABLES = {
+  coin_rewards: "id",
+  coin_reward_claims: "reward_id",
   quizzes: "quiz_id",
   questions: "question_id",
   game_sessions: "session_id",
@@ -9,10 +11,75 @@ const ADMIN_ALLOWED_TABLES = {
   vision_detection_logs: "id",
   player_answers: "answer_id",
   avatar_item_settings: "id",
-  ar_selfies: "id",
 };
 
+const REWARD_COIN_OPTIONS = new Set([50, 100, 200, 300, 1000]);
+
+async function isAdminUser(supabase, userId) {
+  const { data, error } = await supabase
+    .from("users")
+    .select("id")
+    .eq("id", userId)
+    .eq("admin", true)
+    .eq("is_active", true)
+    .maybeSingle();
+
+  return !error && Boolean(data);
+}
+
 export function registerAdminRoutes(app, supabase) {
+
+  app.post("/api/admin/rewards", async (req, res) => {
+    try {
+      const coins = Number(req.body?.coins);
+      const createdBy = Number(req.body?.created_by);
+      const expiresAt = new Date(req.body?.expires_at);
+
+      if (!(await isAdminUser(supabase, createdBy))) {
+        return res.status(403).json({ success: false, error: "只有管理員能派發獎勵" });
+      }
+      if (!REWARD_COIN_OPTIONS.has(coins)) {
+        return res.status(400).json({ success: false, error: "不支援的金幣數量" });
+      }
+      if (Number.isNaN(expiresAt.getTime()) || expiresAt <= new Date()) {
+        return res.status(400).json({ success: false, error: "截止時間必須晚於現在" });
+      }
+      if (expiresAt.getTime() > Date.now() + 6 * 24 * 60 * 60 * 1000) {
+        return res.status(400).json({ success: false, error: "截止日期最多可選擇五天後" });
+      }
+
+      const { data, error } = await supabase
+        .from("coin_rewards")
+        .insert({ coins, expires_at: expiresAt.toISOString(), created_by: createdBy })
+        .select("id, token, coins, expires_at, created_at")
+        .single();
+
+      if (error) throw error;
+      res.status(201).json({ success: true, reward: data });
+    } catch (err) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
+  app.get("/api/admin/rewards", async (req, res) => {
+    try {
+      const adminId = Number(req.query.admin_id);
+      if (!(await isAdminUser(supabase, adminId))) {
+        return res.status(403).json({ success: false, error: "只有管理員能查看獎勵" });
+      }
+
+      const { data, error } = await supabase
+        .from("coin_rewards")
+        .select("id, token, coins, expires_at, created_at, coin_reward_claims(count)")
+        .order("created_at", { ascending: false })
+        .limit(30);
+
+      if (error) throw error;
+      res.json({ success: true, rewards: data || [] });
+    } catch (err) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
 
   // =========================
   // GET /api/admin/users
@@ -30,6 +97,8 @@ export function registerAdminRoutes(app, supabase) {
           is_active,
           role,
           admin,
+          coins,
+          owned_outfits,
           created_at,
           updated_at
         `)

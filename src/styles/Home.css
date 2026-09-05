@@ -431,12 +431,42 @@
 .home-shop-button { width: 100%; min-height: 88px; padding: 14px 18px; display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 14px; border-radius: 16px; color: white; text-align: left; cursor: pointer; font: inherit; background: var(--app-glass-surface); border: 1px solid var(--app-glass-border); }
 .shop-icon-wrap { width: 56px; height: 56px; display: grid; place-items: center; border-radius: 15px; color: #f3ecff; background: rgba(185, 94, 255, 0.14); border: 1px solid rgba(211, 145, 255, 0.2); }
 .shop-icon-wrap svg { width: 36px; height: 36px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.home-qr-button .shop-icon-wrap { color: #f3e8ff; background: rgba(147, 51, 234, 0.3); border-color: rgba(216, 180, 254, 0.34); }
+.home-qr-button .shop-icon-wrap svg { stroke-width: 0; fill: currentColor; }
 .shop-button-copy strong,
 .shop-button-copy small { display: block; }
 .shop-button-copy strong { font-size: 21px; }
 .shop-button-copy small { margin-top: 4px; color: rgba(255, 255, 255, 0.6); font-size: 13px; font-weight: 650; }
 .home-news-banner { min-height: 70px; padding: 14px 18px; display: flex; align-items: center; border-radius: 16px; background: var(--app-glass-surface); border: 1px solid var(--app-glass-border); }
 .news-badge { width: 92px; padding: 9px 13px; border-radius: 12px; color: white; background: rgba(185, 94, 255, 0.16); border: 1px solid rgba(211, 145, 255, 0.24); text-align: center; }
+
+.qr-scanner-backdrop { position: fixed; inset: 0; z-index: 2100; display: grid; place-items: center; padding: 20px; background: rgba(2, 6, 23, 0.78); backdrop-filter: blur(10px); }
+.qr-scanner-dialog { width: min(460px, 100%); padding: 22px; border-radius: 22px; color: white; background: #0f172a; border: 1px solid rgba(255, 255, 255, 0.14); box-shadow: 0 28px 80px rgba(0, 0, 0, 0.55); }
+.qr-scanner-dialog header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.qr-scanner-dialog header span { color: #5eead4; font-size: 11px; font-weight: 900; letter-spacing: 0.16em; }
+.qr-scanner-dialog header h2 { margin: 4px 0 18px; text-align: left; font-size: 24px; }
+.qr-scanner-dialog header button { width: 38px; height: 38px; border: 0; border-radius: 50%; color: white; background: rgba(255, 255, 255, 0.08); font-size: 25px; cursor: pointer; }
+.qr-camera-frame { position: relative; overflow: hidden; width: 100%; aspect-ratio: 1; border-radius: 18px; background: #020617; }
+.qr-camera-frame video { width: 100%; height: 100%; object-fit: cover; }
+.qr-target { position: absolute; inset: 16%; border: 3px solid #5eead4; border-radius: 20px; box-shadow: 0 0 0 999px rgba(2, 6, 23, 0.28); }
+.qr-scanner-status { margin: 15px 0; color: rgba(255, 255, 255, 0.72); text-align: center; font-size: 14px; }
+.qr-result { display: grid; gap: 7px; margin: 12px 0; padding: 14px; border-radius: 13px; background: rgba(20, 184, 166, 0.1); border: 1px solid rgba(94, 234, 212, 0.22); }
+.qr-result strong { color: #99f6e4; font-size: 12px; }
+.qr-result code { overflow-wrap: anywhere; white-space: normal; color: white; }
+.qr-scanner-actions { display: flex; gap: 10px; }
+.qr-scanner-actions button { flex: 1; min-height: 44px; border: 0; border-radius: 12px; color: #042f2e; background: #5eead4; font-weight: 850; cursor: pointer; }
+.qr-scanner-actions button.secondary { color: white; background: rgba(255, 255, 255, 0.09); }
+
+.reward-claim-backdrop { position: fixed; inset: 0; z-index: 2200; display: grid; place-items: center; padding: 20px; background: rgba(2, 6, 23, .82); }
+.reward-claim-dialog { position: relative; width: min(410px, 100%); padding: 38px 28px 28px; border-radius: 24px; color: #172033; background: white; text-align: center; box-shadow: 0 28px 80px rgba(0, 0, 0, .35); box-sizing: border-box; }
+.reward-claim-close { position: absolute; top: 14px; right: 14px; width: 36px; height: 36px; border: 0; border-radius: 50%; color: #667085; background: #f0f1f4; font-size: 22px; cursor: pointer; }
+.reward-coin-mark { width: 74px; height: 74px; margin: 0 auto 18px; display: grid; place-items: center; border-radius: 50%; color: #7c3aed; background: #f1e9ff; border: 5px solid #dac5ff; font-size: 38px; font-weight: 900; }
+.reward-claim-dialog > small { color: #7c3aed; font-size: 10px; font-weight: 900; letter-spacing: .14em; }
+.reward-claim-dialog h2 { margin: 7px 0 12px; font-size: 26px; }
+.reward-coin-amount { display: block; color: #7c3aed; font-size: 42px; letter-spacing: -.04em; }
+.reward-claim-dialog p { margin: 12px 0 22px; color: #667085; line-height: 1.6; }
+.reward-confirm-button { width: 100%; min-height: 48px; border: 0; border-radius: 13px; color: white; background: #7c3aed; font: inherit; font-weight: 850; cursor: pointer; }
+.reward-confirm-button:disabled { opacity: .55; cursor: wait; }
 
 @media (max-width: 960px) {
   .landing-hero { grid-template-columns: 1fr; padding-top: 125px; }

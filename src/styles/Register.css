@@ -121,6 +121,16 @@ textarea {
     background: rgba(75, 85, 99, 0.95);
 }
 
+.btn-home {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #fff;
+}
+
+.btn-home:hover {
+    background: rgba(255, 255, 255, 0.14);
+}
+
 /* 拍照區 */
 .preview-box {
     position: relative;

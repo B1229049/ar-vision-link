@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { BrowserQRCodeReader } from "@zxing/browser";
 import "../styles/Home.css";
 
 function ShopIcon() {
@@ -9,6 +10,178 @@ function ShopIcon() {
       <path d="M23 27v-7a9 9 0 0 1 18 0v7" />
       <path d="m32 33 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2-4.5-4.4 6.2-.9L32 33Z" />
     </svg>
+  );
+}
+
+function QrIcon() {
+  return (
+    <svg viewBox="0 0 64 64" aria-hidden="true">
+      <path d="M8 8h18v18H8V8Zm30 0h18v18H38V8ZM8 38h18v18H8V38Z" />
+      <path d="M14 14h6v6h-6v-6Zm30 0h6v6h-6v-6ZM14 44h6v6h-6v-6Zm24-6h8v8h-8v-8Zm10 0h8v8h-8v-8Zm-10 10h8v8h-8v-8Zm14 4h4v4h-4v-4Z" />
+    </svg>
+  );
+}
+
+function extractRewardToken(value) {
+  try {
+    return new URL(value).searchParams.get("reward") || "";
+  } catch {
+    return value.match(/^[0-9a-f]{8}-[0-9a-f-]{27}$/i)?.[0] || "";
+  }
+}
+
+function QRScannerModal({ onClose, onReward }) {
+  const videoRef = useRef(null);
+  const controlsRef = useRef(null);
+  const [result, setResult] = useState("");
+  const [status, setStatus] = useState("正在啟動相機…");
+  const [restartKey, setRestartKey] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    const videoElement = videoRef.current;
+    const reader = new BrowserQRCodeReader(undefined, {
+      delayBetweenScanAttempts: 250,
+    });
+
+    async function startScanner() {
+      try {
+        const controls = await reader.decodeFromConstraints(
+          {
+            audio: false,
+            video: { facingMode: { ideal: "environment" } },
+          },
+          videoElement,
+          (scanResult) => {
+            if (!scanResult || cancelled) return;
+            const text = scanResult.getText();
+            const rewardToken = extractRewardToken(text);
+            if (rewardToken) {
+              controlsRef.current?.stop();
+              onReward(rewardToken);
+              return;
+            }
+            setResult(text);
+            setStatus("掃描成功");
+            controlsRef.current?.stop();
+          }
+        );
+
+        if (cancelled) controls.stop();
+        else controlsRef.current = controls;
+      } catch (err) {
+        if (cancelled) return;
+        console.error("QR scanner failed:", err);
+        setStatus(
+          err?.name === "NotAllowedError"
+            ? "需要相機權限才能掃描 QR Code"
+            : "無法啟動相機，請確認裝置與瀏覽器權限"
+        );
+      }
+    }
+
+    startScanner();
+
+    return () => {
+      cancelled = true;
+      controlsRef.current?.stop();
+      controlsRef.current = null;
+      const stream = videoElement?.srcObject;
+      stream?.getTracks?.().forEach((track) => track.stop());
+    };
+  }, [onReward, restartKey]);
+
+  return (
+    <div className="qr-scanner-backdrop" role="presentation" onMouseDown={(event) => {
+      if (event.target === event.currentTarget) onClose();
+    }}>
+      <section className="qr-scanner-dialog" role="dialog" aria-modal="true" aria-labelledby="qr-scanner-title">
+        <header>
+          <div><span>QR SCANNER</span><h2 id="qr-scanner-title">掃描 QR Code</h2></div>
+          <button type="button" onClick={onClose} aria-label="關閉掃描器">×</button>
+        </header>
+        <div className="qr-camera-frame">
+          <video ref={videoRef} muted playsInline />
+          {!result && <span className="qr-target" aria-hidden="true" />}
+        </div>
+        <p className="qr-scanner-status">{status}</p>
+        {result && <div className="qr-result"><strong>掃描內容</strong><code>{result}</code></div>}
+        <div className="qr-scanner-actions">
+          {result && <button type="button" onClick={() => {
+            setResult("");
+            setStatus("請將 QR Code 放入框內");
+            setRestartKey((value) => value + 1);
+          }}>再次掃描</button>}
+          <button type="button" className="secondary" onClick={onClose}>關閉</button>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function RewardClaimModal({ token, user, onClose, onClaimed }) {
+  const backendUrl =
+    import.meta.env.VITE_API_URL || "https://ar-vision-link.onrender.com";
+  const [reward, setReward] = useState(null);
+  const [message, setMessage] = useState("正在確認獎勵…");
+  const [claiming, setClaiming] = useState(false);
+  const [claimed, setClaimed] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadReward() {
+      try {
+        const response = await fetch(`${backendUrl}/api/rewards/${token}`);
+        const result = await response.json();
+        if (cancelled) return;
+        if (!response.ok || !result.success) throw new Error(result.error || "無法讀取獎勵");
+        setReward(result);
+        setMessage(result.expired ? "這份獎勵已經過期" : "確認後金幣會加入你的帳號");
+      } catch (err) {
+        setMessage(err.message);
+      }
+    }
+    loadReward();
+    return () => { cancelled = true; };
+  }, [backendUrl, token]);
+
+  async function claimReward() {
+    setClaiming(true);
+    try {
+      const response = await fetch(`${backendUrl}/api/rewards/${token}/claim`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user_id: user.id }),
+      });
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.error || "領取失敗");
+      setClaimed(true);
+      setMessage(`已獲得 ${result.coins_awarded} 金幣`);
+      onClaimed(result.coins);
+    } catch (err) {
+      setMessage(err.message);
+    } finally {
+      setClaiming(false);
+    }
+  }
+
+  return (
+    <div className="reward-claim-backdrop">
+      <section className="reward-claim-dialog" role="dialog" aria-modal="true" aria-labelledby="reward-claim-title">
+        <button className="reward-claim-close" onClick={onClose} aria-label="關閉">×</button>
+        <div className="reward-coin-mark">◉</div>
+        <small>AR VISION LINK REWARD</small>
+        <h2 id="reward-claim-title">{claimed ? "領取成功" : "發現金幣獎勵"}</h2>
+        {reward && <strong className="reward-coin-amount">+{reward.coins}</strong>}
+        <p>{message}</p>
+        {reward && !reward.expired && !claimed && (
+          <button className="reward-confirm-button" onClick={claimReward} disabled={claiming}>
+            {claiming ? "領取中…" : "確定領取"}
+          </button>
+        )}
+        {claimed && <button className="reward-confirm-button" onClick={onClose}>完成</button>}
+      </section>
+    </div>
   );
 }
 
@@ -134,7 +307,7 @@ function LoggedOutLanding() {
 function Home() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [currentUser] = useState(() => {
+  const [currentUser, setCurrentUser] = useState(() => {
     const savedUser = localStorage.getItem("currentUser");
     if (!savedUser) return null;
     try {
@@ -145,12 +318,35 @@ function Home() {
     }
   });
   const [quickRoomCode, setQuickRoomCode] = useState("");
+  const [showQrScanner, setShowQrScanner] = useState(false);
+  const [rewardToken, setRewardToken] = useState(() =>
+    currentUser ? new URLSearchParams(location.search).get("reward") || "" : ""
+  );
   const [showRoomDissolvedNotice, setShowRoomDissolvedNotice] = useState(Boolean(location.state?.roomDissolved));
 
   useEffect(() => {
     if (!location.state?.roomDissolved) return;
     navigate(location.pathname, { replace: true, state: null });
   }, [location.pathname, location.state, navigate]);
+
+  useEffect(() => {
+    const token = new URLSearchParams(location.search).get("reward");
+    if (!token || !currentUser) return;
+    navigate(location.pathname, { replace: true, state: location.state });
+  }, [currentUser, location.pathname, location.search, location.state, navigate]);
+
+  function updateCoins(coins) {
+    setCurrentUser((user) => {
+      const updated = { ...user, coins };
+      localStorage.setItem("currentUser", JSON.stringify(updated));
+      return updated;
+    });
+  }
+
+  const handleRewardDetected = useCallback((token) => {
+    setShowQrScanner(false);
+    setRewardToken(token);
+  }, []);
 
   function handleQuickJoin(event) {
     event.preventDefault();
@@ -167,9 +363,10 @@ function Home() {
       <section className="home-hero"><div className="hero-left"><h1>AR Vision Link</h1><div className="home-player-hub">
         <form className="home-quick-join" onSubmit={handleQuickJoin}><label htmlFor="quick-room-code">快速加入房間</label><div className="quick-join-row"><input id="quick-room-code" value={quickRoomCode} onChange={(event) => setQuickRoomCode(event.target.value.toUpperCase())} placeholder="輸入房號" maxLength={12} /><button type="submit" disabled={!quickRoomCode.trim()}>加入</button></div></form>
         <button type="button" className="home-shop-button" onClick={() => navigate("/store")}><span className="shop-icon-wrap"><ShopIcon /></span><span className="shop-button-copy"><strong>商城</strong><small>探索「虛擬替身」時裝與限定造型</small></span></button>
-        <section className="home-news-banner" aria-label="最新消息"><div className="news-badge"><strong>最新消息</strong></div></section>
-        <section className="home-news-banner" aria-label="信件"><div className="news-badge"><strong>信件</strong></div></section>
+        <button type="button" className="home-shop-button home-qr-button" onClick={() => setShowQrScanner(true)}><span className="shop-icon-wrap"><QrIcon /></span><span className="shop-button-copy"><strong>掃描 QR Code</strong><small>開啟相機，掃描活動或獎勵代碼</small></span></button>
       </div></div></section>
+      {showQrScanner && <QRScannerModal onClose={() => setShowQrScanner(false)} onReward={handleRewardDetected} />}
+      {rewardToken && <RewardClaimModal token={rewardToken} user={currentUser} onClose={() => setRewardToken("")} onClaimed={updateCoins} />}
     </div>
   );
 }

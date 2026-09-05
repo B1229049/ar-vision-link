@@ -53,11 +53,6 @@ const upload = multer({
   },
 });
 
-const AR_SELFIE_BUCKET = "ar-selfies";
-const MAX_AR_SELFIES_PER_USER = 2;
-const MAX_AR_SELFIE_BYTES = 2 * 1024 * 1024;
-const MAX_AR_SELFIE_THUMBNAIL_BYTES = 160 * 1024;
-
 const USER_PUBLIC_SELECT = `
   id,
   name,
@@ -81,6 +76,8 @@ const USER_PRIVATE_SELECT = `
   created_at,
   updated_at,
   face_embedding,
+  coins,
+  owned_outfits,
   admin
 `;
 
@@ -97,6 +94,13 @@ const DEFAULT_AVATAR_CONFIG = {
   top: "top-1",
   bottoms: "bottoms-1",
 };
+
+const STORE_OUTFIT_IDS = new Set(
+  Array.from(
+    { length: 9 },
+    (_, index) => `outfit-${String(index + 1).padStart(2, "0")}`
+  )
+);
 
 const QUIZ_SELECT = `
   quiz_id,
@@ -366,9 +370,10 @@ function normalizeAvatarConfig(config) {
 
   for (const category of Object.keys(AVATAR_ITEMS)) {
     const itemId = config[category];
-    const isStoreItem =
+    const storeMatch =
       typeof itemId === "string" &&
-      new RegExp(`^store-[a-z0-9-]+-${category}$`).test(itemId);
+      itemId.match(new RegExp(`^store-(outfit-\\d{2})-${category}$`));
+    const isStoreItem = storeMatch && STORE_OUTFIT_IDS.has(storeMatch[1]);
 
     if (AVATAR_ITEMS[category].includes(itemId) || isStoreItem) {
       normalized[category] = itemId;
@@ -376,6 +381,15 @@ function normalizeAvatarConfig(config) {
   }
 
   return normalized;
+}
+
+function getStoreOutfitId(itemId, category) {
+  if (typeof itemId !== "string") return null;
+
+  const match = itemId.match(
+    new RegExp(`^store-(outfit-\\d{2})-${category}$`)
+  );
+  return match && STORE_OUTFIT_IDS.has(match[1]) ? match[1] : null;
 }
 
 function requireAvatarAdmin(req, res) {
@@ -784,6 +798,28 @@ app.put("/api/users/:id/avatar", async (req, res) => {
     const { id } = req.params;
     const avatarConfig = normalizeAvatarConfig(req.body.avatar_config);
 
+    const { data: owner, error: ownerError } = await supabase
+      .from("users")
+      .select("owned_outfits")
+      .eq("id", id)
+      .single();
+
+    if (ownerError) {
+      return res.status(500).json({ success: false, error: ownerError.message });
+    }
+
+    const ownedOutfits = new Set(owner?.owned_outfits || []);
+    const lockedOutfits = Object.keys(AVATAR_ITEMS)
+      .map((category) => getStoreOutfitId(avatarConfig[category], category))
+      .filter((outfitId) => outfitId && !ownedOutfits.has(outfitId));
+
+    if (lockedOutfits.length > 0) {
+      return res.status(403).json({
+        success: false,
+        error: `尚未擁有商城造型：${[...new Set(lockedOutfits)].join(", ")}`,
+      });
+    }
+
     const updateData = {
       avatar_config: avatarConfig,
       updated_at: new Date().toISOString(),
@@ -816,159 +852,83 @@ app.put("/api/users/:id/avatar", async (req, res) => {
   }
 });
 
-app.get("/api/users/:id/ar-selfies", async (req, res) => {
+app.get("/api/users/:id/economy", async (req, res) => {
   try {
-    const userId = Number(req.params.id);
+    const { data, error } = await supabase
+      .from("users")
+      .select("coins, owned_outfits")
+      .eq("id", req.params.id)
+      .single();
+
+    if (error) {
+      return res.status(500).json({ success: false, error: error.message });
+    }
+
+    res.json({
+      success: true,
+      coins: Math.max(Number(data?.coins) || 0, 0),
+      owned_outfits: Array.isArray(data?.owned_outfits) ? data.owned_outfits : [],
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.get("/api/rewards/:token", async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from("coin_rewards")
+      .select("coins, expires_at")
+      .eq("token", req.params.token)
+      .maybeSingle();
+
+    if (error) throw error;
+    if (!data) {
+      return res.status(404).json({ success: false, error: "找不到這份獎勵" });
+    }
+
+    const expired = new Date(data.expires_at) < new Date();
+    res.json({ success: true, coins: data.coins, expires_at: data.expires_at, expired });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.post("/api/rewards/:token/claim", async (req, res) => {
+  try {
+    const userId = Number(req.body?.user_id);
     if (!Number.isInteger(userId)) {
-      return res.status(400).json({ success: false, error: "無效的使用者 ID" });
+      return res.status(400).json({ success: false, error: "使用者資料無效" });
     }
 
-    const { data: selfies, error } = await supabase
-      .from("ar_selfies")
-      .select("id, thumbnail_path, created_at")
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false })
-      .limit(MAX_AR_SELFIES_PER_USER);
-
+    const { data, error } = await supabase.rpc("claim_coin_reward", {
+      p_token: req.params.token,
+      p_user_id: userId,
+    });
     if (error) throw error;
 
-    const photos = await Promise.all(
-      selfies.map(async (selfie) => {
-        const { data, error: signedUrlError } = await supabase.storage
-          .from(AR_SELFIE_BUCKET)
-          .createSignedUrl(selfie.thumbnail_path, 60 * 10);
-        if (signedUrlError) throw signedUrlError;
-        return { id: selfie.id, thumbnail_url: data.signedUrl, created_at: selfie.created_at };
-      })
-    );
+    const result = data?.[0];
+    const messages = {
+      not_found: "找不到這份獎勵",
+      expired: "這份獎勵已經過期",
+      user_not_found: "找不到可領獎的使用者",
+      already_claimed: "這個帳號已經領取過此獎勵",
+    };
 
-    res.json({ success: true, photos });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
-
-app.get("/api/users/:userId/ar-selfies/:selfieId/image", async (req, res) => {
-  try {
-    const userId = Number(req.params.userId);
-    const selfieId = Number(req.params.selfieId);
-    if (!Number.isInteger(userId) || !Number.isInteger(selfieId)) {
-      return res.status(400).json({ success: false, error: "無效的照片或使用者 ID" });
+    if (result?.claim_status !== "claimed") {
+      return res.status(result?.claim_status === "already_claimed" ? 409 : 400).json({
+        success: false,
+        status: result?.claim_status,
+        error: messages[result?.claim_status] || "無法領取獎勵",
+        coins: result?.new_balance,
+      });
     }
 
-    const { data: selfie, error } = await supabase
-      .from("ar_selfies")
-      .select("storage_path")
-      .eq("id", selfieId)
-      .eq("user_id", userId)
-      .single();
-    if (error) throw error;
-
-    const { data, error: signedUrlError } = await supabase.storage
-      .from(AR_SELFIE_BUCKET)
-      .createSignedUrl(selfie.storage_path, 60 * 5);
-    if (signedUrlError) throw signedUrlError;
-
-    res.json({ success: true, url: data.signedUrl });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
-
-app.post("/api/users/:id/ar-selfies", async (req, res) => {
-  try {
-    const userId = Number(req.params.id);
-    const photo = req.body?.photo;
-    const thumbnail = req.body?.thumbnail;
-    if (!Number.isInteger(userId) || typeof photo !== "string" || typeof thumbnail !== "string") {
-      return res.status(400).json({ success: false, error: "照片資料或使用者 ID 無效" });
-    }
-
-    const match = photo.match(/^data:image\/jpeg;base64,(.+)$/);
-    if (!match) {
-      return res.status(400).json({ success: false, error: "只支援 JPEG 照片" });
-    }
-
-    const buffer = Buffer.from(match[1], "base64");
-    if (!buffer.length || buffer.length > MAX_AR_SELFIE_BYTES) {
-      return res.status(400).json({ success: false, error: "照片必須小於 2MB" });
-    }
-
-    const thumbnailMatch = thumbnail.match(/^data:image\/jpeg;base64,(.+)$/);
-    const thumbnailBuffer = thumbnailMatch && Buffer.from(thumbnailMatch[1], "base64");
-    if (!thumbnailBuffer?.length || thumbnailBuffer.length > MAX_AR_SELFIE_THUMBNAIL_BYTES) {
-      return res.status(400).json({ success: false, error: "縮圖必須是小於 160KB 的 JPEG" });
-    }
-
-    const { count, error: countError } = await supabase
-      .from("ar_selfies")
-      .select("id", { count: "exact", head: true })
-      .eq("user_id", userId);
-    if (countError) throw countError;
-    if (count >= MAX_AR_SELFIES_PER_USER) {
-      return res.status(409).json({ success: false, error: "每位使用者最多只能保留 2 張 AR 自拍" });
-    }
-
-    const fileId = crypto.randomUUID();
-    const storagePath = `${userId}/${fileId}.jpg`;
-    const thumbnailPath = `${userId}/thumbnails/${fileId}.jpg`;
-    const { error: uploadError } = await supabase.storage
-      .from(AR_SELFIE_BUCKET)
-      .upload(storagePath, buffer, { contentType: "image/jpeg", upsert: false });
-    if (uploadError) throw uploadError;
-
-    const { error: thumbnailUploadError } = await supabase.storage
-      .from(AR_SELFIE_BUCKET)
-      .upload(thumbnailPath, thumbnailBuffer, { contentType: "image/jpeg", upsert: false });
-    if (thumbnailUploadError) {
-      await supabase.storage.from(AR_SELFIE_BUCKET).remove([storagePath]);
-      throw thumbnailUploadError;
-    }
-
-    const { data: selfie, error: insertError } = await supabase
-      .from("ar_selfies")
-      .insert({ user_id: userId, storage_path: storagePath, thumbnail_path: thumbnailPath })
-      .select("id, created_at")
-      .single();
-    if (insertError) {
-      await supabase.storage.from(AR_SELFIE_BUCKET).remove([storagePath, thumbnailPath]);
-      throw insertError;
-    }
-
-    res.status(201).json({ success: true, selfie });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
-
-app.delete("/api/users/:userId/ar-selfies/:selfieId", async (req, res) => {
-  try {
-    const userId = Number(req.params.userId);
-    const selfieId = Number(req.params.selfieId);
-    if (!Number.isInteger(userId) || !Number.isInteger(selfieId)) {
-      return res.status(400).json({ success: false, error: "無效的照片或使用者 ID" });
-    }
-
-    const { data: selfie, error: findError } = await supabase
-      .from("ar_selfies")
-      .select("id, storage_path, thumbnail_path")
-      .eq("id", selfieId)
-      .eq("user_id", userId)
-      .single();
-    if (findError) throw findError;
-
-    const { error: storageError } = await supabase.storage
-      .from(AR_SELFIE_BUCKET)
-      .remove([selfie.storage_path, selfie.thumbnail_path].filter(Boolean));
-    if (storageError) throw storageError;
-
-    const { error: deleteError } = await supabase
-      .from("ar_selfies")
-      .delete()
-      .eq("id", selfie.id);
-    if (deleteError) throw deleteError;
-
-    res.json({ success: true });
+    res.json({
+      success: true,
+      coins_awarded: result.coins_awarded,
+      coins: result.new_balance,
+    });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }

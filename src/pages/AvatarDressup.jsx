@@ -7,6 +7,7 @@ import {
   getItemSetting,
   normalizeAvatarConfig,
 } from "../utils/avatarConfig";
+import { getOwnedStoreItems } from "../data/storeCatalog";
 import "../styles/AvatarDressup.css";
 
 const BACKEND_URL =
@@ -65,31 +66,56 @@ function CategoryIcon({ type }) {
 function AvatarDressup() {
   const navigate = useNavigate();
 
-  const [currentUser, setCurrentUser] = useState(null);
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("currentUser") || "null");
+    } catch {
+      return null;
+    }
+  });
   const [activeCategory, setActiveCategory] = useState("hair");
-  const [avatarConfig, setAvatarConfig] = useState(normalizeAvatarConfig());
-  const [itemSettings, setItemSettings] = useState({});
+  const [avatarConfig, setAvatarConfig] = useState(() =>
+    normalizeAvatarConfig(currentUser?.avatar_config)
+  );
   const [saving, setSaving] = useState(false);
+  const itemSettings = {};
+  const currentUserId = currentUser?.id;
 
   useEffect(() => {
-    const savedUser = localStorage.getItem("currentUser");
-
-    if (!savedUser) {
+    if (!currentUserId) {
       navigate("/face-login");
       return;
     }
 
-    const user = JSON.parse(savedUser);
-    setCurrentUser(user);
-    setAvatarConfig(normalizeAvatarConfig(user.avatar_config));
-    loadItemSettings();
-  }, [navigate]);
+    let cancelled = false;
 
-  async function loadItemSettings() {
-    // The backend might have old absolute pixel values (x, y) instead of x_pct, y_pct.
-    // Since we use avatarItemSettings.js as the source of truth, we ignore the backend here.
-    setItemSettings({});
-  }
+    async function refreshEconomy() {
+      try {
+        const response = await fetch(
+          `${BACKEND_URL}/api/users/${currentUserId}/economy`
+        );
+        const result = await response.json();
+        if (cancelled || !response.ok || !result.success) return;
+
+        setCurrentUser((user) => {
+          const updatedUser = {
+            ...user,
+            coins: result.coins,
+            owned_outfits: result.owned_outfits,
+          };
+          localStorage.setItem("currentUser", JSON.stringify(updatedUser));
+          return updatedUser;
+        });
+      } catch (err) {
+        console.warn("無法更新造型持有資料：", err);
+      }
+    }
+
+    refreshEconomy();
+    return () => {
+      cancelled = true;
+    };
+  }, [currentUserId, navigate]);
 
   function selectItem(category, itemId) {
     setAvatarConfig((prev) => ({
@@ -154,7 +180,10 @@ function AvatarDressup() {
     );
   }
 
-  const activeItems = AVATAR_ITEMS[activeCategory] || [];
+  const activeItems = [
+    ...(AVATAR_ITEMS[activeCategory] || []),
+    ...getOwnedStoreItems(activeCategory, currentUser.owned_outfits),
+  ];
 
   return (
     <div className="avatar-dressup-page">

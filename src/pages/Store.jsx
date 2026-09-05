@@ -96,23 +96,57 @@ function OutfitPieceThumbnail({ outfit, category }) {
 }
 
 function Store() {
-  const currentAvatarConfig = useMemo(() => {
+  const storedUser = useMemo(() => {
     try {
-      const user = JSON.parse(localStorage.getItem("currentUser") || "null");
-      return normalizeAvatarConfig(user?.avatar_config);
+      return JSON.parse(localStorage.getItem("currentUser") || "null");
     } catch {
-      return normalizeAvatarConfig();
+      return null;
     }
   }, []);
+  const currentAvatarConfig = normalizeAvatarConfig(storedUser?.avatar_config);
 
   const [previewOutfitId, setPreviewOutfitId] = useState("");
   const [detailOutfitId, setDetailOutfitId] = useState("");
+  const [coins, setCoins] = useState(Math.max(Number(storedUser?.coins) || 0, 0));
+  const [ownedOutfits, setOwnedOutfits] = useState(
+    Array.isArray(storedUser?.owned_outfits) ? storedUser.owned_outfits : []
+  );
   const previewOutfit =
     STORE_CATALOG.find((outfit) => outfit.id === previewOutfitId) || null;
   const detailOutfit =
     STORE_CATALOG.find((outfit) => outfit.id === detailOutfitId) || null;
   const previewConfig = previewOutfit?.config || currentAvatarConfig;
   const previewSettings = previewOutfit?.settings;
+  const ownedOutfitIds = new Set(ownedOutfits);
+
+  useEffect(() => {
+    if (!storedUser?.id) return;
+
+    async function loadEconomy() {
+      try {
+        const backendUrl =
+          import.meta.env.VITE_API_URL || "https://ar-vision-link.onrender.com";
+        const response = await fetch(`${backendUrl}/api/users/${storedUser.id}/economy`);
+        const result = await response.json();
+        if (!response.ok || !result.success) return;
+
+        setCoins(result.coins);
+        setOwnedOutfits(result.owned_outfits);
+        localStorage.setItem(
+          "currentUser",
+          JSON.stringify({
+            ...storedUser,
+            coins: result.coins,
+            owned_outfits: result.owned_outfits,
+          })
+        );
+      } catch (err) {
+        console.warn("無法更新商城持有資料：", err);
+      }
+    }
+
+    loadEconomy();
+  }, [storedUser]);
 
   useEffect(() => {
     if (!detailOutfit) return undefined;
@@ -129,9 +163,9 @@ function Store() {
     <main className="store-page">
       <header className="store-header">
         <h1>商城</h1>
-        <div className="store-price-note" aria-label="持有 0 金幣">
+        <div className="store-price-note" aria-label={`持有 ${coins} 金幣`}>
           <CoinIcon />
-          <strong>0</strong>
+          <strong>{coins}</strong>
         </div>
       </header>
 
@@ -160,11 +194,12 @@ function Store() {
             <div className="store-outfit-grid">
               {STORE_CATALOG.map((outfit) => {
                 const active = outfit.id === previewOutfitId;
+                const owned = ownedOutfitIds.has(outfit.id);
 
                 return (
                   <article
                     key={outfit.id}
-                    className={`store-outfit-card ${active ? "active" : ""}`}
+                    className={`store-outfit-card ${active ? "active" : ""} ${owned ? "owned" : ""}`}
                     style={{ "--outfit-accent": outfit.accent || "#8b5cf6" }}
                   >
                     <button
@@ -193,9 +228,9 @@ function Store() {
                       >
                         <span aria-hidden="true">i</span>
                       </button>
-                      <div className="store-card-price" aria-label={`${OUTFIT_PRICE} 金幣`}>
-                        <CoinIcon />
-                        <strong>{OUTFIT_PRICE}</strong>
+                      <div className="store-card-price" aria-label={owned ? "已擁有" : `${OUTFIT_PRICE} 金幣`}>
+                        {!owned && <CoinIcon />}
+                        <strong>{owned ? "已擁有" : OUTFIT_PRICE}</strong>
                       </div>
                     </div>
                   </article>
@@ -264,8 +299,11 @@ function Store() {
                     setDetailOutfitId("");
                   }}
                 >
-                  <CoinIcon />
-                  <span>{OUTFIT_PRICE}</span>
+                  {ownedOutfitIds.has(detailOutfit.id) ? (
+                    <span>已擁有・立即試穿</span>
+                  ) : (
+                    <><CoinIcon /><span>{OUTFIT_PRICE}</span></>
+                  )}
                 </button>
               </div>
             </div>

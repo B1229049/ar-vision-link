@@ -58,3 +58,18 @@ export function getStoreTemplateSettingsForTop(itemId) {
 
   return outfit?.templates || null;
 }
+
+export function normalizeOwnedOutfits(value) {
+  if (!Array.isArray(value)) return [];
+
+  const publishedIds = new Set(STORE_CATALOG.map((outfit) => outfit.id));
+  return [...new Set(value.filter((id) => publishedIds.has(id)))];
+}
+
+export function getOwnedStoreItems(category, ownedOutfits) {
+  const ownedIds = new Set(normalizeOwnedOutfits(ownedOutfits));
+
+  return STORE_CATALOG.filter((outfit) => ownedIds.has(outfit.id))
+    .map((outfit) => outfit.items?.[category])
+    .filter(Boolean);
+}

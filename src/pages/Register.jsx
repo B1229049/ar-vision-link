@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import * as faceapi from "@vladmandic/face-api";
+import { useNavigate } from "react-router-dom";
 import { createPersistentProfileImage } from "../utils/profileImage";
 import "../styles/Register.css";
 
@@ -64,6 +65,7 @@ async function loadCommonFaceApiModels() {
 
 
 function Register() {
+  const navigate = useNavigate();
   const [step, setStep] = useState(1);
 
   const [name, setName] = useState("");
@@ -390,6 +392,10 @@ function Register() {
             </button>
           </>
         )}
+
+        <button className="btn btn-home" onClick={() => navigate("/")}>
+          回首頁
+        </button>
       </div>
     </div>
   );
