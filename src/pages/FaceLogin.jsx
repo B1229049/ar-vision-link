@@ -267,7 +267,6 @@ function FaceLogin() {
         {currentUser && (
           <div className="user-info">
             <h3>{currentUser.name}</h3>
-            <p>@{currentUser.nickname || "unknown"}</p>
             <p>{currentUser.description || "尚無介紹"}</p>
 
             <button className="login-btn" onClick={() => navigate("/profile")}>

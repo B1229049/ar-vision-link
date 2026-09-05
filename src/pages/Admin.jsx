@@ -4,8 +4,9 @@ import "../styles/Admin.css";
 
 const BACKEND_URL =
   import.meta.env.VITE_API_URL || "https://ar-vision-link.onrender.com";
-const COIN_OPTIONS = [50, 100, 200, 300, 1000];
+const COIN_OPTIONS = [50, 100, 200, 300];
 const ADMIN_TABLES = [
+  ["users", "Users"],
   ["quizzes", "Quizzes"],
   ["questions", "Questions"],
   ["game_sessions", "Game Sessions"],
@@ -13,6 +14,8 @@ const ADMIN_TABLES = [
   ["player_answers", "Player Answers"],
   ["coin_rewards", "Coin Rewards"],
   ["coin_reward_claims", "Reward Claims"],
+  ["user_face_images", "Face Images"],
+  ["user_face_embeddings", "Face Embeddings"],
   ["vision_sessions", "Vision Sessions"],
   ["vision_detection_logs", "Vision Logs"],
   ["avatar_item_settings", "Avatar Settings"],
@@ -23,14 +26,58 @@ function dateInputValue(date) {
   return new Date(date.getTime() - offset).toISOString().slice(0, 10);
 }
 
-function AdminIcon({ name }) {
-  const paths = {
-    dashboard: <><rect x="3" y="3" width="7" height="7" rx="2" /><rect x="14" y="3" width="7" height="7" rx="2" /><rect x="3" y="14" width="7" height="7" rx="2" /><rect x="14" y="14" width="7" height="7" rx="2" /></>,
-    users: <><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" /></>,
-    reward: <><rect x="3" y="8" width="18" height="13" rx="2" /><path d="M12 8v13M3 12h18M7.5 8C5 8 4 6.8 4 5.4S5.1 3 6.6 3C9 3 12 8 12 8s3-5 5.4-5C18.9 3 20 4 20 5.4S19 8 16.5 8" /></>,
-    database: <><ellipse cx="12" cy="5" rx="8" ry="3" /><path d="M4 5v7c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 12v7c0 1.7 3.6 3 8 3s8-1.3 8-3v-7" /></>,
-  };
-  return <svg viewBox="0 0 24 24" aria-hidden="true">{paths[name]}</svg>;
+function localDateFromValue(value) {
+  const [year, month, day] = value.split("-").map(Number);
+  return new Date(year, month - 1, day);
+}
+
+function monthKey(date) {
+  return date.getFullYear() * 12 + date.getMonth();
+}
+
+function RewardCalendar({ value, min, max, onChange, onClose }) {
+  const minDate = localDateFromValue(min);
+  const maxDate = localDateFromValue(max);
+  const [visibleMonth, setVisibleMonth] = useState(() => {
+    const selected = localDateFromValue(value);
+    return new Date(selected.getFullYear(), selected.getMonth(), 1);
+  });
+  const firstDay = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth(), 1);
+  const lastDay = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() + 1, 0);
+  const cells = [];
+  for (let blank = 0; blank < firstDay.getDay(); blank += 1) cells.push(null);
+  for (let day = 1; day <= lastDay.getDate(); day += 1) {
+    cells.push(new Date(visibleMonth.getFullYear(), visibleMonth.getMonth(), day));
+  }
+  const canGoPrevious = monthKey(visibleMonth) > monthKey(minDate);
+  const canGoNext = monthKey(visibleMonth) < monthKey(maxDate);
+
+  return (
+    <div className="admin-calendar" role="dialog" aria-label="選擇截止日期">
+      <header>
+        <button type="button" disabled={!canGoPrevious} onClick={() => setVisibleMonth(new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() - 1, 1))} aria-label="上個月">‹</button>
+        <strong>{visibleMonth.getFullYear()} 年 {visibleMonth.getMonth() + 1} 月</strong>
+        <button type="button" disabled={!canGoNext} onClick={() => setVisibleMonth(new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() + 1, 1))} aria-label="下個月">›</button>
+      </header>
+      <div className="admin-calendar-weekdays">{["日", "一", "二", "三", "四", "五", "六"].map((day) => <span key={day}>{day}</span>)}</div>
+      <div className="admin-calendar-days">
+        {cells.map((date, index) => {
+          if (!date) return <span key={`blank-${index}`} />;
+          const dateValue = dateInputValue(date);
+          const disabled = dateValue < min || dateValue > max;
+          return <button key={dateValue} type="button" className={dateValue === value ? "selected" : ""} disabled={disabled} onClick={() => { onChange(dateValue); onClose(); }}>{date.getDate()}</button>;
+        })}
+      </div>
+    </div>
+  );
+}
+
+function SidebarIcon({ name }) {
+  return name === "reward" ? (
+    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="8" width="18" height="13" rx="2" /><path d="M12 8v13M3 12h18M7.5 8C5 8 4 6.8 4 5.4S5.1 3 6.6 3C9 3 12 8 12 8s3-5 5.4-5C18.9 3 20 4 20 5.4S19 8 16.5 8" /></svg>
+  ) : (
+    <svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="5" rx="8" ry="3" /><path d="M4 5v7c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 12v7c0 1.7 3.6 3 8 3s8-1.3 8-3v-7" /></svg>
+  );
 }
 
 function Admin() {
@@ -38,50 +85,32 @@ function Admin() {
     try { return JSON.parse(localStorage.getItem("currentUser") || "null"); }
     catch { return null; }
   }, []);
-  const [view, setView] = useState("dashboard");
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [editingId, setEditingId] = useState(null);
-  const [editData, setEditData] = useState({});
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [selectedTable, setSelectedTable] = useState("quizzes");
+  const adminUserId = adminUser?.id;
+  const [view, setView] = useState("rewards");
+  const [tablesExpanded, setTablesExpanded] = useState(false);
+  const [selectedTable, setSelectedTable] = useState("");
   const [tableRows, setTableRows] = useState([]);
   const [tableLoading, setTableLoading] = useState(false);
+  const [tableError, setTableError] = useState("");
   const [rewardCoins, setRewardCoins] = useState(100);
   const [rewardDate, setRewardDate] = useState(dateInputValue(new Date()));
+  const [calendarOpen, setCalendarOpen] = useState(false);
   const [rewardImage, setRewardImage] = useState("");
   const [rewardUrl, setRewardUrl] = useState("");
   const [creatingReward, setCreatingReward] = useState(false);
   const [rewards, setRewards] = useState([]);
   const [rewardMessage, setRewardMessage] = useState("");
-  const adminUserId = adminUser?.id;
-
+  const minRewardDate = dateInputValue(new Date());
   const maxRewardDate = useMemo(() => {
     const date = new Date();
     date.setDate(date.getDate() + 5);
     return dateInputValue(date);
   }, []);
 
-  async function loadUsers() {
-    try {
-      setLoading(true);
-      const response = await fetch(`${BACKEND_URL}/api/admin/users`);
-      const result = await response.json();
-      if (!response.ok || !result.success) throw new Error(result.error || "無法取得使用者資料");
-      setUsers(result.users || []);
-      setError("");
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  }
-
   async function loadRewards() {
-    if (!adminUser?.id) return;
+    if (!adminUserId) return;
     try {
-      const response = await fetch(`${BACKEND_URL}/api/admin/rewards?admin_id=${adminUser.id}`);
+      const response = await fetch(`${BACKEND_URL}/api/admin/rewards?admin_id=${adminUserId}`);
       const result = await response.json();
       if (response.ok && result.success) setRewards(result.rewards || []);
     } catch (err) {
@@ -91,79 +120,33 @@ function Admin() {
 
   useEffect(() => {
     let cancelled = false;
-
     async function initialize() {
+      if (!adminUserId) return;
       try {
-        const [usersResponse, rewardsResponse] = await Promise.all([
-          fetch(`${BACKEND_URL}/api/admin/users`),
-          adminUserId
-            ? fetch(`${BACKEND_URL}/api/admin/rewards?admin_id=${adminUserId}`)
-            : Promise.resolve(null),
-        ]);
-        const usersResult = await usersResponse.json();
-        const rewardsResult = rewardsResponse ? await rewardsResponse.json() : null;
-        if (cancelled) return;
-        if (!usersResponse.ok || !usersResult.success) {
-          throw new Error(usersResult.error || "無法取得使用者資料");
-        }
-        setUsers(usersResult.users || []);
-        if (rewardsResponse?.ok && rewardsResult?.success) {
-          setRewards(rewardsResult.rewards || []);
-        }
+        const response = await fetch(`${BACKEND_URL}/api/admin/rewards?admin_id=${adminUserId}`);
+        const result = await response.json();
+        if (!cancelled && response.ok && result.success) setRewards(result.rewards || []);
       } catch (err) {
-        if (!cancelled) setError(err.message);
-      } finally {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) console.warn("無法取得獎勵紀錄：", err);
       }
     }
-
     initialize();
     return () => { cancelled = true; };
   }, [adminUserId]);
 
-  function beginEdit(user) {
-    if (user.admin) return alert("管理員帳號不可編輯");
-    setEditingId(user.id);
-    setEditData({
-      name: user.name || "",
-      nickname: user.nickname || "",
-      description: user.description || "",
-      is_active: user.is_active,
-      admin: user.admin,
-    });
-  }
-
-  async function saveUser(user) {
-    const response = await fetch(`${BACKEND_URL}/api/admin/users/${user.id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(editData),
-    });
-    const result = await response.json();
-    if (!response.ok || !result.success) return alert(result.error || "更新失敗");
-    setUsers((items) => items.map((item) => item.id === user.id ? result.user : item));
-    setEditingId(null);
-  }
-
-  async function deleteUser(user) {
-    if (user.admin || !window.confirm(`確定刪除「${user.name}」？`)) return;
-    const response = await fetch(`${BACKEND_URL}/api/admin/users/${user.id}`, { method: "DELETE" });
-    const result = await response.json();
-    if (!response.ok || !result.success) return alert(result.error || "刪除失敗");
-    setUsers((items) => items.filter((item) => item.id !== user.id));
-  }
-
   async function loadTable(table) {
     setSelectedTable(table);
+    setView("database");
     setTableLoading(true);
+    setTableError("");
     try {
       const response = await fetch(`${BACKEND_URL}/api/admin/${table}`);
       const result = await response.json();
       if (!response.ok || !result.success) throw new Error(result.error || "讀取失敗");
-      setTableRows(result.rows || []);
+      setTableRows(result.rows || result.users || []);
     } catch (err) {
       setTableRows([]);
-      alert(err.message);
+      setTableError(err.message);
     } finally {
       setTableLoading(false);
     }
@@ -171,22 +154,18 @@ function Admin() {
 
   async function createReward(event) {
     event.preventDefault();
+    if (rewardDate < minRewardDate || rewardDate > maxRewardDate) return;
     setCreatingReward(true);
     setRewardMessage("");
     try {
-      const localExpiry = new Date(`${rewardDate}T23:59:00`);
+      const expiry = new Date(`${rewardDate}T23:59:00`);
       const response = await fetch(`${BACKEND_URL}/api/admin/rewards`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          coins: Number(rewardCoins),
-          expires_at: localExpiry.toISOString(),
-          created_by: adminUser.id,
-        }),
+        body: JSON.stringify({ coins: Number(rewardCoins), expires_at: expiry.toISOString(), created_by: adminUserId }),
       });
       const result = await response.json();
       if (!response.ok || !result.success) throw new Error(result.error || "建立獎勵失敗");
-
       const url = `${window.location.origin}${import.meta.env.BASE_URL}?reward=${result.reward.token}`;
       const image = await QRCode.toDataURL(url, {
         width: 900,
@@ -212,53 +191,28 @@ function Admin() {
     link.click();
   }
 
-  const activeUsers = users.filter((user) => user.is_active).length;
-  const totalCoins = users.reduce((sum, user) => sum + (Number(user.coins) || 0), 0);
-
   return (
     <main className="admin-page">
       <aside className="admin-sidebar">
-        <div className="admin-brand"><span>AV</span><div><strong>Admin Center</strong><small>管理員工作區</small></div></div>
+        <div className="admin-brand"><strong>Admin Center</strong></div>
         <nav>
-          {[["dashboard", "dashboard", "總覽"], ["users", "users", "使用者"], ["rewards", "reward", "派發獎勵"], ["database", "database", "資料表"]].map(([key, icon, label]) => (
-            <button key={key} className={view === key ? "active" : ""} onClick={() => setView(key)}>
-              <AdminIcon name={icon} /><span>{label}</span>
-            </button>
-          ))}
+          <button className={view === "rewards" ? "active" : ""} onClick={() => setView("rewards")}><SidebarIcon name="reward" /><span>派發獎勵</span></button>
+          <button className={`admin-database-toggle ${view === "database" ? "active" : ""}`} onClick={() => setTablesExpanded((open) => !open)} aria-expanded={tablesExpanded}><SidebarIcon name="database" /><span>資料表</span><b aria-hidden="true">⌄</b></button>
+          {tablesExpanded && <div className="admin-table-menu">{ADMIN_TABLES.map(([key, name]) => <button key={key} className={selectedTable === key ? "active" : ""} onClick={() => loadTable(key)}>{name}</button>)}</div>}
         </nav>
-        <div className="admin-account"><span>{adminUser?.name?.slice(0, 1) || "A"}</span><div><strong>{adminUser?.name || "Admin"}</strong><small>Administrator</small></div></div>
       </aside>
 
       <section className="admin-workspace">
-        <header className="admin-topbar"><div><small>ADMIN CENTER</small><h1>{view === "dashboard" ? "儀表板" : view === "users" ? "使用者管理" : view === "rewards" ? "派發獎勵" : "資料表瀏覽"}</h1></div><span className="admin-status">系統運作中</span></header>
-
-        {view === "dashboard" && <>
-          <div className="admin-metrics">
-            <article><span>使用者總數</span><strong>{users.length}</strong><small>{activeUsers} 位使用中</small></article>
-            <article><span>系統金幣總量</span><strong>{totalCoins.toLocaleString()}</strong><small>所有帳號持有量</small></article>
-            <article><span>已建立獎勵</span><strong>{rewards.length}</strong><small>最近 30 筆內</small></article>
-          </div>
-          <section className="admin-panel"><div className="admin-panel-heading"><div><h2>快速操作</h2><p>管理平台常用功能</p></div></div><div className="admin-quick-actions"><button onClick={() => setView("users")}><AdminIcon name="users" /><strong>管理使用者</strong><span>查看帳號與狀態</span></button><button onClick={() => setView("rewards")}><AdminIcon name="reward" /><strong>建立獎勵 QR</strong><span>設定金幣與期限</span></button><button onClick={() => setView("database")}><AdminIcon name="database" /><strong>瀏覽資料表</strong><span>檢視系統原始資料</span></button></div></section>
-        </>}
-
-        {view === "users" && <section className="admin-panel">
-          <div className="admin-panel-heading"><div><h2>使用者</h2><p>{loading ? "載入中…" : `${users.length} 個帳號`}</p></div><button onClick={loadUsers}>重新整理</button></div>
-          {error ? <p className="admin-error">{error}</p> : <div className="admin-data-table-wrapper"><table className="admin-table"><thead><tr><th>ID</th><th>名稱</th><th>暱稱</th><th>金幣</th><th>狀態</th><th>權限</th><th>操作</th></tr></thead><tbody>{users.map((user) => {
-            const editing = editingId === user.id;
-            return <tr key={user.id}><td>#{user.id}</td><td>{editing ? <input value={editData.name} onChange={(e) => setEditData({ ...editData, name: e.target.value })} /> : user.name}</td><td>{editing ? <input value={editData.nickname} onChange={(e) => setEditData({ ...editData, nickname: e.target.value })} /> : user.nickname || "—"}</td><td>{Number(user.coins || 0).toLocaleString()}</td><td><span className={`admin-chip ${user.is_active ? "success" : "muted"}`}>{user.is_active ? "啟用" : "停用"}</span></td><td>{user.admin ? "管理員" : "一般使用者"}</td><td className="admin-row-actions">{editing ? <><button onClick={() => saveUser(user)}>儲存</button><button className="secondary" onClick={() => setEditingId(null)}>取消</button></> : <><button onClick={() => setSelectedUser(user)}>詳細</button>{!user.admin && <><button className="secondary" onClick={() => beginEdit(user)}>編輯</button><button className="danger" onClick={() => deleteUser(user)}>刪除</button></>}</>}</td></tr>;
-          })}</tbody></table></div>}
-        </section>}
+        <header className="admin-topbar"><div><small>ADMIN CENTER</small><h1>{view === "rewards" ? "派發獎勵" : selectedTable ? ADMIN_TABLES.find(([key]) => key === selectedTable)?.[1] : "資料表"}</h1></div><span className="admin-status">系統運作中</span></header>
 
         {view === "rewards" && <div className="admin-reward-layout">
-          <section className="admin-panel reward-form-panel"><div className="admin-panel-heading"><div><h2>建立金幣獎勵</h2><p>每個帳號對同一個 QR Code 僅能領取一次</p></div></div><form onSubmit={createReward}><label>派發金幣<select value={rewardCoins} onChange={(e) => setRewardCoins(e.target.value)}>{COIN_OPTIONS.map((value) => <option key={value} value={value}>{value} 金幣</option>)}</select></label><label>截止日期<input type="date" value={rewardDate} min={dateInputValue(new Date())} max={maxRewardDate} onChange={(e) => setRewardDate(e.target.value)} required /><small>有效至當日 23:59，最多選擇五天後</small></label><button className="admin-primary-button" disabled={creatingReward}>{creatingReward ? "建立中…" : "產生 QR Code"}</button>{rewardMessage && <p className="reward-message">{rewardMessage}</p>}</form></section>
-          <section className="admin-panel reward-preview-panel"><div className="admin-panel-heading"><div><h2>QR Code 預覽</h2><p>可直接下載 PNG 圖片</p></div></div>{rewardImage ? <><img src={rewardImage} alt={`${rewardCoins} 金幣獎勵 QR Code`} /><code>{rewardUrl}</code><button className="admin-primary-button" onClick={downloadRewardImage}>下載 QR 圖片</button></> : <div className="reward-placeholder"><AdminIcon name="reward" /><p>設定獎勵後，QR Code 將顯示在這裡</p></div>}</section>
+          <section className="admin-panel reward-form-panel"><div className="admin-panel-heading"><div><h2>建立金幣獎勵</h2><p>每個帳號對同一個 QR Code 僅能領取一次</p></div></div><form onSubmit={createReward}><label>派發金幣<select value={rewardCoins} onChange={(e) => setRewardCoins(e.target.value)}>{COIN_OPTIONS.map((value) => <option key={value} value={value}>{value} 金幣</option>)}</select></label><div className="admin-date-field"><span>截止日期</span><button type="button" className="admin-date-trigger" onClick={() => setCalendarOpen((open) => !open)} aria-expanded={calendarOpen}>{localDateFromValue(rewardDate).toLocaleDateString("zh-TW", { year: "numeric", month: "long", day: "numeric" })}<b aria-hidden="true">▾</b></button>{calendarOpen && <RewardCalendar value={rewardDate} min={minRewardDate} max={maxRewardDate} onChange={setRewardDate} onClose={() => setCalendarOpen(false)} />}<small>有效至當日 23:59，僅能選擇 5 天內日期</small></div><button className="admin-primary-button" disabled={creatingReward}>{creatingReward ? "建立中…" : "產生 QR Code"}</button>{rewardMessage && <p className="reward-message">{rewardMessage}</p>}</form></section>
+          <section className="admin-panel reward-preview-panel"><div className="admin-panel-heading"><div><h2>QR Code 預覽</h2><p>可直接下載 PNG 圖片</p></div></div>{rewardImage ? <><img src={rewardImage} alt={`${rewardCoins} 金幣獎勵 QR Code`} /><code>{rewardUrl}</code><button className="admin-primary-button" onClick={downloadRewardImage}>下載 QR 圖片</button></> : <div className="reward-placeholder"><SidebarIcon name="reward" /><p>設定獎勵後，QR Code 將顯示在這裡</p></div>}</section>
           <section className="admin-panel reward-history"><div className="admin-panel-heading"><div><h2>最近建立</h2><p>最近 30 筆獎勵</p></div></div><div className="reward-history-list">{rewards.map((reward) => <article key={reward.id}><strong>{reward.coins} 金幣</strong><span>截止 {new Date(reward.expires_at).toLocaleString("zh-TW")}</span><small>{reward.coin_reward_claims?.[0]?.count || 0} 人已領取</small></article>)}</div></section>
         </div>}
 
-        {view === "database" && <section className="admin-panel"><div className="admin-panel-heading"><div><h2>資料表</h2><p>選擇資料來源並檢視內容</p></div></div><div className="admin-table-tabs">{ADMIN_TABLES.map(([key, name]) => <button key={key} className={selectedTable === key ? "active" : ""} onClick={() => loadTable(key)}>{name}</button>)}</div>{tableLoading ? <p>載入中…</p> : tableRows.length ? <div className="admin-data-table-wrapper"><table className="admin-table"><thead><tr>{Object.keys(tableRows[0]).map((key) => <th key={key}>{key}</th>)}</tr></thead><tbody>{tableRows.map((row, index) => <tr key={index}>{Object.keys(tableRows[0]).map((key) => <td key={key}>{row[key] == null ? "—" : typeof row[key] === "object" ? JSON.stringify(row[key]) : String(row[key])}</td>)}</tr>)}</tbody></table></div> : <div className="admin-empty">選擇資料表以載入內容</div>}</section>}
+        {view === "database" && <section className="admin-panel"><div className="admin-panel-heading"><div><h2>{selectedTable || "資料表內容"}</h2><p>{selectedTable ? "目前資料表的即時內容" : "請從左側展開並選擇資料表"}</p></div></div>{tableError && <p className="admin-error">{tableError}</p>}{tableLoading ? <p>載入中…</p> : tableRows.length ? <div className="admin-data-table-wrapper"><table className="admin-table"><thead><tr>{Object.keys(tableRows[0]).map((key) => <th key={key}>{key}</th>)}</tr></thead><tbody>{tableRows.map((row, index) => <tr key={index}>{Object.keys(tableRows[0]).map((key) => <td key={key}>{row[key] == null ? "—" : typeof row[key] === "object" ? JSON.stringify(row[key]) : String(row[key])}</td>)}</tr>)}</tbody></table></div> : <div className="admin-empty">尚未載入資料</div>}</section>}
       </section>
-
-      {selectedUser && <div className="admin-modal-overlay" onMouseDown={(event) => event.target === event.currentTarget && setSelectedUser(null)}><section className="admin-modal"><header><h2>使用者詳細資料</h2><button onClick={() => setSelectedUser(null)}>×</button></header>{[["ID", selectedUser.id], ["名稱", selectedUser.name], ["暱稱", selectedUser.nickname], ["介紹", selectedUser.description], ["金幣", selectedUser.coins || 0], ["持有套裝", selectedUser.owned_outfits?.join(", ") || "無"], ["建立時間", selectedUser.created_at]].map(([label, value]) => <p key={label}><strong>{label}</strong><span>{value || "—"}</span></p>)}</section></div>}
     </main>
   );
 }

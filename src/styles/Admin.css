@@ -27,16 +27,20 @@
   z-index: 20;
 }
 
-.admin-brand { display: flex; align-items: center; gap: 12px; padding: 0 10px 28px; }
+.admin-brand { display: block; padding: 7px 10px 28px; }
 .admin-brand > span { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 12px; color: #fff; background: var(--admin-blue); font-weight: 800; }
 .admin-brand strong, .admin-brand small, .admin-account strong, .admin-account small { display: block; }
-.admin-brand strong { font-size: 16px; }
+.admin-brand strong { font-size: 18px; }
 .admin-brand small, .admin-account small { margin-top: 3px; color: var(--admin-muted); font-size: 11px; }
 .admin-sidebar nav { display: grid; gap: 5px; }
 .admin-sidebar nav button { width: 100%; min-height: 46px; padding: 0 13px; display: flex; align-items: center; gap: 12px; border: 0; border-radius: 11px; color: #5c5c61; background: transparent; font: inherit; font-weight: 650; cursor: pointer; }
 .admin-sidebar nav button:hover { color: var(--admin-ink); background: #f5f5f7; }
 .admin-sidebar nav button.active { color: var(--admin-blue); background: #eaf3ff; }
 .admin-sidebar svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.admin-database-toggle b { margin-left: auto; font-size: 20px; font-weight: 500; transition: transform .18s ease; }
+.admin-database-toggle[aria-expanded="true"] b { transform: rotate(180deg); }
+.admin-table-menu { margin: 4px 0 8px 31px; padding-left: 10px; display: grid; gap: 2px; border-left: 1px solid #d8d8dd; }
+.admin-sidebar nav .admin-table-menu button { min-height: 34px; padding: 6px 9px; border-radius: 8px; font-size: 12px; }
 .admin-account { margin-top: auto; padding: 14px 10px 0; display: flex; align-items: center; gap: 10px; border-top: 1px solid #ededf0; }
 .admin-account > span { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 50%; color: var(--admin-blue-dark); background: #dcebff; font-weight: 800; }
 
@@ -85,9 +89,25 @@
 
 .admin-reward-layout { display: grid; grid-template-columns: minmax(300px, .85fr) minmax(340px, 1.15fr); gap: 18px; align-items: start; }
 .reward-form-panel form { display: grid; gap: 18px; }
-.reward-form-panel label { display: grid; gap: 8px; color: #3a3a3e; font-size: 13px; font-weight: 700; }
+.reward-form-panel label, .admin-date-field { position: relative; display: grid; gap: 8px; color: #3a3a3e; font-size: 13px; font-weight: 700; min-width: 0; }
 .reward-form-panel label select, .reward-form-panel label input { width: 100%; }
+.reward-form-panel label, .reward-form-panel select, .reward-form-panel input[type="date"] { min-width: 0; max-width: 100%; }
 .reward-form-panel label small { color: var(--admin-muted); font-size: 11px; font-weight: 500; }
+.admin-date-field > small { color: var(--admin-muted); font-size: 11px; font-weight: 500; }
+.admin-date-trigger { width: 100%; min-width: 0; min-height: 42px; padding: 0 12px; display: flex; align-items: center; justify-content: space-between; border: 1px solid #cfcfd5; border-radius: 10px; color: var(--admin-ink); background: #fff; font: inherit; font-weight: 600; box-sizing: border-box; cursor: pointer; }
+.admin-date-trigger b { color: #77777c; font-size: 12px; }
+.admin-calendar { position: absolute; z-index: 60; top: 70px; left: 0; width: min(320px, 100%); padding: 15px; border: 1px solid #dedee3; border-radius: 16px; background: #fff; box-shadow: 0 16px 42px rgba(0, 0, 0, .16); box-sizing: border-box; }
+.admin-calendar header { margin-bottom: 12px; display: grid; grid-template-columns: 34px 1fr 34px; align-items: center; }
+.admin-calendar header strong { text-align: center; font-size: 15px; }
+.admin-calendar header button, .admin-calendar-days button { border: 0; background: transparent; cursor: pointer; }
+.admin-calendar header button { width: 34px; height: 34px; border-radius: 9px; color: var(--admin-blue); font-size: 25px; line-height: 1; }
+.admin-calendar header button:disabled { color: #e8e8eb; cursor: default; }
+.admin-calendar-weekdays, .admin-calendar-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.admin-calendar-weekdays span { padding: 4px 0 7px; color: #8a8a90; text-align: center; font-size: 10px; }
+.admin-calendar-days button, .admin-calendar-days > span { aspect-ratio: 1; display: grid; place-items: center; border-radius: 50%; color: #28282b; font-size: 13px; }
+.admin-calendar-days button:hover:not(:disabled) { background: #edf5ff; }
+.admin-calendar-days button.selected { color: #fff; background: var(--admin-blue); font-weight: 800; }
+.admin-calendar-days button:disabled { color: rgba(29, 29, 31, .10); background: transparent; cursor: default; pointer-events: none; }
 .admin-primary-button { min-height: 46px; padding: 0 18px; border: 0; border-radius: 11px; color: #fff; background: var(--admin-blue); font: inherit; font-weight: 750; cursor: pointer; }
 .admin-primary-button:hover { background: var(--admin-blue-dark); }
 .admin-primary-button:disabled { opacity: .55; cursor: wait; }
@@ -120,9 +140,9 @@
   .admin-page { display: block; padding-bottom: var(--mobile-bottom-nav-height); }
   .admin-sidebar { position: sticky; top: var(--navbar-height); width: 100%; height: auto; padding: 10px 14px; display: block; border-right: 0; border-bottom: 1px solid #dedee3; }
   .admin-brand, .admin-account { display: none; }
-  .admin-sidebar nav { display: grid; grid-template-columns: repeat(4, 1fr); }
+  .admin-sidebar nav { display: grid; grid-template-columns: repeat(2, 1fr); }
   .admin-sidebar nav button { padding: 6px; justify-content: center; font-size: 12px; }
-  .admin-sidebar nav button span { display: none; }
+  .admin-table-menu { grid-column: 1 / -1; margin-left: 0; grid-template-columns: repeat(2, 1fr); }
   .admin-workspace { padding: 25px 14px 80px; }
   .admin-metrics, .admin-quick-actions, .reward-history-list { grid-template-columns: 1fr; }
   .admin-reward-layout { grid-template-columns: 1fr; }

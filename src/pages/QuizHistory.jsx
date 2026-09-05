@@ -433,7 +433,6 @@ function HostDetail({ detail }) {
 
                 <div className="player-info">
                   <strong>{item.users?.name || "未命名玩家"}</strong>
-                  <span>@{item.users?.nickname || "unknown"}</span>
                 </div>
 
                 <div className="score">{item.score ?? 0} 分</div>

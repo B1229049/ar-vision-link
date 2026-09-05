@@ -10,7 +10,6 @@ function EditProfile() {
   const [currentUser, setCurrentUser] = useState(null);
 
   const [name, setName] = useState("");
-  const [nickname, setNickname] = useState("");
   const [description, setDescription] = useState("");
   const [profileUrl, setProfileUrl] = useState("");
   const [processingImage, setProcessingImage] = useState(false);
@@ -33,7 +32,6 @@ function EditProfile() {
 
     setCurrentUser(user);
     setName(user.name || "");
-    setNickname(user.nickname || "");
     setDescription(user.description || "");
     setProfileUrl(user.profile_url || "");
   }, [navigate]);
@@ -82,7 +80,6 @@ function EditProfile() {
         },
         body: JSON.stringify({
           name: name.trim(),
-          nickname: nickname.trim(),
           description: description.trim(),
           ...(profileUrl !== (currentUser.profile_url || "")
             ? { profile_url: profileUrl }
@@ -132,7 +129,7 @@ function EditProfile() {
         <h2>編輯個人資料</h2>
 
         <p className="edit-subtitle">
-          修改你的頭像、名稱、暱稱與自我介紹。
+          修改你的頭像、名稱與自我介紹。
         </p>
 
         <div className="edit-profile-image-section">
@@ -184,15 +181,6 @@ function EditProfile() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="請輸入姓名"
-          />
-        </div>
-
-        <div className="edit-field">
-          <label>暱稱</label>
-          <input
-            value={nickname}
-            onChange={(e) => setNickname(e.target.value)}
-            placeholder="請輸入暱稱"
           />
         </div>
 

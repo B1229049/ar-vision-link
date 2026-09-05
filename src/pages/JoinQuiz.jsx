@@ -431,7 +431,7 @@ function JoinQuiz() {
                       key={key}
                       onClick={() => openPlayerProfile(user)}
                       disabled={Number(user?.id) === Number(currentUser?.id)}
-                      aria-label={`查看 ${user?.nickname || user?.name || "玩家"} 的個人資料`}
+                      aria-label={`查看 ${user?.name || "玩家"} 的個人資料`}
                     >
                       <strong>{user?.name || "未知玩家"}</strong>
                       <AvatarRenderer
@@ -474,7 +474,7 @@ function JoinQuiz() {
                         key={key}
                         onClick={() => openPlayerProfile(user)}
                         disabled={Number(user?.id) === Number(currentUser?.id)}
-                        aria-label={`查看 ${user?.nickname || user?.name || "玩家"} 的個人資料`}
+                        aria-label={`查看 ${user?.name || "玩家"} 的個人資料`}
                       >
                         <ProfileImage
                           user={user}

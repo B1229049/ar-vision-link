@@ -522,7 +522,7 @@ function HostLobby() {
                         className="lobby-avatar-player"
                         key={record.record_id}
                         onClick={() => openPlayerProfile(user)}
-                        aria-label={`查看 ${user?.nickname || user?.name || "玩家"} 的個人資料`}
+                        aria-label={`查看 ${user?.name || "玩家"} 的個人資料`}
                       >
                         <strong>{user?.name || "未知玩家"}</strong>
                         <AvatarRenderer
@@ -587,7 +587,7 @@ function HostLobby() {
                           className="host-player-side-item"
                           key={record.record_id}
                           onClick={() => openPlayerProfile(user)}
-                          aria-label={`查看 ${user?.nickname || user?.name || "玩家"} 的個人資料`}
+                          aria-label={`查看 ${user?.name || "玩家"} 的個人資料`}
                         >
                           <ProfileImage
                             user={user}

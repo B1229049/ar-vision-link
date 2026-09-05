@@ -260,7 +260,7 @@ function LoggedOutLanding() {
           <div className="landing-copy"><h2 className="landing-heading">身分不是帳號欄位，而是整個體驗的入口。</h2><p className="landing-intro">從臉部登入到多人 AR Camera，讓公開資訊、虛擬替身與活動成果跟著使用者出現在現場。</p></div>
           <article className="identity-preview">
             <h3>一個身分，連結所有歷程</h3><p>個人資料、虛擬替身、測驗成績與臉部資料維持在同一個使用者身分下。</p>
-            <div className="identity-profile"><div className="identity-avatar" aria-hidden="true" /><div className="identity-data"><strong>個人資料</strong><span>名稱 · 李田所</span><span>暱稱 · 田同學</span><span>使用者ID · 114</span><span>個人介紹 · 嗨!一庫走</span></div></div>
+            <div className="identity-profile"><div className="identity-avatar" aria-hidden="true" /><div className="identity-data"><strong>個人資料</strong><span>名稱 · 李田所</span><span>使用者ID · 114</span><span>個人介紹 · 嗨!一庫走</span></div></div>
           </article>
         </div>
       </section>

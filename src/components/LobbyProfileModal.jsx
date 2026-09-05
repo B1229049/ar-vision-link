@@ -49,7 +49,7 @@ function LobbyProfileModal({ user, onClose }) {
           <div className="shared-lobby-profile-info">
             <ProfileImage user={user} className="shared-lobby-profile-image" />
 
-            <h3>{user.nickname || user.name || "未設定暱稱"}</h3>
+            <h3>{user.name || "未設定名稱"}</h3>
 
             <div className="shared-lobby-profile-bio-panel">
               <h4>自我介紹</h4>

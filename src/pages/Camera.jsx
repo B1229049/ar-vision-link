@@ -447,10 +447,6 @@ function Camera() {
             >
               <div className="name">{face.user.name || "未命名"}</div>
 
-              <div className="nickname">
-                @{face.user.nickname || "unknown"}
-              </div>
-
               <div className="description">
                 {face.user.description || "尚無介紹"}
               </div>

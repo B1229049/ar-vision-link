@@ -13,7 +13,7 @@ const ADMIN_ALLOWED_TABLES = {
   avatar_item_settings: "id",
 };
 
-const REWARD_COIN_OPTIONS = new Set([50, 100, 200, 300, 1000]);
+const REWARD_COIN_OPTIONS = new Set([50, 100, 200, 300]);
 
 async function isAdminUser(supabase, userId) {
   const { data, error } = await supabase
@@ -91,7 +91,6 @@ export function registerAdminRoutes(app, supabase) {
         .select(`
           id,
           name,
-          nickname,
           description,
           profile_url,
           is_active,
@@ -133,7 +132,6 @@ export function registerAdminRoutes(app, supabase) {
 
       const {
         name,
-        nickname,
         description,
         profile_url,
         is_active,
@@ -147,10 +145,6 @@ export function registerAdminRoutes(app, supabase) {
 
       if (name !== undefined) {
         payload.name = name?.trim();
-      }
-
-      if (nickname !== undefined) {
-        payload.nickname = nickname?.trim() || null;
       }
 
       if (description !== undefined) {
@@ -182,7 +176,6 @@ export function registerAdminRoutes(app, supabase) {
         .select(`
           id,
           name,
-          nickname,
           description,
           profile_url,
           is_active,

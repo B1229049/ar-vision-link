@@ -583,7 +583,7 @@ function HostConsole() {
                     {remoteEntry?.stream ? (
                       <TrackedPlayerVideo
                         stream={remoteEntry.stream}
-                        playerName={user?.nickname || user?.name || "Player"}
+                        playerName={user?.name || "Player"}
                         score={record.score || 0}
                         result={result || ans}
                       />

@@ -5,6 +5,8 @@ import { getItemSetting, normalizeAvatarConfig } from "../utils/avatarConfig";
 import "../styles/Store.css";
 
 const OUTFIT_PRICE = 100;
+const BACKEND_URL =
+  import.meta.env.VITE_API_URL || "https://ar-vision-link.onrender.com";
 const OUTFIT_CATEGORIES = [
   { key: "hair", label: "頭部" },
   { key: "face", label: "臉部" },
@@ -111,10 +113,14 @@ function Store() {
   const [ownedOutfits, setOwnedOutfits] = useState(
     Array.isArray(storedUser?.owned_outfits) ? storedUser.owned_outfits : []
   );
+  const [purchasingId, setPurchasingId] = useState("");
+  const [confirmOutfitId, setConfirmOutfitId] = useState("");
   const previewOutfit =
     STORE_CATALOG.find((outfit) => outfit.id === previewOutfitId) || null;
   const detailOutfit =
     STORE_CATALOG.find((outfit) => outfit.id === detailOutfitId) || null;
+  const confirmOutfit =
+    STORE_CATALOG.find((outfit) => outfit.id === confirmOutfitId) || null;
   const previewConfig = previewOutfit?.config || currentAvatarConfig;
   const previewSettings = previewOutfit?.settings;
   const ownedOutfitIds = new Set(ownedOutfits);
@@ -124,9 +130,7 @@ function Store() {
 
     async function loadEconomy() {
       try {
-        const backendUrl =
-          import.meta.env.VITE_API_URL || "https://ar-vision-link.onrender.com";
-        const response = await fetch(`${backendUrl}/api/users/${storedUser.id}/economy`);
+        const response = await fetch(`${BACKEND_URL}/api/users/${storedUser.id}/economy`);
         const result = await response.json();
         if (!response.ok || !result.success) return;
 
@@ -135,7 +139,7 @@ function Store() {
         localStorage.setItem(
           "currentUser",
           JSON.stringify({
-            ...storedUser,
+            ...JSON.parse(localStorage.getItem("currentUser") || "{}"),
             coins: result.coins,
             owned_outfits: result.owned_outfits,
           })
@@ -146,7 +150,63 @@ function Store() {
     }
 
     loadEconomy();
+    const timer = window.setInterval(loadEconomy, 10000);
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === "visible") loadEconomy();
+    };
+    document.addEventListener("visibilitychange", refreshWhenVisible);
+    window.addEventListener("focus", loadEconomy);
+
+    return () => {
+      window.clearInterval(timer);
+      document.removeEventListener("visibilitychange", refreshWhenVisible);
+      window.removeEventListener("focus", loadEconomy);
+    };
   }, [storedUser]);
+
+  async function purchaseOutfit(outfit) {
+    if (!storedUser?.id || purchasingId) return;
+    setPurchasingId(outfit.id);
+    try {
+      const response = await fetch(
+        `${BACKEND_URL}/api/store/outfits/${outfit.id}/purchase`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ user_id: storedUser.id }),
+        }
+      );
+      const responseText = await response.text();
+      let result;
+      try {
+        result = JSON.parse(responseText);
+      } catch {
+        throw new Error(response.status === 404
+          ? "商城購買服務尚未部署，請重新部署後端"
+          : "後端沒有回傳有效的購買結果");
+      }
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || "購買失敗");
+      }
+
+      setCoins(result.coins);
+      setOwnedOutfits(result.owned_outfits);
+      const latestUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
+      localStorage.setItem("currentUser", JSON.stringify({
+        ...latestUser,
+        coins: result.coins,
+        owned_outfits: result.owned_outfits,
+      }));
+      setPreviewOutfitId(outfit.id);
+      setDetailOutfitId("");
+      setConfirmOutfitId("");
+    } catch (err) {
+      console.error(err);
+      alert(err.message || "購買時發生錯誤");
+    } finally {
+      setPurchasingId("");
+    }
+  }
 
   useEffect(() => {
     if (!detailOutfit) return undefined;
@@ -202,6 +262,7 @@ function Store() {
                     className={`store-outfit-card ${active ? "active" : ""} ${owned ? "owned" : ""}`}
                     style={{ "--outfit-accent": outfit.accent || "#8b5cf6" }}
                   >
+                    {owned && <span className="store-owned-badge">已擁有</span>}
                     <button
                       type="button"
                       className="store-outfit-preview-button"
@@ -228,10 +289,10 @@ function Store() {
                       >
                         <span aria-hidden="true">i</span>
                       </button>
-                      <div className="store-card-price" aria-label={owned ? "已擁有" : `${OUTFIT_PRICE} 金幣`}>
+                      <button type="button" className="store-card-price" aria-label={owned ? "已擁有" : `購買 ${getOutfitName(outfit)}，${OUTFIT_PRICE} 金幣`} disabled={owned || Boolean(purchasingId)} onClick={() => setConfirmOutfitId(outfit.id)}>
                         {!owned && <CoinIcon />}
                         <strong>{owned ? "已擁有" : OUTFIT_PRICE}</strong>
-                      </div>
+                      </button>
                     </div>
                   </article>
                 );
@@ -295,17 +356,34 @@ function Store() {
                   type="button"
                   className="store-detail-try-button"
                   onClick={() => {
-                    setPreviewOutfitId(detailOutfit.id);
-                    setDetailOutfitId("");
+                    if (ownedOutfitIds.has(detailOutfit.id)) {
+                      setPreviewOutfitId(detailOutfit.id);
+                      setDetailOutfitId("");
+                    } else {
+                      setConfirmOutfitId(detailOutfit.id);
+                    }
                   }}
+                  disabled={purchasingId === detailOutfit.id}
                 >
                   {ownedOutfitIds.has(detailOutfit.id) ? (
                     <span>已擁有・立即試穿</span>
                   ) : (
-                    <><CoinIcon /><span>{OUTFIT_PRICE}</span></>
+                    <><CoinIcon /><span>{purchasingId === detailOutfit.id ? "購買中…" : OUTFIT_PRICE}</span></>
                   )}
                 </button>
               </div>
+            </div>
+          </section>
+        </div>
+      )}
+
+      {confirmOutfit && (
+        <div className="store-purchase-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget && !purchasingId) setConfirmOutfitId(""); }}>
+          <section className="store-purchase-dialog" role="dialog" aria-modal="true" aria-labelledby="store-purchase-title">
+            <h2 id="store-purchase-title">是否購買 ?</h2>
+            <div className="store-purchase-actions">
+              <button type="button" className="confirm" disabled={Boolean(purchasingId)} onClick={() => purchaseOutfit(confirmOutfit)}>{purchasingId ? "購買中…" : "確定"}</button>
+              <button type="button" className="cancel" disabled={Boolean(purchasingId)} onClick={() => setConfirmOutfitId("")}>取消</button>
             </div>
           </section>
         </div>

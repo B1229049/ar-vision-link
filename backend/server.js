@@ -56,7 +56,6 @@ const upload = multer({
 const USER_PUBLIC_SELECT = `
   id,
   name,
-  nickname,
   description,
   profile_url,
   avatar_config,
@@ -68,7 +67,6 @@ const USER_PUBLIC_SELECT = `
 const USER_PRIVATE_SELECT = `
   id,
   name,
-  nickname,
   description,
   profile_url,
   avatar_config,
@@ -231,7 +229,6 @@ async function getLeaderboard(sessionId) {
       users (
         id,
         name,
-        nickname,
         description,
         profile_url,
         avatar_config
@@ -522,7 +519,6 @@ app.post("/api/users/register", async (req, res) => {
   try {
     const {
       name,
-      nickname,
       description,
       profile_url,
       face_embedding,
@@ -557,7 +553,6 @@ app.post("/api/users/register", async (req, res) => {
       .insert([
         {
           name: name.trim(),
-          nickname: nickname?.trim() || "",
           description: description?.trim() || "",
           profile_url: profile_url || "",
           avatar_config: normalizeAvatarConfig(
@@ -588,7 +583,6 @@ app.put("/api/users/:id", async (req, res) => {
 
     const {
       name,
-      nickname,
       description,
       profile_url,
       is_active,
@@ -599,7 +593,6 @@ app.put("/api/users/:id", async (req, res) => {
     };
 
     if (name !== undefined) updateData.name = name;
-    if (nickname !== undefined) updateData.nickname = nickname;
     if (description !== undefined) updateData.description = description;
     if (profile_url !== undefined) {
       if (typeof profile_url !== "string" || !profile_url.startsWith("data:image/")) {
@@ -928,6 +921,74 @@ app.post("/api/rewards/:token/claim", async (req, res) => {
       success: true,
       coins_awarded: result.coins_awarded,
       coins: result.new_balance,
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.post("/api/store/outfits/:outfitId/purchase", async (req, res) => {
+  try {
+    const userId = Number(req.body?.user_id);
+    const outfitId = req.params.outfitId;
+    if (!Number.isInteger(userId) || !STORE_OUTFIT_IDS.has(outfitId)) {
+      return res.status(400).json({ success: false, error: "購買資料無效" });
+    }
+
+    let { data, error } = await supabase.rpc("purchase_store_outfit", {
+      p_user_id: userId,
+      p_outfit_id: outfitId,
+      p_price: 100,
+    });
+    if (error && (error.code === "PGRST202" || /purchase_store_outfit/i.test(error.message || ""))) {
+      const { data: user, error: userError } = await supabase
+        .from("users")
+        .select("coins, owned_outfits")
+        .eq("id", userId)
+        .maybeSingle();
+      if (userError) throw userError;
+      if (!user) {
+        data = [{ purchase_status: "user_not_found", new_balance: null, owned_outfits: [] }];
+      } else {
+        const owned = Array.isArray(user.owned_outfits) ? user.owned_outfits : [];
+        const balance = Math.max(Number(user.coins) || 0, 0);
+        if (owned.includes(outfitId)) {
+          data = [{ purchase_status: "already_owned", new_balance: balance, owned_outfits: owned }];
+        } else if (balance < 100) {
+          data = [{ purchase_status: "insufficient_coins", new_balance: balance, owned_outfits: owned }];
+        } else {
+          const nextOwned = [...owned, outfitId];
+          const nextBalance = balance - 100;
+          const { error: updateError } = await supabase.from("users").update({ coins: nextBalance, owned_outfits: nextOwned }).eq("id", userId);
+          if (updateError) throw updateError;
+          data = [{ purchase_status: "purchased", new_balance: nextBalance, owned_outfits: nextOwned }];
+        }
+      }
+      error = null;
+    }
+    if (error) throw error;
+
+    const result = data?.[0];
+    const messages = {
+      invalid_outfit: "找不到這套造型",
+      user_not_found: "找不到可購買的使用者",
+      already_owned: "你已經擁有這套造型",
+      insufficient_coins: "金幣不足",
+    };
+    if (result?.purchase_status !== "purchased") {
+      return res.status(result?.purchase_status === "already_owned" ? 409 : 400).json({
+        success: false,
+        status: result?.purchase_status,
+        error: messages[result?.purchase_status] || "購買失敗",
+        coins: result?.new_balance,
+        owned_outfits: result?.owned_outfits || [],
+      });
+    }
+
+    res.json({
+      success: true,
+      coins: result.new_balance,
+      owned_outfits: result.owned_outfits || [],
     });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
@@ -1924,7 +1985,6 @@ app.get("/api/player-records/session/:sessionId", async (req, res) => {
         users (
           id,
           name,
-          nickname,
           profile_url
         )
       `)
@@ -2079,7 +2139,6 @@ app.get("/api/player-answers/session/:sessionId/question/:questionId", async (re
         users (
           id,
           name,
-          nickname,
           profile_url
         )
       `)
@@ -2272,7 +2331,6 @@ app.get("/api/history/player/:userId/session/:sessionId", async (req, res) => {
         users (
           id,
           name,
-          nickname,
           profile_url
         )
       `)
@@ -2456,7 +2514,6 @@ app.get("/api/history/host/:hostId/session/:sessionId", async (req, res) => {
         users (
           id,
           name,
-          nickname,
           profile_url
         )
       `)
@@ -2484,7 +2541,6 @@ app.get("/api/history/host/:hostId/session/:sessionId", async (req, res) => {
         users (
           id,
           name,
-          nickname,
           profile_url
         ),
         questions (

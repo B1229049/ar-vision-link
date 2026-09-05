@@ -248,7 +248,6 @@ function QuizGame() {
           user: {
             id: currentUser.id,
             name: currentUser.name,
-            nickname: currentUser.nickname,
             profile_url: currentUser.profile_url,
           },
         });
@@ -481,7 +480,7 @@ function QuizGame() {
           {cameraError && <div className="camera-error">{cameraError}</div>}
 
           <div className="ar-status-box">
-            <strong>{currentUser?.nickname || currentUser?.name}</strong>
+            <strong>{currentUser?.name}</strong>
             <span>Score: {score}</span>
 
             {answerResult && (

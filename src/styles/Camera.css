@@ -108,11 +108,6 @@
   font-weight: 700;
 }
 
-.nameplate .nickname {
-  font-size: 13px;
-  opacity: 0.9;
-}
-
 .status-panel {
   position: fixed;
   left: 16px;
