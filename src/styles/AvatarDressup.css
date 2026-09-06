@@ -75,13 +75,11 @@
   top: calc(50% + 100px);
   width: min(190px, 92%);
   height: 26px;
-  border: 2px solid rgba(168, 85, 247, 0.62);
+  border: 2px solid #58468e;
   border-radius: 50%;
-  background: rgba(126, 34, 206, 0.08);
+  background: #241b35;
   transform: translate(-50%, -50%);
-  box-shadow:
-    0 0 34px rgba(126, 34, 206, 0.2),
-    inset 0 0 22px rgba(168, 85, 247, 0.08);
+  box-shadow: none;
 }
 
 .avatar-tabs {
@@ -245,7 +243,6 @@
 
 .avatar-item-thumb .avatar-item-custom-thumb {
   z-index: 1;
-  transform: none;
 }
 
 .avatar-dressup-btn {

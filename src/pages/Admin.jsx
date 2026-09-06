@@ -5,6 +5,7 @@ import "../styles/Admin.css";
 const BACKEND_URL =
   import.meta.env.VITE_API_URL || "https://ar-vision-link.onrender.com";
 const COIN_OPTIONS = [50, 100, 200, 300];
+const SUPABASE_USAGE_URL = "https://supabase.com/dashboard/org/_/usage";
 const ADMIN_TABLES = [
   ["users", "Users"],
   ["quizzes", "Quizzes"],
@@ -21,6 +22,13 @@ const ADMIN_TABLES = [
   ["avatar_item_settings", "Avatar Settings"],
 ];
 
+async function fetchOverview(adminUserId) {
+  const response = await fetch(`${BACKEND_URL}/api/admin/overview?admin_id=${adminUserId}`);
+  const result = await response.json();
+  if (!response.ok || !result.success) throw new Error(result.error || "無法讀取系統總覽");
+  return result.overview;
+}
+
 function dateInputValue(date) {
   const offset = date.getTimezoneOffset() * 60 * 1000;
   return new Date(date.getTime() - offset).toISOString().slice(0, 10);
@@ -33,6 +41,32 @@ function localDateFromValue(value) {
 
 function monthKey(date) {
   return date.getFullYear() * 12 + date.getMonth();
+}
+
+function formatBytes(value) {
+  if (value == null) return "尚未取得";
+  const units = ["B", "KB", "MB", "GB"];
+  let amount = Math.max(Number(value) || 0, 0);
+  let unit = 0;
+  while (amount >= 1024 && unit < units.length - 1) {
+    amount /= 1024;
+    unit += 1;
+  }
+  return `${amount.toFixed(unit > 1 ? 1 : 0)} ${units[unit]}`;
+}
+
+function ResourceCard({ label, used, limit, unavailable, children }) {
+  const percent = used == null ? 0 : Math.min((used / limit) * 100, 100);
+  return (
+    <article className="admin-resource-card">
+      <span>{label}</span>
+      {children || <>
+        <strong>{unavailable ? "—" : formatBytes(Math.max(limit - used, 0))}</strong>
+        <small>{unavailable ? unavailable : `已使用 ${formatBytes(used)}／額度 ${formatBytes(limit)}`}</small>
+        {!unavailable && <div className="admin-resource-progress"><i style={{ width: `${percent}%` }} /></div>}
+      </>}
+    </article>
+  );
 }
 
 function RewardCalendar({ value, min, max, onChange, onClose }) {
@@ -73,6 +107,9 @@ function RewardCalendar({ value, min, max, onChange, onClose }) {
 }
 
 function SidebarIcon({ name }) {
+  if (name === "overview") {
+    return <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="2" /><rect x="14" y="3" width="7" height="7" rx="2" /><rect x="3" y="14" width="7" height="7" rx="2" /><rect x="14" y="14" width="7" height="7" rx="2" /></svg>;
+  }
   return name === "reward" ? (
     <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="8" width="18" height="13" rx="2" /><path d="M12 8v13M3 12h18M7.5 8C5 8 4 6.8 4 5.4S5.1 3 6.6 3C9 3 12 8 12 8s3-5 5.4-5C18.9 3 20 4 20 5.4S19 8 16.5 8" /></svg>
   ) : (
@@ -86,7 +123,7 @@ function Admin() {
     catch { return null; }
   }, []);
   const adminUserId = adminUser?.id;
-  const [view, setView] = useState("rewards");
+  const [view, setView] = useState("overview");
   const [tablesExpanded, setTablesExpanded] = useState(false);
   const [selectedTable, setSelectedTable] = useState("");
   const [tableRows, setTableRows] = useState([]);
@@ -100,6 +137,9 @@ function Admin() {
   const [creatingReward, setCreatingReward] = useState(false);
   const [rewards, setRewards] = useState([]);
   const [rewardMessage, setRewardMessage] = useState("");
+  const [overview, setOverview] = useState(null);
+  const [overviewLoading, setOverviewLoading] = useState(true);
+  const [overviewError, setOverviewError] = useState("");
   const minRewardDate = dateInputValue(new Date());
   const maxRewardDate = useMemo(() => {
     const date = new Date();
@@ -117,6 +157,29 @@ function Admin() {
       console.warn("無法取得獎勵紀錄：", err);
     }
   }
+
+  async function loadOverview() {
+    if (!adminUserId) return;
+    setOverviewLoading(true);
+    setOverviewError("");
+    try {
+      setOverview(await fetchOverview(adminUserId));
+    } catch (err) {
+      setOverviewError(err.message);
+    } finally {
+      setOverviewLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    if (!adminUserId) return undefined;
+    let cancelled = false;
+    fetchOverview(adminUserId)
+      .then((data) => { if (!cancelled) setOverview(data); })
+      .catch((err) => { if (!cancelled) setOverviewError(err.message); })
+      .finally(() => { if (!cancelled) setOverviewLoading(false); });
+    return () => { cancelled = true; };
+  }, [adminUserId]);
 
   useEffect(() => {
     let cancelled = false;
@@ -196,6 +259,7 @@ function Admin() {
       <aside className="admin-sidebar">
         <div className="admin-brand"><strong>Admin Center</strong></div>
         <nav>
+          <button className={view === "overview" ? "active" : ""} onClick={() => setView("overview")}><SidebarIcon name="overview" /><span>總覽</span></button>
           <button className={view === "rewards" ? "active" : ""} onClick={() => setView("rewards")}><SidebarIcon name="reward" /><span>派發獎勵</span></button>
           <button className={`admin-database-toggle ${view === "database" ? "active" : ""}`} onClick={() => setTablesExpanded((open) => !open)} aria-expanded={tablesExpanded}><SidebarIcon name="database" /><span>資料表</span><b aria-hidden="true">⌄</b></button>
           {tablesExpanded && <div className="admin-table-menu">{ADMIN_TABLES.map(([key, name]) => <button key={key} className={selectedTable === key ? "active" : ""} onClick={() => loadTable(key)}>{name}</button>)}</div>}
@@ -203,7 +267,19 @@ function Admin() {
       </aside>
 
       <section className="admin-workspace">
-        <header className="admin-topbar"><div><small>ADMIN CENTER</small><h1>{view === "rewards" ? "派發獎勵" : selectedTable ? ADMIN_TABLES.find(([key]) => key === selectedTable)?.[1] : "資料表"}</h1></div><span className="admin-status">系統運作中</span></header>
+        <header className="admin-topbar"><div><h1>{view === "overview" ? "總覽" : view === "rewards" ? "派發獎勵" : selectedTable ? ADMIN_TABLES.find(([key]) => key === selectedTable)?.[1] : "資料表"}</h1></div><span className="admin-status">系統運作中</span></header>
+
+        {view === "overview" && <section className="admin-overview">
+          <div className="admin-overview-heading"><div><h2>Supabase 資源</h2><p>空間為即時估算；月流量請以 Supabase 官方 Usage 結算資料為準。</p></div><button type="button" onClick={loadOverview} disabled={overviewLoading}>{overviewLoading ? "更新中…" : "重新整理"}</button></div>
+          {overviewError && <p className="admin-error">{overviewError}</p>}
+          <div className="admin-resource-grid">
+            <ResourceCard label="使用者總數"><strong>{overviewLoading ? "—" : Number(overview?.user_count || 0).toLocaleString()}</strong><small>目前 users 資料表中的帳號數量</small></ResourceCard>
+            <ResourceCard label="資料庫剩餘空間" used={overview?.database?.used_bytes} limit={overview?.database?.limit_bytes || 524288000} unavailable={overviewLoading ? "載入中…" : overview?.database?.used_bytes == null ? "需在 Supabase 執行專案附帶的統計 SQL" : ""} />
+            <ResourceCard label="Storage 剩餘空間" used={overview?.storage?.used_bytes} limit={overview?.storage?.limit_bytes || 1073741824} unavailable={overviewLoading ? "載入中…" : overview?.storage?.used_bytes == null ? "需在 Supabase 執行專案附帶的統計 SQL" : ""} />
+            <ResourceCard label="本月傳輸流量"><strong>5 GB 額度</strong><small>Supabase 未向 service-role 提供帳務流量；請由官方 Usage 查看實際剩餘量</small></ResourceCard>
+          </div>
+          <a className="admin-usage-link" href={SUPABASE_USAGE_URL} target="_blank" rel="noreferrer">開啟 Supabase Usage 查看流量與完整用量</a>
+        </section>}
 
         {view === "rewards" && <div className="admin-reward-layout">
           <section className="admin-panel reward-form-panel"><div className="admin-panel-heading"><div><h2>建立金幣獎勵</h2><p>每個帳號對同一個 QR Code 僅能領取一次</p></div></div><form onSubmit={createReward}><label>派發金幣<select value={rewardCoins} onChange={(e) => setRewardCoins(e.target.value)}>{COIN_OPTIONS.map((value) => <option key={value} value={value}>{value} 金幣</option>)}</select></label><div className="admin-date-field"><span>截止日期</span><button type="button" className="admin-date-trigger" onClick={() => setCalendarOpen((open) => !open)} aria-expanded={calendarOpen}>{localDateFromValue(rewardDate).toLocaleDateString("zh-TW", { year: "numeric", month: "long", day: "numeric" })}<b aria-hidden="true">▾</b></button>{calendarOpen && <RewardCalendar value={rewardDate} min={minRewardDate} max={maxRewardDate} onChange={setRewardDate} onClose={() => setCalendarOpen(false)} />}<small>有效至當日 23:59，僅能選擇 5 天內日期</small></div><button className="admin-primary-button" disabled={creatingReward}>{creatingReward ? "建立中…" : "產生 QR Code"}</button>{rewardMessage && <p className="reward-message">{rewardMessage}</p>}</form></section>

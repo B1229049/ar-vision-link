@@ -222,7 +222,9 @@ function AvatarDressup() {
               const active = avatarConfig[activeCategory] === item.id;
               const frontSetting = getItemSetting(itemSettings, item.id, "front");
               const backSetting = getItemSetting(itemSettings, item.id, "back");
+              const overlaySetting = getItemSetting(itemSettings, item.id, "overlay");
               const showBackThumb = backSetting.show_thumb !== false;
+              const isStoreItem = item.id.startsWith("store-outfit-");
 
               return (
                 <button
@@ -233,31 +235,33 @@ function AvatarDressup() {
                   title={item.label}
                 >
                   <span className="avatar-item-thumb">
-                    {item.backImg && showBackThumb && (
-                      <img
-                        src={item.backImg}
-                        alt=""
-                        style={{
-                          transform: thumbTransform(backSetting),
-                        }}
-                      />
-                    )}
-                    <img
-                      src={item.frontImg}
-                      alt=""
-                      style={{
-                        transform: thumbTransform(frontSetting),
-                      }}
-                    />
-                    {item.thumbImg && (
+                    {isStoreItem && item.thumbImg ? (
                       <img
                         className="avatar-item-custom-thumb"
                         src={item.thumbImg}
                         alt=""
-                        onError={(event) => {
-                          event.currentTarget.style.display = "none";
+                        style={{
+                          transform: thumbTransform(frontSetting),
                         }}
                       />
+                    ) : (
+                      <>
+                        {item.backImg && showBackThumb && (
+                          <img src={item.backImg} alt="" style={{ transform: thumbTransform(backSetting) }} />
+                        )}
+                        <img src={item.frontImg} alt="" style={{ transform: thumbTransform(frontSetting) }} />
+                        {item.overlayImg && (
+                          <img src={item.overlayImg} alt="" style={{ transform: thumbTransform(overlaySetting) }} />
+                        )}
+                        {!isStoreItem && item.thumbImg && (
+                          <img
+                            className="avatar-item-custom-thumb"
+                            src={item.thumbImg}
+                            alt=""
+                            onError={(event) => { event.currentTarget.style.display = "none"; }}
+                          />
+                        )}
+                      </>
                     )}
                   </span>
                 </button>

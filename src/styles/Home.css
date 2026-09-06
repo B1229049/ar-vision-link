@@ -431,8 +431,7 @@
 .home-shop-button { width: 100%; min-height: 88px; padding: 14px 18px; display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 14px; border-radius: 16px; color: white; text-align: left; cursor: pointer; font: inherit; background: var(--app-glass-surface); border: 1px solid var(--app-glass-border); }
 .shop-icon-wrap { width: 56px; height: 56px; display: grid; place-items: center; border-radius: 15px; color: #f3ecff; background: rgba(185, 94, 255, 0.14); border: 1px solid rgba(211, 145, 255, 0.2); }
 .shop-icon-wrap svg { width: 36px; height: 36px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
-.home-qr-button .shop-icon-wrap { color: #f3e8ff; background: rgba(147, 51, 234, 0.3); border-color: rgba(216, 180, 254, 0.34); }
-.home-qr-button .shop-icon-wrap svg { stroke-width: 0; fill: currentColor; }
+.home-qr-button .shop-icon-wrap svg { width: 30px; height: 30px; stroke-width: 0; fill: currentColor; }
 .shop-button-copy strong,
 .shop-button-copy small { display: block; }
 .shop-button-copy strong { font-size: 21px; }

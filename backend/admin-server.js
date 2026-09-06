@@ -29,6 +29,45 @@ async function isAdminUser(supabase, userId) {
 
 export function registerAdminRoutes(app, supabase) {
 
+  app.get("/api/admin/overview", async (req, res) => {
+    try {
+      const adminId = Number(req.query.admin_id);
+      if (!(await isAdminUser(supabase, adminId))) {
+        return res.status(403).json({ success: false, error: "只有管理員能查看系統總覽" });
+      }
+
+      const { count: userCount, error: countError } = await supabase
+        .from("users")
+        .select("id", { count: "exact", head: true });
+      if (countError) throw countError;
+
+      const { data: resourceUsage, error: usageError } = await supabase
+        .rpc("get_admin_resource_usage");
+      const usage = !usageError && resourceUsage && typeof resourceUsage === "object"
+        ? resourceUsage
+        : {};
+
+      res.json({
+        success: true,
+        overview: {
+          user_count: userCount || 0,
+          database: {
+            used_bytes: Number.isFinite(Number(usage.database_bytes)) ? Number(usage.database_bytes) : null,
+            limit_bytes: 500 * 1024 * 1024,
+          },
+          storage: {
+            used_bytes: Number.isFinite(Number(usage.storage_bytes)) ? Number(usage.storage_bytes) : null,
+            limit_bytes: 1024 * 1024 * 1024,
+          },
+          egress: { used_bytes: null, limit_bytes: 5 * 1024 * 1024 * 1024 },
+          measured_at: new Date().toISOString(),
+        },
+      });
+    } catch (err) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
   app.post("/api/admin/rewards", async (req, res) => {
     try {
       const coins = Number(req.body?.coins);
