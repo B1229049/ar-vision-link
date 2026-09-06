@@ -1,16 +1,17 @@
-const ADMIN_ALLOWED_TABLES = {
-  coin_rewards: "id",
-  coin_reward_claims: "reward_id",
-  quizzes: "quiz_id",
-  questions: "question_id",
-  game_sessions: "session_id",
-  player_records: "record_id",
-  user_face_images: "id",
-  user_face_embeddings: "id",
-  vision_sessions: "id",
-  vision_detection_logs: "id",
-  player_answers: "answer_id",
-  avatar_item_settings: "id",
+const ADMIN_TABLE_KEYS = {
+  users: ["id"],
+  coin_rewards: ["id"],
+  coin_reward_claims: ["reward_id", "user_id"],
+  quizzes: ["quiz_id"],
+  questions: ["question_id"],
+  game_sessions: ["session_id"],
+  player_records: ["record_id"],
+  user_face_images: ["id"],
+  user_face_embeddings: ["id"],
+  vision_sessions: ["id"],
+  vision_detection_logs: ["id"],
+  player_answers: ["answer_id"],
+  avatar_item_settings: ["id"],
 };
 
 const REWARD_COIN_OPTIONS = new Set([50, 100, 200, 300]);
@@ -25,6 +26,15 @@ async function isAdminUser(supabase, userId) {
     .maybeSingle();
 
   return !error && Boolean(data);
+}
+
+function applyRowKeys(query, keyColumns, rowKeys) {
+  return keyColumns.reduce((nextQuery, column) => {
+    if (rowKeys?.[column] === undefined || rowKeys?.[column] === null) {
+      throw new Error(`缺少資料列識別欄位：${column}`);
+    }
+    return nextQuery.eq(column, rowKeys[column]);
+  }, query);
 }
 
 export function registerAdminRoutes(app, supabase) {
@@ -288,7 +298,7 @@ export function registerAdminRoutes(app, supabase) {
     try {
       const { table } = req.params;
 
-      if (!ADMIN_ALLOWED_TABLES[table]) {
+      if (!ADMIN_TABLE_KEYS[table]) {
         return res.status(400).json({
           success: false,
           error: "Table not allowed",
@@ -299,7 +309,7 @@ export function registerAdminRoutes(app, supabase) {
         .from(table)
         .select("*")
         .order(
-          ADMIN_ALLOWED_TABLES[table],
+          ADMIN_TABLE_KEYS[table][0],
           { ascending: true }
         );
 
@@ -320,6 +330,59 @@ export function registerAdminRoutes(app, supabase) {
         success: false,
         error: err.message,
       });
+    }
+  });
+
+  app.put("/api/admin/table/:table", async (req, res) => {
+    try {
+      const { table } = req.params;
+      const adminId = Number(req.body?.admin_id);
+      const keyColumns = ADMIN_TABLE_KEYS[table];
+      if (!keyColumns) return res.status(400).json({ success: false, error: "Table not allowed" });
+      if (!(await isAdminUser(supabase, adminId))) {
+        return res.status(403).json({ success: false, error: "只有管理員能修改資料" });
+      }
+
+      const updates = req.body?.data;
+      if (!updates || typeof updates !== "object" || Array.isArray(updates)) {
+        return res.status(400).json({ success: false, error: "沒有可更新的資料" });
+      }
+      const safeUpdates = Object.fromEntries(
+        Object.entries(updates).filter(([column]) => !keyColumns.includes(column))
+      );
+      if (!Object.keys(safeUpdates).length) {
+        return res.status(400).json({ success: false, error: "主鍵不可修改" });
+      }
+
+      let query = supabase.from(table).update(safeUpdates);
+      query = applyRowKeys(query, keyColumns, req.body?.keys);
+      const { data, error } = await query.select("*").maybeSingle();
+      if (error) throw error;
+      if (!data) return res.status(404).json({ success: false, error: "找不到這筆資料" });
+      res.json({ success: true, row: data });
+    } catch (err) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
+  app.delete("/api/admin/table/:table", async (req, res) => {
+    try {
+      const { table } = req.params;
+      const adminId = Number(req.body?.admin_id);
+      const keyColumns = ADMIN_TABLE_KEYS[table];
+      if (!keyColumns) return res.status(400).json({ success: false, error: "Table not allowed" });
+      if (!(await isAdminUser(supabase, adminId))) {
+        return res.status(403).json({ success: false, error: "只有管理員能刪除資料" });
+      }
+
+      let query = supabase.from(table).delete();
+      query = applyRowKeys(query, keyColumns, req.body?.keys);
+      const { data, error } = await query.select(keyColumns.join(",")).maybeSingle();
+      if (error) throw error;
+      if (!data) return res.status(404).json({ success: false, error: "找不到這筆資料" });
+      res.json({ success: true, deleted: data });
+    } catch (err) {
+      res.status(500).json({ success: false, error: err.message });
     }
   });
 

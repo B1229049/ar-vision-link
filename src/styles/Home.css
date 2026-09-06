@@ -432,6 +432,10 @@
 .shop-icon-wrap { width: 56px; height: 56px; display: grid; place-items: center; border-radius: 15px; color: #f3ecff; background: rgba(185, 94, 255, 0.14); border: 1px solid rgba(211, 145, 255, 0.2); }
 .shop-icon-wrap svg { width: 36px; height: 36px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
 .home-qr-button .shop-icon-wrap svg { width: 30px; height: 30px; stroke-width: 0; fill: currentColor; }
+.home-avatar-edit-button { background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.1); }
+.home-avatar-edit-button:hover { background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.14); }
+.home-avatar-edit-button .shop-icon-wrap svg { width: 30px; height: 30px; }
+.home-avatar-edit-button .shop-button-copy { align-self: stretch; padding-top: 9px; box-sizing: border-box; }
 .shop-button-copy strong,
 .shop-button-copy small { display: block; }
 .shop-button-copy strong { font-size: 21px; }

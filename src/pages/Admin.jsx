@@ -5,7 +5,6 @@ import "../styles/Admin.css";
 const BACKEND_URL =
   import.meta.env.VITE_API_URL || "https://ar-vision-link.onrender.com";
 const COIN_OPTIONS = [50, 100, 200, 300];
-const SUPABASE_USAGE_URL = "https://supabase.com/dashboard/org/_/usage";
 const ADMIN_TABLES = [
   ["users", "Users"],
   ["quizzes", "Quizzes"],
@@ -21,6 +20,13 @@ const ADMIN_TABLES = [
   ["vision_detection_logs", "Vision Logs"],
   ["avatar_item_settings", "Avatar Settings"],
 ];
+const ADMIN_TABLE_KEYS = {
+  users: ["id"], coin_rewards: ["id"], coin_reward_claims: ["reward_id", "user_id"],
+  quizzes: ["quiz_id"], questions: ["question_id"], game_sessions: ["session_id"],
+  player_records: ["record_id"], player_answers: ["answer_id"], user_face_images: ["id"],
+  user_face_embeddings: ["id"], vision_sessions: ["id"], vision_detection_logs: ["id"],
+  avatar_item_settings: ["id"],
+};
 
 async function fetchOverview(adminUserId) {
   const response = await fetch(`${BACKEND_URL}/api/admin/overview?admin_id=${adminUserId}`);
@@ -67,6 +73,30 @@ function ResourceCard({ label, used, limit, unavailable, children }) {
       </>}
     </article>
   );
+}
+
+function cellText(value) {
+  if (value == null) return "";
+  return typeof value === "object" ? JSON.stringify(value) : String(value);
+}
+
+function parseEditedValue(value, originalValue) {
+  if (originalValue == null) {
+    const trimmedValue = value.trim();
+    if (!trimmedValue) return null;
+    if (/^(true|false)$/i.test(value)) return value.toLowerCase() === "true";
+    if (/^-?\d+(\.\d+)?$/.test(value)) return Number(value);
+    if (trimmedValue.startsWith("[") || trimmedValue.startsWith("{")) return JSON.parse(value);
+    return value;
+  }
+  if (typeof originalValue === "boolean") return value === "true";
+  if (typeof originalValue === "number") {
+    const number = Number(value);
+    if (!Number.isFinite(number)) throw new Error("數字欄位格式錯誤");
+    return number;
+  }
+  if (typeof originalValue === "object") return JSON.parse(value);
+  return value;
 }
 
 function RewardCalendar({ value, min, max, onChange, onClose }) {
@@ -129,6 +159,9 @@ function Admin() {
   const [tableRows, setTableRows] = useState([]);
   const [tableLoading, setTableLoading] = useState(false);
   const [tableError, setTableError] = useState("");
+  const [editingRow, setEditingRow] = useState(null);
+  const [editDraft, setEditDraft] = useState({});
+  const [savingRow, setSavingRow] = useState(false);
   const [rewardCoins, setRewardCoins] = useState(100);
   const [rewardDate, setRewardDate] = useState(dateInputValue(new Date()));
   const [calendarOpen, setCalendarOpen] = useState(false);
@@ -215,6 +248,65 @@ function Admin() {
     }
   }
 
+  function rowKeys(row) {
+    return Object.fromEntries((ADMIN_TABLE_KEYS[selectedTable] || []).map((key) => [key, row[key]]));
+  }
+
+  function beginRowEdit(row) {
+    setEditingRow(row);
+    setEditDraft(Object.fromEntries(Object.entries(row).map(([key, value]) => [key, cellText(value)])));
+    setTableError("");
+  }
+
+  async function saveRow() {
+    if (!editingRow || !selectedTable) return;
+    setSavingRow(true);
+    setTableError("");
+    try {
+      const keyColumns = ADMIN_TABLE_KEYS[selectedTable] || [];
+      const data = {};
+      for (const [column, originalValue] of Object.entries(editingRow)) {
+        if (keyColumns.includes(column)) continue;
+        const parsed = parseEditedValue(editDraft[column] ?? "", originalValue);
+        if (JSON.stringify(parsed) !== JSON.stringify(originalValue)) data[column] = parsed;
+      }
+      if (!Object.keys(data).length) {
+        setEditingRow(null);
+        return;
+      }
+      const response = await fetch(`${BACKEND_URL}/api/admin/table/${selectedTable}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ admin_id: adminUserId, keys: rowKeys(editingRow), data }),
+      });
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.error || "修改失敗");
+      setEditingRow(null);
+      await loadTable(selectedTable);
+    } catch (err) {
+      setTableError(err.message);
+    } finally {
+      setSavingRow(false);
+    }
+  }
+
+  async function deleteRow(row) {
+    if (!selectedTable || !window.confirm("確定要刪除這筆資料嗎？刪除後無法復原。")) return;
+    setTableError("");
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/admin/table/${selectedTable}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ admin_id: adminUserId, keys: rowKeys(row) }),
+      });
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.error || "刪除失敗");
+      await loadTable(selectedTable);
+    } catch (err) {
+      setTableError(err.message);
+    }
+  }
+
   async function createReward(event) {
     event.preventDefault();
     if (rewardDate < minRewardDate || rewardDate > maxRewardDate) return;
@@ -259,7 +351,7 @@ function Admin() {
       <aside className="admin-sidebar">
         <div className="admin-brand"><strong>Admin Center</strong></div>
         <nav>
-          <button className={view === "overview" ? "active" : ""} onClick={() => setView("overview")}><SidebarIcon name="overview" /><span>總覽</span></button>
+          <button className={view === "overview" ? "active" : ""} onClick={() => setView("overview")}><SidebarIcon name="overview" /><span>資源監控</span></button>
           <button className={view === "rewards" ? "active" : ""} onClick={() => setView("rewards")}><SidebarIcon name="reward" /><span>派發獎勵</span></button>
           <button className={`admin-database-toggle ${view === "database" ? "active" : ""}`} onClick={() => setTablesExpanded((open) => !open)} aria-expanded={tablesExpanded}><SidebarIcon name="database" /><span>資料表</span><b aria-hidden="true">⌄</b></button>
           {tablesExpanded && <div className="admin-table-menu">{ADMIN_TABLES.map(([key, name]) => <button key={key} className={selectedTable === key ? "active" : ""} onClick={() => loadTable(key)}>{name}</button>)}</div>}
@@ -267,18 +359,16 @@ function Admin() {
       </aside>
 
       <section className="admin-workspace">
-        <header className="admin-topbar"><div><h1>{view === "overview" ? "總覽" : view === "rewards" ? "派發獎勵" : selectedTable ? ADMIN_TABLES.find(([key]) => key === selectedTable)?.[1] : "資料表"}</h1></div><span className="admin-status">系統運作中</span></header>
+        <header className="admin-topbar"><div><h1>{view === "overview" ? "Supabase 資源" : view === "rewards" ? "派發獎勵" : selectedTable ? ADMIN_TABLES.find(([key]) => key === selectedTable)?.[1] : "資料表"}</h1></div><span className="admin-status">系統運作中</span></header>
 
         {view === "overview" && <section className="admin-overview">
-          <div className="admin-overview-heading"><div><h2>Supabase 資源</h2><p>空間為即時估算；月流量請以 Supabase 官方 Usage 結算資料為準。</p></div><button type="button" onClick={loadOverview} disabled={overviewLoading}>{overviewLoading ? "更新中…" : "重新整理"}</button></div>
+          <div className="admin-overview-heading"><button type="button" onClick={loadOverview} disabled={overviewLoading}>{overviewLoading ? "更新中…" : "重新整理"}</button></div>
           {overviewError && <p className="admin-error">{overviewError}</p>}
           <div className="admin-resource-grid">
             <ResourceCard label="使用者總數"><strong>{overviewLoading ? "—" : Number(overview?.user_count || 0).toLocaleString()}</strong><small>目前 users 資料表中的帳號數量</small></ResourceCard>
             <ResourceCard label="資料庫剩餘空間" used={overview?.database?.used_bytes} limit={overview?.database?.limit_bytes || 524288000} unavailable={overviewLoading ? "載入中…" : overview?.database?.used_bytes == null ? "需在 Supabase 執行專案附帶的統計 SQL" : ""} />
             <ResourceCard label="Storage 剩餘空間" used={overview?.storage?.used_bytes} limit={overview?.storage?.limit_bytes || 1073741824} unavailable={overviewLoading ? "載入中…" : overview?.storage?.used_bytes == null ? "需在 Supabase 執行專案附帶的統計 SQL" : ""} />
-            <ResourceCard label="本月傳輸流量"><strong>5 GB 額度</strong><small>Supabase 未向 service-role 提供帳務流量；請由官方 Usage 查看實際剩餘量</small></ResourceCard>
           </div>
-          <a className="admin-usage-link" href={SUPABASE_USAGE_URL} target="_blank" rel="noreferrer">開啟 Supabase Usage 查看流量與完整用量</a>
         </section>}
 
         {view === "rewards" && <div className="admin-reward-layout">
@@ -287,8 +377,10 @@ function Admin() {
           <section className="admin-panel reward-history"><div className="admin-panel-heading"><div><h2>最近建立</h2><p>最近 30 筆獎勵</p></div></div><div className="reward-history-list">{rewards.map((reward) => <article key={reward.id}><strong>{reward.coins} 金幣</strong><span>截止 {new Date(reward.expires_at).toLocaleString("zh-TW")}</span><small>{reward.coin_reward_claims?.[0]?.count || 0} 人已領取</small></article>)}</div></section>
         </div>}
 
-        {view === "database" && <section className="admin-panel"><div className="admin-panel-heading"><div><h2>{selectedTable || "資料表內容"}</h2><p>{selectedTable ? "目前資料表的即時內容" : "請從左側展開並選擇資料表"}</p></div></div>{tableError && <p className="admin-error">{tableError}</p>}{tableLoading ? <p>載入中…</p> : tableRows.length ? <div className="admin-data-table-wrapper"><table className="admin-table"><thead><tr>{Object.keys(tableRows[0]).map((key) => <th key={key}>{key}</th>)}</tr></thead><tbody>{tableRows.map((row, index) => <tr key={index}>{Object.keys(tableRows[0]).map((key) => <td key={key}>{row[key] == null ? "—" : typeof row[key] === "object" ? JSON.stringify(row[key]) : String(row[key])}</td>)}</tr>)}</tbody></table></div> : <div className="admin-empty">尚未載入資料</div>}</section>}
+        {view === "database" && <section className="admin-panel"><div className="admin-panel-heading"><div><h2>{selectedTable || "資料表內容"}</h2><p>{selectedTable ? "目前資料表的即時內容" : "請從左側展開並選擇資料表"}</p></div></div>{tableError && <p className="admin-error">{tableError}</p>}{tableLoading ? <p>載入中…</p> : tableRows.length ? <div className="admin-data-table-wrapper"><table className="admin-table"><thead><tr>{Object.keys(tableRows[0]).map((key) => <th key={key}>{key}</th>)}<th>操作</th></tr></thead><tbody>{tableRows.map((row, index) => <tr key={index}>{Object.keys(tableRows[0]).map((key) => <td key={key}>{row[key] == null ? "—" : typeof row[key] === "object" ? JSON.stringify(row[key]) : String(row[key])}</td>)}<td><div className="admin-row-actions"><button type="button" onClick={() => beginRowEdit(row)}>修改</button><button type="button" className="danger" onClick={() => deleteRow(row)}>刪除</button></div></td></tr>)}</tbody></table></div> : <div className="admin-empty">尚未載入資料</div>}</section>}
       </section>
+
+      {editingRow && <div className="admin-modal-overlay" onMouseDown={(event) => { if (event.target === event.currentTarget && !savingRow) setEditingRow(null); }}><section className="admin-modal admin-edit-modal" role="dialog" aria-modal="true" aria-label="修改資料"><header><h2>修改單筆資料</h2><button type="button" onClick={() => setEditingRow(null)} disabled={savingRow}>×</button></header><div className="admin-edit-fields">{Object.entries(editingRow).map(([column, value]) => { const primary = (ADMIN_TABLE_KEYS[selectedTable] || []).includes(column); const useTextarea = typeof value === "object" || cellText(value).length > 80; return <label key={column}><span>{column}{primary ? "（主鍵）" : ""}</span>{useTextarea ? <textarea value={editDraft[column] ?? ""} onChange={(event) => setEditDraft((draft) => ({ ...draft, [column]: event.target.value }))} disabled={primary || savingRow} /> : <input value={editDraft[column] ?? ""} onChange={(event) => setEditDraft((draft) => ({ ...draft, [column]: event.target.value }))} disabled={primary || savingRow} />}</label>; })}</div><footer><button type="button" className="admin-primary-button" onClick={saveRow} disabled={savingRow}>{savingRow ? "儲存中…" : "儲存修改"}</button><button type="button" className="admin-secondary-button" onClick={() => setEditingRow(null)} disabled={savingRow}>取消</button></footer></section></div>}
     </main>
   );
 }

@@ -22,6 +22,17 @@ function QrIcon() {
   );
 }
 
+function AvatarEditIcon() {
+  return (
+    <svg viewBox="0 0 64 64" aria-hidden="true">
+      <circle cx="27" cy="22" r="10" />
+      <path d="M10 52c1.8-10.2 7.6-15.3 17-15.3 5.1 0 9.2 1.5 12.1 4.5" />
+      <path d="m39 50 3.1-9.2L53.9 29 59 34.1 47.2 45.9 39 50Z" />
+      <path d="m50.8 32.1 5.1 5.1" />
+    </svg>
+  );
+}
+
 function extractRewardToken(value) {
   try {
     return new URL(value).searchParams.get("reward") || "";
@@ -364,6 +375,7 @@ function Home() {
         <form className="home-quick-join" onSubmit={handleQuickJoin}><label htmlFor="quick-room-code">快速加入房間</label><div className="quick-join-row"><input id="quick-room-code" value={quickRoomCode} onChange={(event) => setQuickRoomCode(event.target.value.toUpperCase())} placeholder="輸入房號" maxLength={12} /><button type="submit" disabled={!quickRoomCode.trim()}>加入</button></div></form>
         <button type="button" className="home-shop-button" onClick={() => navigate("/store")}><span className="shop-icon-wrap"><ShopIcon /></span><span className="shop-button-copy"><strong>商城</strong><small>探索「虛擬替身」時裝與限定造型</small></span></button>
         <button type="button" className="home-shop-button home-qr-button" onClick={() => setShowQrScanner(true)}><span className="shop-icon-wrap"><QrIcon /></span><span className="shop-button-copy"><strong>掃描 QR Code</strong><small>開啟相機，掃描活動或獎勵代碼</small></span></button>
+        <button type="button" className="home-shop-button home-avatar-edit-button" onClick={() => navigate("/avatar-dressup")}><span className="shop-icon-wrap"><AvatarEditIcon /></span><span className="shop-button-copy"><strong>編輯「虛擬替身」</strong></span></button>
       </div></div></section>
       {showQrScanner && <QRScannerModal onClose={() => setShowQrScanner(false)} onReward={handleRewardDetected} />}
       {rewardToken && <RewardClaimModal token={rewardToken} user={currentUser} onClose={() => setRewardToken("")} onClaimed={updateCoins} />}
