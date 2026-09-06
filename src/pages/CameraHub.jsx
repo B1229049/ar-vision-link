@@ -14,7 +14,7 @@ function CameraHub() {
         >
           <span className="camera-hub-content">
             <span className="camera-hub-copy">
-              <strong>ARcamera舊有內容</strong>
+              <strong>舊有內容</strong>
               <small>臉部掃描辨識</small>
             </span>
             <span className="camera-hub-action">開啟相機 →</span>
