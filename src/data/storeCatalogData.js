@@ -512,7 +512,7 @@ export const STORE_CATALOG_SOURCE = [
         "scale": 0.7,
         "x_pct": -2.95,
         "y_pct": -3.6,
-        "thumb_scale": 1.65,
+        "thumb_scale": 1.58,
         "thumb_x_pct": 0,
         "thumb_y_pct": 7.2
       },
@@ -767,23 +767,23 @@ export const STORE_CATALOG_SOURCE = [
       },
       "template-01": {
         "scale": 1,
-        "x_pct": 0,
-        "y_pct": 0,
+        "x_pct": 0.55,
+        "y_pct": -0.5,
         "visible": true
       },
       "template-02": {
         "scale": 0.6,
         "x_pct": -0.75,
-        "y_pct": 2.85,
+        "y_pct": 2.1,
         "visible": true
       }
     },
     "settings": {
       "store-outfit-09-hair_front": {
-        "scale": 1.1,
-        "x_pct": 2.6,
-        "y_pct": -2.95,
-        "thumb_scale": 1.12,
+        "scale": 1.12,
+        "x_pct": 3.9,
+        "y_pct": -1.95,
+        "thumb_scale": 1.16,
         "thumb_x_pct": 0,
         "thumb_y_pct": 15.7
       },
@@ -791,7 +791,7 @@ export const STORE_CATALOG_SOURCE = [
         "scale": 0.47,
         "x_pct": -2.95,
         "y_pct": 2.3,
-        "thumb_scale": 1.12,
+        "thumb_scale": 1.05,
         "thumb_x_pct": 0.65,
         "thumb_y_pct": 16.35
       },
@@ -799,25 +799,219 @@ export const STORE_CATALOG_SOURCE = [
         "scale": 0.76,
         "x_pct": -2.95,
         "y_pct": -5.25,
-        "thumb_scale": 1.42,
+        "thumb_scale": 1.29,
         "thumb_x_pct": 0,
         "thumb_y_pct": -1.3
       },
       "store-outfit-09-top_front": {
-        "scale": 0.54,
+        "scale": 0.51,
         "x_pct": -1.3,
-        "y_pct": 18.65,
+        "y_pct": 17.65,
         "thumb_scale": 1.05,
         "thumb_x_pct": 0,
         "thumb_y_pct": 1.95
       },
       "store-outfit-09-bottoms_front": {
         "scale": 0.4,
-        "x_pct": -1.3,
-        "y_pct": 27.8,
+        "x_pct": -1.65,
+        "y_pct": 27.4,
         "thumb_scale": 0.65,
         "thumb_x_pct": 0,
         "thumb_y_pct": 13.75
+      }
+    }
+  },
+  {
+    "id": "outfit-10",
+    "published": true,
+    "pieces": {
+      "hair": {
+        "id": "store-outfit-10-hair",
+        "label": "套裝 10・頭部",
+        "front": "store/hair/頭髮10-1.png",
+        "back": "store/hair/頭髮10-2.png",
+        "thumb": "store/hair/頭髮10-0.png"
+      },
+      "face": {
+        "id": "store-outfit-10-face",
+        "label": "套裝 10・臉部",
+        "front": "store/face/表情10.png"
+      },
+      "top": {
+        "id": "store-outfit-10-top",
+        "label": "套裝 10・上半身",
+        "front": "store/top/上衣10.png",
+        "thumb": "store/top/上衣10-0.png"
+      },
+      "bottoms": {
+        "id": "store-outfit-10-bottoms",
+        "label": "套裝 10・下半身",
+        "front": "store/bottoms/褲裝10.png"
+      }
+    },
+    "templates": {
+      "template-03": {
+        "scale": 1,
+        "x_pct": 0,
+        "y_pct": -24.8,
+        "visible": false
+      },
+      "template-00": {
+        "scale": 1,
+        "x_pct": 0,
+        "y_pct": -0.7,
+        "visible": false
+      },
+      "template-01": {
+        "scale": 1,
+        "x_pct": 0.55,
+        "y_pct": -0.5,
+        "visible": true
+      },
+      "template-02": {
+        "scale": 0.41,
+        "x_pct": -0.5,
+        "y_pct": 3.1,
+        "visible": true
+      }
+    },
+    "settings": {
+      "store-outfit-10-hair_front": {
+        "scale": 0.89,
+        "x_pct": 1.65,
+        "y_pct": -5.55,
+        "thumb_scale": 1,
+        "thumb_x_pct": 0,
+        "thumb_y_pct": 10.45
+      },
+      "store-outfit-10-hair_back": {
+        "scale": 1,
+        "x_pct": 15.7,
+        "y_pct": -3.6,
+        "thumb_scale": 1,
+        "thumb_x_pct": 0,
+        "thumb_y_pct": 0
+      },
+      "store-outfit-10-top_front": {
+        "scale": 0.59,
+        "x_pct": -0.35,
+        "y_pct": 23.2,
+        "thumb_scale": 1,
+        "thumb_x_pct": 0,
+        "thumb_y_pct": 4.55
+      },
+      "store-outfit-10-face_front": {
+        "scale": 0.63,
+        "x_pct": -2.95,
+        "y_pct": -6.2,
+        "thumb_scale": 1.29,
+        "thumb_x_pct": 0,
+        "thumb_y_pct": 4.55
+      },
+      "store-outfit-10-bottoms_front": {
+        "scale": 0.49,
+        "x_pct": -0.9,
+        "y_pct": 28.8,
+        "thumb_scale": 1,
+        "thumb_x_pct": 0,
+        "thumb_y_pct": 0
+      }
+    }
+  },
+  {
+    "id": "outfit-11",
+    "published": true,
+    "pieces": {
+      "hair": {
+        "id": "store-outfit-11-hair",
+        "label": "套裝 11・頭部",
+        "front": "store/hair/頭髮11-1.png",
+        "back": "store/hair/頭髮11-2.png",
+        "thumb": "store/hair/頭髮11-0.png"
+      },
+      "face": {
+        "id": "store-outfit-11-face",
+        "label": "套裝 11・臉部",
+        "front": "store/face/表情11.png"
+      },
+      "top": {
+        "id": "store-outfit-11-top",
+        "label": "套裝 11・上半身",
+        "front": "store/top/上衣11.png",
+        "thumb": "store/top/上衣11-0.png"
+      },
+      "bottoms": {
+        "id": "store-outfit-11-bottoms",
+        "label": "套裝 11・下半身",
+        "front": "store/bottoms/褲裝11.png"
+      }
+    },
+    "templates": {
+      "template-03": {
+        "scale": 1,
+        "x_pct": 0,
+        "y_pct": -24.8,
+        "visible": false
+      },
+      "template-00": {
+        "scale": 1,
+        "x_pct": 0,
+        "y_pct": -0.7,
+        "visible": false
+      },
+      "template-01": {
+        "scale": 1,
+        "x_pct": 0.55,
+        "y_pct": -0.5,
+        "visible": true
+      },
+      "template-02": {
+        "scale": 0.39,
+        "x_pct": -0.5,
+        "y_pct": 3.1,
+        "visible": true
+      }
+    },
+    "settings": {
+      "store-outfit-11-hair_front": {
+        "scale": 0.85,
+        "x_pct": 0,
+        "y_pct": -9.8,
+        "thumb_scale": 0.97,
+        "thumb_x_pct": 0,
+        "thumb_y_pct": 6.55
+      },
+      "store-outfit-11-hair_back": {
+        "scale": 1.13,
+        "x_pct": -0.35,
+        "y_pct": 1.95,
+        "thumb_scale": 0.97,
+        "thumb_x_pct": 0,
+        "thumb_y_pct": 6.55
+      },
+      "store-outfit-11-top_front": {
+        "scale": 0.69,
+        "x_pct": -0.65,
+        "y_pct": 12.75,
+        "thumb_scale": 1.11,
+        "thumb_x_pct": 0,
+        "thumb_y_pct": -10.45
+      },
+      "store-outfit-11-bottoms_front": {
+        "scale": 0.48,
+        "x_pct": 0,
+        "y_pct": 29.75,
+        "thumb_scale": 1,
+        "thumb_x_pct": 0,
+        "thumb_y_pct": 0
+      },
+      "store-outfit-11-face_front": {
+        "scale": 0.94,
+        "x_pct": -2.6,
+        "y_pct": 0.65,
+        "thumb_scale": 1.81,
+        "thumb_x_pct": 0,
+        "thumb_y_pct": 16.35
       }
     }
   }

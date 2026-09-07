@@ -45,7 +45,7 @@
 .quiz-create-panel {
   min-height: 238px;
   padding: clamp(26px, 3vw, 38px);
-  background: #58468e;
+  background: #6d47d7;
   display: flex;
   flex-direction: column;
 }
