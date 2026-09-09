@@ -895,7 +895,7 @@ export const STORE_CATALOG_SOURCE = [
       "store-outfit-10-top_front": {
         "scale": 0.59,
         "x_pct": -0.35,
-        "y_pct": 23.2,
+        "y_pct": 22.55,
         "thumb_scale": 1,
         "thumb_x_pct": 0,
         "thumb_y_pct": 4.55

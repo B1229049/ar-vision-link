@@ -108,8 +108,7 @@ function QRScannerModal({ onClose, onReward }) {
     }}>
       <section className="qr-scanner-dialog" role="dialog" aria-modal="true" aria-labelledby="qr-scanner-title">
         <header>
-          <div><span>QR SCANNER</span><h2 id="qr-scanner-title">掃描 QR Code</h2></div>
-          <button type="button" onClick={onClose} aria-label="關閉掃描器">×</button>
+          <div><h2 id="qr-scanner-title">掃描 QR Code</h2></div>
         </header>
         <div className="qr-camera-frame">
           <video ref={videoRef} muted playsInline />
