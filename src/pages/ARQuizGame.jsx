@@ -43,6 +43,7 @@ function ARQuizGame() {
   const peerConnectionRef = useRef(null);
   const hostSocketIdRef = useRef(null);
   const iceConfigRef = useRef(null);
+  const offerInProgressRef = useRef(false);
 
   const optionRefs = useRef({
     A: null,
@@ -252,6 +253,21 @@ function ARQuizGame() {
   async function createOfferToHost(hostSocketId) {
     if (!hostSocketId || !socketRef.current) return;
 
+    const existingPc = peerConnectionRef.current;
+
+    if (
+      offerInProgressRef.current ||
+      (existingPc &&
+        hostSocketIdRef.current === hostSocketId &&
+        existingPc.signalingState !== "closed" &&
+        !["failed", "closed"].includes(existingPc.connectionState))
+    ) {
+      console.warn("WebRTC 連線正在建立或已存在，忽略重複的 host-ready");
+      return;
+    }
+
+    offerInProgressRef.current = true;
+
     try {
       cleanupWebRTC();
 
@@ -277,12 +293,15 @@ function ARQuizGame() {
       };
 
       pc.onconnectionstatechange = () => {
+        console.log("AR WebRTC 狀態:", pc.connectionState);
+
         if (
           pc.connectionState === "failed" ||
-          pc.connectionState === "closed" ||
-          pc.connectionState === "disconnected"
+          pc.connectionState === "closed"
         ) {
-          cleanupWebRTC();
+          if (peerConnectionRef.current === pc) {
+            cleanupWebRTC();
+          }
         }
       };
 
@@ -296,13 +315,33 @@ function ARQuizGame() {
       });
     } catch (err) {
       console.error("AR 玩家建立 WebRTC offer 失敗：", err);
+      cleanupWebRTC();
+    } finally {
+      offerInProgressRef.current = false;
     }
   }
 
-  async function handleWebRTCAnswer(answer) {
+  async function handleWebRTCAnswer(fromSocketId, answer) {
     const pc = peerConnectionRef.current;
 
     if (!pc || !answer) return;
+
+    if (
+      fromSocketId &&
+      hostSocketIdRef.current &&
+      fromSocketId !== hostSocketIdRef.current
+    ) {
+      console.warn("忽略舊 WebRTC 連線的 answer:", fromSocketId);
+      return;
+    }
+
+    if (pc.signalingState !== "have-local-offer") {
+      console.warn(
+        "忽略重複或過期的 WebRTC answer:",
+        pc.signalingState
+      );
+      return;
+    }
 
     try {
       await pc.setRemoteDescription(new RTCSessionDescription(answer));
@@ -311,10 +350,18 @@ function ARQuizGame() {
     }
   }
 
-  async function handleRemoteIceCandidate(candidate) {
+  async function handleRemoteIceCandidate(fromSocketId, candidate) {
     const pc = peerConnectionRef.current;
 
     if (!pc || !candidate) return;
+
+    if (
+      fromSocketId &&
+      hostSocketIdRef.current &&
+      fromSocketId !== hostSocketIdRef.current
+    ) {
+      return;
+    }
 
     try {
       await pc.addIceCandidate(new RTCIceCandidate(candidate));
@@ -382,12 +429,12 @@ function ARQuizGame() {
       createOfferToHost(hostSocketId);
     });
 
-    socket.on("webrtc-answer", ({ answer }) => {
-      handleWebRTCAnswer(answer);
+    socket.on("webrtc-answer", ({ from, answer }) => {
+      handleWebRTCAnswer(from, answer);
     });
 
-    socket.on("webrtc-ice-candidate", ({ candidate }) => {
-      handleRemoteIceCandidate(candidate);
+    socket.on("webrtc-ice-candidate", ({ from, candidate }) => {
+      handleRemoteIceCandidate(from, candidate);
     });
 
     socket.on("webrtc-user-disconnected", ({ role }) => {
