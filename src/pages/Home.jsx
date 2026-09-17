@@ -211,6 +211,12 @@ const landingFeatures = [
   ["收集式要素", "收集各式各樣的'虛擬替身'造型"],
 ];
 
+const landingImages = {
+  hero: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1400&q=85",
+  arQuiz: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1400&q=85",
+  identity: "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=900&q=85",
+};
+
 function LoggedOutLanding() {
   return (
     <main className="landing-page">
@@ -221,12 +227,23 @@ function LoggedOutLanding() {
           <p>一個身分，連結 AI 出題、多人即時競賽、AR 鏡頭、自拍創作與虛擬替身。讓每一次參與，都能被看見、即時回應，也留下自己的學習足跡。</p>
           <Link className="landing-pill primary" to="/register">建立你的身分 →</Link>
         </div>
-        <div className="landing-feature-list" aria-label="AR Vision Link 產品功能">
-          {landingFeatures.map(([title, description]) => (
-            <article className="landing-feature-card" key={title}>
-              <div><h2>{title}</h2><p>{description}</p></div>
-            </article>
-          ))}
+        <div className="landing-hero-visual">
+          <figure className="landing-hero-image">
+            <img
+              src={landingImages.hero}
+              alt="學生一起使用電腦進行數位互動學習"
+              fetchPriority="high"
+              referrerPolicy="no-referrer"
+            />
+            <figcaption><span>LIVE</span> AI × AR 互動學習現場</figcaption>
+          </figure>
+          <div className="landing-feature-list" aria-label="AR Vision Link 產品功能">
+            {landingFeatures.map(([title, description]) => (
+              <article className="landing-feature-card" key={title}>
+                <div><h2>{title}</h2><p>{description}</p></div>
+              </article>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -261,7 +278,20 @@ function LoggedOutLanding() {
       <section className="landing-band play-band">
         <div className="landing-split">
           <div className="landing-copy"><h2 className="landing-heading">不只按答案，直接在鏡頭裡作答。</h2><p className="landing-intro">AR 模式透過手部追蹤辨識指向位置，題目、倒數、分數與排行都疊加在真實畫面上；主持端同步看到玩家狀況。</p></div>
-          <div className="landing-media-placeholder dark" aria-label="AR 答題圖片預留區" />
+          <figure className="ar-quiz-showcase">
+            <img
+              src={landingImages.arQuiz}
+              alt="學生使用筆記型電腦參與互動測驗"
+              loading="lazy"
+              referrerPolicy="no-referrer"
+            />
+            <div className="ar-quiz-overlay" aria-hidden="true">
+              <span className="ar-status">● AR MODE</span>
+              <strong>CPU 的主要功能是什麼？</strong>
+              <div className="ar-options"><span>A　儲存檔案</span><span className="selected">B　執行指令</span></div>
+              <small>手勢鎖定中 · 72%</small>
+            </div>
+          </figure>
         </div>
       </section>
 
@@ -270,7 +300,7 @@ function LoggedOutLanding() {
           <div className="landing-copy"><h2 className="landing-heading">身分不是帳號欄位，而是整個體驗的入口。</h2><p className="landing-intro">從臉部登入到多人 AR Camera，讓公開資訊、虛擬替身與活動成果跟著使用者出現在現場。</p></div>
           <article className="identity-preview">
             <h3>一個身分，連結所有歷程</h3><p>個人資料、虛擬替身、測驗成績與臉部資料維持在同一個使用者身分下。</p>
-            <div className="identity-profile"><div className="identity-avatar" aria-hidden="true" /><div className="identity-data"><strong>個人資料</strong><span>名稱 · 李田所</span><span>使用者ID · 114</span><span>個人介紹 · 嗨!一庫走</span></div></div>
+            <div className="identity-profile"><div className="identity-avatar"><img src={landingImages.identity} alt="AR Vision Link 使用者個人照片" loading="lazy" referrerPolicy="no-referrer" /><span aria-hidden="true">FACE ID · VERIFIED</span></div><div className="identity-data"><strong>個人資料</strong><span>名稱 · 李田所</span><span>使用者ID · 114</span><span>個人介紹 · 嗨!一庫走</span></div></div>
           </article>
         </div>
       </section>

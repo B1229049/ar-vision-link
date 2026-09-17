@@ -79,6 +79,39 @@ const USER_PRIVATE_SELECT = `
   admin
 `;
 
+const USER_LOGIN_SELECT = `
+  id,
+  name,
+  description,
+  profile_url,
+  avatar_config,
+  is_active,
+  created_at,
+  updated_at,
+  coins,
+  owned_outfits,
+  admin
+`;
+
+const USER_FACE_MATCH_SELECT = `
+  id,
+  face_embedding
+`;
+
+const FACE_DESCRIPTOR_LENGTH = 128;
+
+// 臉部登入門檻
+const FACE_LOGIN_THRESHOLD = 0.5;
+
+// AR Camera 批次辨識門檻
+const FACE_RECOGNITION_THRESHOLD = 0.45;
+
+// 第一名與第二名至少要相差多少
+const FACE_MIN_DISTANCE_GAP = 0.05;
+
+// 避免一次傳入過多資料
+const MAX_BATCH_FACE_COUNT = 20;
+
 const AVATAR_ITEMS = {
   hair: Array.from({ length: 16 }, (_, index) => `hair-${index + 1}`),
   face: Array.from({ length: 12 }, (_, index) => `face-${index + 1}`),
@@ -412,6 +445,84 @@ function requireAvatarAdmin(req, res) {
   return true;
 }
 
+function normalizeFaceDescriptor(value) {
+  if (
+    !Array.isArray(value) ||
+    value.length !== FACE_DESCRIPTOR_LENGTH
+  ) {
+    return null;
+  }
+
+  const descriptor = value.map(Number);
+
+  if (!descriptor.every(Number.isFinite)) {
+    return null;
+  }
+
+  const squaredLength = descriptor.reduce(
+    (sum, item) => sum + item * item,
+    0
+  );
+
+  const vectorLength = Math.sqrt(squaredLength);
+
+  if (!Number.isFinite(vectorLength) || vectorLength === 0) {
+    return null;
+  }
+
+  return descriptor.map((item) => item / vectorLength);
+}
+
+function findBestFaceMatch(descriptor, users) {
+  let bestUser = null;
+  let bestDistance = Infinity;
+  let secondBestDistance = Infinity;
+
+  for (const user of users || []) {
+    const storedDescriptor = user.face_embedding;
+
+    if (
+      !Array.isArray(storedDescriptor) ||
+      storedDescriptor.length !== FACE_DESCRIPTOR_LENGTH
+    ) {
+      continue;
+    }
+
+    let sum = 0;
+
+    for (let i = 0; i < FACE_DESCRIPTOR_LENGTH; i += 1) {
+      const difference =
+        descriptor[i] - storedDescriptor[i];
+
+      sum += difference * difference;
+    }
+
+    const distance = Math.sqrt(sum);
+
+    if (distance < bestDistance) {
+      secondBestDistance = bestDistance;
+      bestDistance = distance;
+      bestUser = user;
+    } else if (distance < secondBestDistance) {
+      secondBestDistance = distance;
+    }
+  }
+
+  return {
+    user: bestUser,
+    distance: bestDistance,
+    secondDistance: secondBestDistance,
+  };
+}
+
+function faceMatchIsAmbiguous(distance, secondDistance) {
+  return (
+    Number.isFinite(distance) &&
+    Number.isFinite(secondDistance) &&
+    secondDistance - distance < FACE_MIN_DISTANCE_GAP
+  );
+}
+
 let userEmbeddingCache = null;
 let userEmbeddingCacheTime = 0;
 
@@ -427,16 +538,26 @@ async function getActiveUsersWithEmbeddings() {
     return userEmbeddingCache;
   }
 
+  // 只下載比對需要的 id 與 embedding。
+  // 不再一次下載所有使用者的 Base64 頭像。
   const { data, error } = await supabase
     .from("users")
-    .select(USER_PRIVATE_SELECT)
+    .select(USER_FACE_MATCH_SELECT)
     .eq("is_active", true);
 
   if (error) {
     throw new Error(error.message);
   }
 
-  userEmbeddingCache = data || [];
+  userEmbeddingCache = (data || [])
+    .map((user) => ({
+      id: user.id,
+      face_embedding: normalizeFaceDescriptor(
+        user.face_embedding
+      ),
+    }))
+    .filter((user) => user.face_embedding !== null);
+
   userEmbeddingCacheTime = now;
 
   return userEmbeddingCache;
@@ -532,31 +653,39 @@ app.post("/api/users/register", async (req, res) => {
       });
     }
 
-    if (!Array.isArray(face_embedding) || face_embedding.length === 0) {
+    const cleanEmbedding =
+      normalizeFaceDescriptor(face_embedding);
+
+    if (!cleanEmbedding) {
       return res.status(400).json({
         success: false,
-        error: "face_embedding 必須是數字陣列",
+        error:
+          "face_embedding 必須是包含 128 個有效數字的陣列",
       });
     }
 
-    if (typeof profile_url !== "string" || !profile_url.startsWith("data:image/")) {
+    if (
+      typeof profile_url !== "string" ||
+      !profile_url.startsWith("data:image/")
+    ) {
       return res.status(400).json({
         success: false,
-        error: "註冊頭像必須是有效且可持久保存的圖片",
+        error:
+          "註冊頭像必須是有效且可持久保存的圖片",
       });
     }
-
-    const cleanEmbedding = face_embedding.map(Number);
 
     const { data, error } = await supabase
       .from("users")
       .insert([
         {
           name: name.trim(),
-          description: description?.trim() || "",
-          profile_url: profile_url || "",
+          description:
+            description?.trim() || "",
+          profile_url,
           avatar_config: normalizeAvatarConfig(
-            avatar_config || createRandomAvatarConfig()
+            avatar_config ||
+              createRandomAvatarConfig()
           ),
           is_active: true,
           face_embedding: cleanEmbedding,
@@ -566,14 +695,25 @@ app.post("/api/users/register", async (req, res) => {
       .single();
 
     if (error) {
-      return res.status(500).json({ success: false, error: error.message });
+      return res.status(500).json({
+        success: false,
+        error: error.message,
+      });
     }
 
     clearUserEmbeddingCache();
 
-    res.json({ success: true, user: data });
+    return res.json({
+      success: true,
+      user: data,
+    });
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    console.error("users/register error:", err);
+
+    return res.status(500).json({
+      success: false,
+      error: err.message,
+    });
   }
 });
 
@@ -638,10 +778,15 @@ app.delete("/api/users/:id", async (req, res) => {
       .single();
 
     if (error) {
-      return res.status(500).json({ success: false, error: error.message });
+      return res.status(500).json({
+        success: false,
+        error: error.message,
+      });
     }
 
-    clearUserEmbeddingCache();
+    if (is_active !== undefined) {
+      clearUserEmbeddingCache();
+    }
 
     res.json({ success: true, user: data });
   } catch (err) {
@@ -651,68 +796,79 @@ app.delete("/api/users/:id", async (req, res) => {
 
 app.post("/api/face-login", async (req, res) => {
   try {
-    const { descriptor } = req.body;
+    const cleanDescriptor = normalizeFaceDescriptor(
+      req.body.descriptor
+    );
 
-    if (!Array.isArray(descriptor)) {
+    if (!cleanDescriptor) {
       return res.status(400).json({
         success: false,
-        error: "descriptor 必須是陣列",
+        error:
+          "descriptor 必須是包含 128 個有效數字的陣列",
       });
     }
 
-    const users = await getActiveUsersWithEmbeddings();
+    const users =
+      await getActiveUsersWithEmbeddings();
 
-    let bestUser = null;
-    let bestDistance = Infinity;
+    const match = findBestFaceMatch(
+      cleanDescriptor,
+      users
+    );
 
-    for (const user of users || []) {
-      if (
-        !Array.isArray(user.face_embedding) ||
-        user.face_embedding.length !== descriptor.length
-      ) {
-        continue;
-      }
+    const isAmbiguous = faceMatchIsAmbiguous(
+      match.distance,
+      match.secondDistance
+    );
 
-      let sum = 0;
-
-      for (let i = 0; i < descriptor.length; i++) {
-        const diff =
-          Number(descriptor[i]) -
-          Number(user.face_embedding[i]);
-
-        sum += diff * diff;
-      }
-
-      const distance = Math.sqrt(sum);
-
-      if (distance < bestDistance) {
-        bestDistance = distance;
-        bestUser = user;
-      }
-    }
-
-    if (!bestUser || bestDistance > 0.5) {
+    if (
+      !match.user ||
+      match.distance > FACE_LOGIN_THRESHOLD ||
+      isAmbiguous
+    ) {
       return res.json({
         success: false,
-        error: "找不到符合的人臉",
+        error: isAmbiguous
+          ? "辨識結果不夠明確，請正對鏡頭後重試"
+          : "找不到符合的人臉",
       });
     }
 
+    // 配對成功後，只查詢該名使用者的完整資料。
+    const {
+      data: loginUser,
+      error: loginUserError,
+    } = await supabase
+      .from("users")
+      .select(USER_LOGIN_SELECT)
+      .eq("id", match.user.id)
+      .eq("is_active", true)
+      .single();
 
-    console.log("登入使用者:", bestUser);
+    if (loginUserError || !loginUser) {
+      throw new Error(
+        loginUserError?.message ||
+          "無法取得登入使用者資料"
+      );
+    }
 
+    // 不要將 embedding 印進 Render Log。
+    console.log("臉部登入成功:", {
+      userId: loginUser.id,
+      distance: match.distance,
+    });
 
-    delete bestUser.face_embedding;
-
-    res.json({
+    return res.json({
       success: true,
-      distance: bestDistance,
-      user: bestUser,
+      distance: match.distance,
+      user: loginUser,
     });
   } catch (err) {
-    res.status(500).json({
+    console.error("face-login error:", err);
+
+    return res.status(500).json({
       success: false,
-      error: err.message,
+      error: "臉部登入服務發生錯誤",
     });
   }
 });
@@ -845,25 +1001,88 @@ app.put("/api/users/:id/avatar", async (req, res) => {
   }
 });
 
-app.get("/api/users/:id/economy", async (req, res) => {
+app.put("/api/users/:id/face", async (req, res) => {
   try {
+    const { id } = req.params;
+    const {
+      face_embedding,
+      profile_url,
+    } = req.body;
+
+    const cleanEmbedding =
+      normalizeFaceDescriptor(face_embedding);
+
+    if (!cleanEmbedding) {
+      return res.status(400).json({
+        success: false,
+        error:
+          "face_embedding 必須是包含 128 個有效數字的陣列",
+      });
+    }
+
+    const {
+      data: existingUser,
+      error: existingUserError,
+    } = await supabase
+      .from("users")
+      .select("profile_url")
+      .eq("id", id)
+      .single();
+
+    if (existingUserError) {
+      return res.status(500).json({
+        success: false,
+        error: existingUserError.message,
+      });
+    }
+
+    const updateData = {
+      face_embedding: cleanEmbedding,
+      updated_at: new Date().toISOString(),
+    };
+
+    const existingProfileUrl =
+      existingUser?.profile_url || "";
+
+    const mayRepairProfileImage =
+      !existingProfileUrl ||
+      existingProfileUrl.startsWith("blob:");
+
+    if (
+      mayRepairProfileImage &&
+      typeof profile_url === "string" &&
+      profile_url.startsWith("data:image/")
+    ) {
+      updateData.profile_url = profile_url;
+    }
+
     const { data, error } = await supabase
       .from("users")
-      .select("coins, owned_outfits")
-      .eq("id", req.params.id)
+      .update(updateData)
+      .eq("id", id)
+      .select(USER_PUBLIC_SELECT)
       .single();
 
     if (error) {
-      return res.status(500).json({ success: false, error: error.message });
+      return res.status(500).json({
+        success: false,
+        error: error.message,
+      });
     }
 
-    res.json({
+    clearUserEmbeddingCache();
+
+    return res.json({
       success: true,
-      coins: Math.max(Number(data?.coins) || 0, 0),
-      owned_outfits: Array.isArray(data?.owned_outfits) ? data.owned_outfits : [],
+      user: data,
     });
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    console.error("users/:id/face error:", err);
+
+    return res.status(500).json({
+      success: false,
+      error: err.message,
+    });
   }
 });
 
@@ -1170,74 +1389,126 @@ app.post("/api/avatar/backfill-users", async (req, res) => {
 });
 
 app.post("/api/face-recognize-batch", async (req, res) => {
-  try {
-    const { descriptors } = req.body;
+    try {
+      const { descriptors } = req.body;
 
-    if (!Array.isArray(descriptors)) {
-      return res.status(400).json({
+      if (
+        !Array.isArray(descriptors) ||
+        descriptors.length > MAX_BATCH_FACE_COUNT
+      ) {
+        return res.status(400).json({
+          success: false,
+          error:
+            `descriptors 必須是陣列，且一次最多 ` +
+            `${MAX_BATCH_FACE_COUNT} 張臉`,
+        });
+      }
+
+      const users =
+        await getActiveUsersWithEmbeddings();
+
+      const matches = descriptors.map(
+        (descriptor) => {
+          const cleanDescriptor =
+            normalizeFaceDescriptor(descriptor);
+
+          if (!cleanDescriptor) {
+            return null;
+          }
+
+          const match = findBestFaceMatch(
+            cleanDescriptor,
+            users
+          );
+
+          const isAmbiguous =
+            faceMatchIsAmbiguous(
+              match.distance,
+              match.secondDistance
+            );
+
+          if (
+            !match.user ||
+            match.distance >=
+              FACE_RECOGNITION_THRESHOLD ||
+            isAmbiguous
+          ) {
+            return null;
+          }
+
+          return {
+            userId: match.user.id,
+            distance: match.distance,
+          };
+        }
+      );
+
+      const matchedUserIds = [
+        ...new Set(
+          matches
+            .filter(Boolean)
+            .map((match) => match.userId)
+        ),
+      ];
+
+      let publicUserMap = new Map();
+
+      if (matchedUserIds.length > 0) {
+        const {
+          data: matchedUsers,
+          error: matchedUsersError,
+        } = await supabase
+          .from("users")
+          .select(USER_PUBLIC_SELECT)
+          .in("id", matchedUserIds)
+          .eq("is_active", true);
+
+        if (matchedUsersError) {
+          throw new Error(
+            matchedUsersError.message
+          );
+        }
+
+        publicUserMap = new Map(
+          (matchedUsers || []).map((user) => [
+            String(user.id),
+            user,
+          ])
+        );
+      }
+
+      const results = matches.map((match) => {
+        if (!match) return null;
+
+        const user = publicUserMap.get(
+          String(match.userId)
+        );
+
+        if (!user) return null;
+
+        return {
+          user,
+          distance: match.distance,
+        };
+      });
+
+      return res.json({
+        success: true,
+        results,
+      });
+    } catch (err) {
+      console.error(
+        "face-recognize-batch error:",
+        err
+      );
+
+      return res.status(500).json({
         success: false,
-        error: "descriptors 必須是陣列",
+        error: "批次臉部辨識服務發生錯誤",
       });
     }
-
-    const users = await getActiveUsersWithEmbeddings();
-
-    const results = [];
-
-    for (const descriptor of descriptors) {
-      let bestUser = null;
-      let bestDistance = Infinity;
-
-      for (const user of users || []) {
-        if (
-          !Array.isArray(user.face_embedding) ||
-          user.face_embedding.length !== descriptor.length
-        ) {
-          continue;
-        }
-
-        let sum = 0;
-
-        for (let i = 0; i < descriptor.length; i++) {
-          const diff =
-            Number(descriptor[i]) -
-            Number(user.face_embedding[i]);
-
-          sum += diff * diff;
-        }
-
-        const distance = Math.sqrt(sum);
-
-        if (distance < bestDistance) {
-          bestDistance = distance;
-          bestUser = user;
-        }
-      }
-
-      if (bestUser && bestDistance < 0.45) {
-        const safeUser = { ...bestUser };
-        delete safeUser.face_embedding;
-
-        results.push({
-          user: safeUser,
-          distance: bestDistance,
-        });
-      } else {
-        results.push(null);
-      }
-    }
-
-    res.json({
-      success: true,
-      results,
-    });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      error: err.message,
-    });
   }
-});
+);
 
 /* =========================
    Quiz API
