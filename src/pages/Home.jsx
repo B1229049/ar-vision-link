@@ -247,11 +247,11 @@ function LoggedOutLanding() {
           <div className="quiz-creator-preview" aria-label="AI 建立測驗介面示意">
             <header><strong>QUIZ CENTER</strong></header>
             <div className="quiz-preview-body">
-              <aside><span>▦ 總覽</span><span>▤ 我的測驗</span><span>▥ 歷史紀錄</span><span>♙ 建立房間</span></aside>
+              <aside><span>總覽</span><span>我的測驗</span><span>歷史紀錄</span><span>建立房間</span></aside>
               <div className="quiz-preview-main">
                 <div className="quiz-file">教材檔案：ComputerScience.pdf</div>
                 <div className="quiz-generating">✦ 正在從教材產生 5 道題目...</div>
-                <div className="quiz-question"><strong>Q1 · 被稱為「電腦的大腦」，負責處理資料與執行指令的核心硬體是下列哪一個？</strong><div><span className="correct">A · 中央處理器 (CPU)</span><span>B · 固態硬碟 (SSD)</span><span>C · 滑鼠 (Mouse)</span><span>D · 顯示卡 (GPU)</span></div></div>
+                <div className="quiz-question"><strong>Q1 · 被稱為「電腦的大腦」，負責處理資料與執行指令的核心硬體是下列哪一個？</strong><div><span className="answer-a correct">A · 中央處理器 (CPU)</span><span className="answer-b">B · 固態硬碟 (SSD)</span><span className="answer-c">C · 滑鼠 (Mouse)</span><span className="answer-d">D · 顯示卡 (GPU)</span></div></div>
               </div>
             </div>
           </div>
@@ -261,7 +261,22 @@ function LoggedOutLanding() {
       <section className="landing-band play-band">
         <div className="landing-split">
           <div className="landing-copy"><h2 className="landing-heading">不只按答案，直接在鏡頭裡作答。</h2><p className="landing-intro">AR 模式透過手部追蹤辨識指向位置，題目、倒數、分數與排行都疊加在真實畫面上；主持端同步看到玩家狀況。</p></div>
-          <div className="landing-media-placeholder dark" aria-label="AR 答題圖片預留區" />
+          <div className="ar-game-preview" aria-label="AR 手勢答題介面示意">
+            <div className="ar-game-camera-slot" aria-hidden="true" />
+            <div className="ar-game-topbar"><strong>AR VISION LINK</strong><span>LIVE</span></div>
+            <div className="ar-game-question">
+              <small>第 3 題 / 共 10 題</small>
+              <strong>CPU 的主要功能是什麼？</strong>
+            </div>
+            <div className="ar-game-timer"><b>12</b><small>秒</small></div>
+            <div className="ar-game-options" aria-hidden="true">
+              <span className="answer-a">A · 儲存檔案</span>
+              <span className="answer-b">B · 執行指令</span>
+              <span className="answer-c">C · 連接網路</span>
+              <span className="answer-d">D · 輸出畫面</span>
+            </div>
+            <div className="ar-game-footer"><span>手勢辨識中</span><b>2,480 PTS</b></div>
+          </div>
         </div>
       </section>
 
@@ -293,7 +308,14 @@ function LoggedOutLanding() {
       <section className="landing-band ar-camera-band">
         <div className="landing-split">
           <div className="landing-copy"><h2 className="landing-heading">從鏡頭進入<br />AR世界</h2><p className="landing-intro">AR Camera 結合臉部追蹤、即時辨識與 2D／3D 特效，讓每一次自拍和多人互動都能留下更有趣的畫面。</p></div>
-          <div className="ar-camera-showcase-slot" aria-label="AR Camera 展示圖預留區" />
+          <div className="ar-camera-showcase" aria-label="AR Camera 產品介面示意">
+            <figure className="ar-camera-shot ar-camera-shot-entry">
+              <img src={`${import.meta.env.BASE_URL}generated/ar-camera-entry.png`} alt="AR Camera 模式選擇介面" />
+            </figure>
+            <figure className="ar-camera-shot ar-camera-shot-selfie">
+              <img src={`${import.meta.env.BASE_URL}generated/ar-camera-selfie.png`} alt="套用狗狗 AR 特效的自拍介面" />
+            </figure>
+          </div>
         </div>
       </section>
 

@@ -476,8 +476,8 @@ function HostConsole() {
                   key={key}
                   className={
                     key === currentQuestion.correct_answer
-                      ? "console-option correct"
-                      : "console-option"
+                      ? `console-option option-${key.toLowerCase()} correct`
+                      : `console-option option-${key.toLowerCase()}`
                   }
                 >
                   <strong>{key}</strong>
@@ -491,7 +491,7 @@ function HostConsole() {
 
               <div className="stats-list">
                 {answerStats.map((item) => (
-                  <div className="stat-row" key={item.key}>
+                  <div className={`stat-row option-${item.key.toLowerCase()}`} key={item.key}>
                     <div className="stat-label">
                       <strong>{item.key}</strong>
                       <span>{item.count} 人</span>

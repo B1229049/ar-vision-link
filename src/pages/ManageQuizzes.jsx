@@ -590,7 +590,6 @@ function ManageQuizzes() {
                     <div className="question-card" key={q.question_id || index}>
                       <div className="question-header">
                         <div className="question-heading-copy">
-                          <span>{index + 1}</span>
                           <h3>第 {index + 1} 題</h3>
                         </div>
 
@@ -615,7 +614,7 @@ function ManageQuizzes() {
 
                       <div className="options-grid">
                         {["a", "b", "c", "d"].map((letter) => (
-                          <div className="option-box" key={letter}>
+                          <div className={`option-box option-${letter}`} key={letter}>
                             <label>選項 {letter.toUpperCase()}</label>
                             <input
                               className="option-input"

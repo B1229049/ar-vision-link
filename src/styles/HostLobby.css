@@ -885,15 +885,17 @@
   align-items: center;
   justify-content: center;
   gap: 9px;
-  border: 1px solid rgba(239, 68, 68, 0.36);
+  border: 1px solid #c8445e;
   border-radius: 999px;
-  background: rgba(239, 68, 68, 0.22);
-  color: #fecaca;
-  backdrop-filter: blur(12px);
+  background: #8f263c;
+  color: white;
+  box-shadow: none;
+  backdrop-filter: none;
 }
 
 .lobby-dissolve-btn:hover {
-  background: rgba(239, 68, 68, 0.36);
+  background: #a92f49;
+  border-color: #df5b74;
 }
 
 .lobby-dissolve-btn:disabled {

@@ -500,7 +500,7 @@ function JoinQuiz() {
               : "等待主持人開始遊戲..."}
           </div>
 
-          <button className="join-btn secondary" onClick={leaveRoom}>
+          <button className="join-btn secondary leave-room-btn" onClick={leaveRoom}>
             離開房間
           </button>
         </div>

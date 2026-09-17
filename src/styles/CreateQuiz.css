@@ -129,27 +129,27 @@
 }
 
 .quiz-option-field.option-a {
-  --option-bg: rgba(37, 99, 235, 0.28);
-  --option-border: rgba(96, 165, 250, 0.48);
-  --option-label: #bfdbfe;
+  --option-bg: rgba(49, 95, 214, 0.72);
+  --option-border: rgba(113, 149, 236, 0.9);
+  --option-label: white;
 }
 
 .quiz-option-field.option-b {
-  --option-bg: rgba(225, 29, 72, 0.24);
-  --option-border: rgba(251, 113, 133, 0.48);
-  --option-label: #fecdd3;
+  --option-bg: rgba(200, 60, 97, 0.72);
+  --option-border: rgba(225, 121, 148, 0.9);
+  --option-label: white;
 }
 
 .quiz-option-field.option-c {
-  --option-bg: rgba(245, 158, 11, 0.24);
-  --option-border: rgba(251, 191, 36, 0.5);
-  --option-label: #fde68a;
+  --option-bg: rgba(211, 149, 32, 0.76);
+  --option-border: rgba(237, 189, 96, 0.9);
+  --option-label: white;
 }
 
 .quiz-option-field.option-d {
-  --option-bg: rgba(126, 34, 206, 0.24);
-  --option-border: rgba(192, 132, 252, 0.46);
-  --option-label: #e9d5ff;
+  --option-bg: rgba(138, 69, 199, 0.74);
+  --option-border: rgba(182, 123, 229, 0.9);
+  --option-label: white;
 }
 
 .ai-wrapper {
@@ -480,26 +480,26 @@
 }
 
 .quiz-option-field.option-a {
-  --option-bg: #1d4ed8;
-  --option-border: transparent;
+  --option-bg: #315fd6;
+  --option-border: #7195ec;
   --option-label: white;
 }
 
 .quiz-option-field.option-b {
-  --option-bg: #be123c;
-  --option-border: transparent;
+  --option-bg: #c83c61;
+  --option-border: #e17994;
   --option-label: white;
 }
 
 .quiz-option-field.option-c {
-  --option-bg: #ca8a04;
-  --option-border: transparent;
+  --option-bg: #d39520;
+  --option-border: #edbd60;
   --option-label: white;
 }
 
 .quiz-option-field.option-d {
-  --option-bg: #db2777;
-  --option-border: transparent;
+  --option-bg: #8a45c7;
+  --option-border: #b67be5;
   --option-label: white;
 }
 

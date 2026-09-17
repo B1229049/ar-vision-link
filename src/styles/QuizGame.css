@@ -184,24 +184,24 @@
 }
 
 .option-btn.option-a {
-  background: rgba(37, 99, 235, 0.9);
-  border-color: rgba(147, 197, 253, 0.72);
+  background: #315fd6;
+  border-color: #7195ec;
 }
 
 .option-btn.option-b {
-  background: rgba(225, 29, 72, 0.86);
-  border-color: rgba(251, 113, 133, 0.72);
+  background: #c83c61;
+  border-color: #e17994;
 }
 
 .option-btn.option-c {
-  background: rgba(245, 158, 11, 0.9);
-  border-color: rgba(252, 211, 77, 0.72);
-  color: #172033;
+  background: #d39520;
+  border-color: #edbd60;
+  color: white;
 }
 
 .option-btn.option-d {
-  background: rgba(126, 34, 206, 0.9);
-  border-color: rgba(216, 180, 254, 0.72);
+  background: #8a45c7;
+  border-color: #b67be5;
 }
 
 .option-btn:hover:not(:disabled) {
@@ -242,7 +242,7 @@
 }
 
 .option-btn.option-c .option-key {
-  color: #172033;
+  color: white;
 }
 
 .option-correct-check {

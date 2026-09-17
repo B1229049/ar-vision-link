@@ -81,7 +81,7 @@ function ARQuizGame() {
 
   const [questions, setQuestions] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [sessionData, setSessionData] = useState(null);
+  const [quizTitle, setQuizTitle] = useState("AR Quiz");
   const [loading, setLoading] = useState(true);
   const [cameraError, setCameraError] = useState("");
 
@@ -395,7 +395,7 @@ function ARQuizGame() {
       const nextQuestions = data.questions || [];
       const nextIndex = Number(data.session?.current_question) || 0;
 
-      setSessionData(data.session);
+      setQuizTitle(data.quiz?.title || "AR Quiz");
       setQuestions(nextQuestions);
       setLeaderboard(data.leaderboard || []);
       setCurrentIndex(nextIndex);
@@ -408,7 +408,6 @@ function ARQuizGame() {
     socket.on("question-changed", ({ session }) => {
       const nextIndex = Number(session?.current_question) || 0;
 
-      setSessionData(session);
       setCurrentIndex(nextIndex);
 
       currentIndexRef.current = nextIndex;
@@ -420,7 +419,6 @@ function ARQuizGame() {
     });
 
     socket.on("game-finished", ({ session }) => {
-      setSessionData(session);
       cleanupWebRTC();
       navigate(`/quiz/leaderboard/${session.session_id}`);
     });
@@ -520,7 +518,7 @@ function ARQuizGame() {
       const nextQuestions = data.questions || [];
       const nextIndex = data.session?.current_question || 0;
 
-      setSessionData(data.session);
+      setQuizTitle(data.quiz?.title || "AR Quiz");
       setQuestions(nextQuestions);
       setCurrentIndex(nextIndex);
 
@@ -588,7 +586,7 @@ function ARQuizGame() {
         const indexTip = results.landmarks[0][8];
         const videoRect = video.getBoundingClientRect();
 
-        const x = videoRect.left + indexTip.x * videoRect.width;
+        const x = videoRect.left + (1 - indexTip.x) * videoRect.width;
         const y = videoRect.top + indexTip.y * videoRect.height;
 
         setFingerPoint({ x, y });
@@ -818,60 +816,60 @@ function ARQuizGame() {
         />
       )}
 
-      <button className="ar-back-btn" onClick={goBack}>
-        ← 返回
-      </button>
-
-      <div className="ar-top-status">
-        <span>
-          第 {currentIndex + 1} / {questions.length} 題
-        </span>
-
-        <span className={timeLeft <= 5 ? "danger-time" : ""}>
-          {timeLeft}s
-        </span>
-
-        <span>手指指向答案</span>
+      <div className="ar-game-header">
+        <div className="ar-game-header-row">
+          <strong className="ar-quiz-title">{quizTitle}</strong>
+          <span className={`ar-time-left ${timeLeft <= 5 ? "danger-time" : ""}`}>
+            剩餘 {timeLeft}s
+          </span>
+          <button className="ar-exit-btn" onClick={goBack} aria-label="離開 AR 答題">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M10 5H5v14h5M14 8l4 4-4 4M8 12h10" />
+            </svg>
+          </button>
+        </div>
       </div>
+
+      <div className="ar-pointing-hint">手指指向答案</div>
 
       {cameraError && <div className="ar-camera-error">{cameraError}</div>}
 
-      <div className="ar-question-card">{currentQuestion.question_text}</div>
+      <div className="ar-options-layer">
+        {["A", "B", "C", "D"].map((letter) => (
+          <button
+            key={letter}
+            ref={(el) => {
+              optionRefs.current[letter] = el;
+            }}
+            data-answer={letter}
+            className={`ar-option ar-option-${optionPositions[letter]} option-${letter.toLowerCase()} ${getOptionClass(
+              letter
+            )}`}
+            onClick={() => handleAnswer(letter)}
+            disabled={answered || timeLeft <= 0}
+          >
+            <span>{letter}</span>
 
-      {["A", "B", "C", "D"].map((letter) => (
-        <button
-          key={letter}
-          ref={(el) => {
-            optionRefs.current[letter] = el;
-          }}
-          data-answer={letter}
-          className={`ar-option ar-option-${optionPositions[letter]} ${getOptionClass(
-            letter
-          )}`}
-          onClick={() => handleAnswer(letter)}
-          disabled={answered || timeLeft <= 0}
-        >
-          <span>{letter}</span>
+            {getOptionText(letter)}
 
-          {getOptionText(letter)}
+            {timeLeft <= 0 && letter === currentQuestion.correct_answer && (
+              <span className="option-correct-check" aria-label="正確答案">
+                ✓
+              </span>
+            )}
 
-          {timeLeft <= 0 && letter === currentQuestion.correct_answer && (
-            <span className="option-correct-check" aria-label="正確答案">
-              ✓
-            </span>
-          )}
-
-          {pointingTarget === letter && !answered && (
-            <div className="ar-point-progress">
-              <div
-                style={{
-                  width: `${Math.round(pointingProgress * 100)}%`,
-                }}
-              />
-            </div>
-          )}
-        </button>
-      ))}
+            {pointingTarget === letter && !answered && (
+              <div className="ar-point-progress">
+                <div
+                  style={{
+                    width: `${Math.round(pointingProgress * 100)}%`,
+                  }}
+                />
+              </div>
+            )}
+          </button>
+        ))}
+      </div>
 
       {timeLeft <= 0 && !answered && (
         <div className="ar-result-card">

@@ -143,6 +143,19 @@
   background: rgba(168, 85, 247, 0.28);
 }
 
+.join-btn.leave-room-btn {
+  color: #fff;
+  background: #b4233f;
+  border-color: #d14b65;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.join-btn.leave-room-btn:hover {
+  background: #cc2e4e;
+  border-color: #e4627b;
+}
+
 .joined-room-panel {
   margin: 24px 0;
   padding: 24px;

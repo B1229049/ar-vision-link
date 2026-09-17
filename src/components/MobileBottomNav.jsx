@@ -73,7 +73,11 @@ function MobileBottomNav() {
     localStorage.getItem("currentUser")
   );
 
-  if (!currentUser || location.pathname === "/ar-selfie") {
+  if (
+    !currentUser ||
+    location.pathname === "/ar-selfie" ||
+    location.pathname.startsWith("/ar-quiz/")
+  ) {
     return null;
   }
 
