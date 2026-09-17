@@ -7,6 +7,28 @@ import {
 } from "@mediapipe/tasks-vision";
 import "../styles/ARQuizGame.css";
 
+const OPTION_POSITION_SLOTS = ["a", "b", "c", "d"];
+
+function createRandomOptionPositions() {
+  const shuffledSlots = [...OPTION_POSITION_SLOTS];
+
+  for (let i = shuffledSlots.length - 1; i > 0; i -= 1) {
+    const randomIndex = Math.floor(Math.random() * (i + 1));
+
+    [shuffledSlots[i], shuffledSlots[randomIndex]] = [
+      shuffledSlots[randomIndex],
+      shuffledSlots[i],
+    ];
+  }
+
+  return {
+    A: shuffledSlots[0],
+    B: shuffledSlots[1],
+    C: shuffledSlots[2],
+    D: shuffledSlots[3],
+  };
+}
+
 function ARQuizGame() {
   const { sessionId } = useParams();
   const navigate = useNavigate();
@@ -21,6 +43,7 @@ function ARQuizGame() {
   const peerConnectionRef = useRef(null);
   const hostSocketIdRef = useRef(null);
   const iceConfigRef = useRef(null);
+  const offerInProgressRef = useRef(false);
 
   const optionRefs = useRef({
     A: null,
@@ -73,6 +96,9 @@ function ARQuizGame() {
   const [pointingTarget, setPointingTarget] = useState("");
   const [pointingProgress, setPointingProgress] = useState(0);
   const [fingerPoint, setFingerPoint] = useState(null);
+  const [optionPositions, setOptionPositions] = useState(() =>
+    createRandomOptionPositions()
+  );
 
   const currentQuestion = questions[currentIndex];
 
@@ -122,6 +148,7 @@ function ARQuizGame() {
 
   useEffect(() => {
     resetQuestionState();
+    setOptionPositions(createRandomOptionPositions());
   }, [currentIndex, questions]);
 
   async function getIceConfig() {
@@ -144,20 +171,55 @@ function ARQuizGame() {
   }
 
   async function ensureLocalStream() {
-    if (streamRef.current) return streamRef.current;
+    if (streamRef.current) {
+      return streamRef.current;
+    }
 
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: {
-        facingMode: "environment",
-      },
-      audio: false,
-    });
+    const stream =
+      await navigator.mediaDevices.getUserMedia({
+        video: {
+          // user 代表前鏡頭，exact 可避免手機改用後鏡頭
+          facingMode: {
+            exact: "user",
+          },
+          width: {
+            ideal: 640,
+          },
+          height: {
+            ideal: 480,
+          },
+          frameRate: {
+            ideal: 30,
+            max: 30,
+          },
+        },
+        audio: false,
+      });
 
     streamRef.current = stream;
 
     if (videoRef.current) {
-      videoRef.current.srcObject = stream;
-      await videoRef.current.play?.();
+      const video = videoRef.current;
+
+      video.srcObject = stream;
+
+      await new Promise((resolve) => {
+        if (
+          video.readyState >=
+          HTMLMediaElement.HAVE_CURRENT_DATA
+        ) {
+          resolve();
+          return;
+        }
+
+        video.addEventListener(
+          "loadeddata",
+          resolve,
+          { once: true }
+        );
+      });
+
+      await video.play();
     }
 
     return stream;
@@ -191,6 +253,21 @@ function ARQuizGame() {
   async function createOfferToHost(hostSocketId) {
     if (!hostSocketId || !socketRef.current) return;
 
+    const existingPc = peerConnectionRef.current;
+
+    if (
+      offerInProgressRef.current ||
+      (existingPc &&
+        hostSocketIdRef.current === hostSocketId &&
+        existingPc.signalingState !== "closed" &&
+        !["failed", "closed"].includes(existingPc.connectionState))
+    ) {
+      console.warn("WebRTC 連線正在建立或已存在，忽略重複的 host-ready");
+      return;
+    }
+
+    offerInProgressRef.current = true;
+
     try {
       cleanupWebRTC();
 
@@ -216,12 +293,15 @@ function ARQuizGame() {
       };
 
       pc.onconnectionstatechange = () => {
+        console.log("AR WebRTC 狀態:", pc.connectionState);
+
         if (
           pc.connectionState === "failed" ||
-          pc.connectionState === "closed" ||
-          pc.connectionState === "disconnected"
+          pc.connectionState === "closed"
         ) {
-          cleanupWebRTC();
+          if (peerConnectionRef.current === pc) {
+            cleanupWebRTC();
+          }
         }
       };
 
@@ -235,13 +315,33 @@ function ARQuizGame() {
       });
     } catch (err) {
       console.error("AR 玩家建立 WebRTC offer 失敗：", err);
+      cleanupWebRTC();
+    } finally {
+      offerInProgressRef.current = false;
     }
   }
 
-  async function handleWebRTCAnswer(answer) {
+  async function handleWebRTCAnswer(fromSocketId, answer) {
     const pc = peerConnectionRef.current;
 
     if (!pc || !answer) return;
+
+    if (
+      fromSocketId &&
+      hostSocketIdRef.current &&
+      fromSocketId !== hostSocketIdRef.current
+    ) {
+      console.warn("忽略舊 WebRTC 連線的 answer:", fromSocketId);
+      return;
+    }
+
+    if (pc.signalingState !== "have-local-offer") {
+      console.warn(
+        "忽略重複或過期的 WebRTC answer:",
+        pc.signalingState
+      );
+      return;
+    }
 
     try {
       await pc.setRemoteDescription(new RTCSessionDescription(answer));
@@ -250,10 +350,18 @@ function ARQuizGame() {
     }
   }
 
-  async function handleRemoteIceCandidate(candidate) {
+  async function handleRemoteIceCandidate(fromSocketId, candidate) {
     const pc = peerConnectionRef.current;
 
     if (!pc || !candidate) return;
+
+    if (
+      fromSocketId &&
+      hostSocketIdRef.current &&
+      fromSocketId !== hostSocketIdRef.current
+    ) {
+      return;
+    }
 
     try {
       await pc.addIceCandidate(new RTCIceCandidate(candidate));
@@ -321,12 +429,12 @@ function ARQuizGame() {
       createOfferToHost(hostSocketId);
     });
 
-    socket.on("webrtc-answer", ({ answer }) => {
-      handleWebRTCAnswer(answer);
+    socket.on("webrtc-answer", ({ from, answer }) => {
+      handleWebRTCAnswer(from, answer);
     });
 
-    socket.on("webrtc-ice-candidate", ({ candidate }) => {
-      handleRemoteIceCandidate(candidate);
+    socket.on("webrtc-ice-candidate", ({ from, candidate }) => {
+      handleRemoteIceCandidate(from, candidate);
     });
 
     socket.on("webrtc-user-disconnected", ({ role }) => {
@@ -737,7 +845,7 @@ function ARQuizGame() {
             optionRefs.current[letter] = el;
           }}
           data-answer={letter}
-          className={`ar-option ar-option-${letter.toLowerCase()} ${getOptionClass(
+          className={`ar-option ar-option-${optionPositions[letter]} ${getOptionClass(
             letter
           )}`}
           onClick={() => handleAnswer(letter)}
