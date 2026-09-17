@@ -277,18 +277,33 @@ function ManageQuizzes() {
       }
     }
 
-    const formattedQuestions = questions.map((q) => ({
-      question_id: q.question_id,
-      question_text: q.question_text,
-      options: {
-        A: q.option_a,
-        B: q.option_b,
-        C: q.option_c,
-        D: q.option_d,
-      },
-      correct_answer: q.correct_answer || "A",
-      time_limit: Number(q.time_limit) || 20,
-    }));
+    const formattedQuestions = questions.map((q) => {
+      const optionA = q.option_a.trim();
+      const optionB = q.option_b.trim();
+      const optionC = q.option_c.trim();
+      const optionD = q.option_d.trim();
+
+      return {
+        question_id: q.question_id,
+        question_text: q.question_text.trim(),
+
+        // 目前後端 PUT /api/quizzes/:quizId 讀取這四個欄位。
+        option_a: optionA,
+        option_b: optionB,
+        option_c: optionC,
+        option_d: optionD,
+
+        // 同時保留 JSON options，避免其他版本的後端或前端格式不一致。
+        options: {
+          A: optionA,
+          B: optionB,
+          C: optionC,
+          D: optionD,
+        },
+        correct_answer: q.correct_answer || "A",
+        time_limit: Number(q.time_limit) || 20,
+      };
+    });
 
     setSaving(true);
 
