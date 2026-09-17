@@ -44,6 +44,9 @@ function ARQuizGame() {
   const hostSocketIdRef = useRef(null);
   const iceConfigRef = useRef(null);
   const offerInProgressRef = useRef(false);
+  const pendingIceCandidatesRef = useRef([]);
+  const answerHoldTimeoutRef = useRef(null);
+  const mountedRef = useRef(false);
 
   const optionRefs = useRef({
     A: null,
@@ -121,12 +124,14 @@ function ARQuizGame() {
   }, [questions, currentIndex]);
 
   useEffect(() => {
+    mountedRef.current = true;
     loadSession();
     startCamera();
     connectSocket();
     initHandTracking();
 
     return () => {
+      mountedRef.current = false;
       stopCamera();
       disconnectSocket();
       clearTimer();
@@ -175,13 +180,16 @@ function ARQuizGame() {
       return streamRef.current;
     }
 
-    const stream =
-      await navigator.mediaDevices.getUserMedia({
+    if (!navigator.mediaDevices?.getUserMedia) {
+      throw new Error("目前瀏覽器不支援相機功能");
+    }
+
+    let stream;
+
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({
         video: {
-          // user 代表前鏡頭，exact 可避免手機改用後鏡頭
-          facingMode: {
-            exact: "user",
-          },
+          facingMode: { ideal: "user" },
           width: {
             ideal: 640,
           },
@@ -195,6 +203,15 @@ function ARQuizGame() {
         },
         audio: false,
       });
+    } catch (error) {
+      // 部分桌面瀏覽器或沒有前鏡頭的裝置不接受 facingMode。
+      if (error?.name !== "OverconstrainedError") throw error;
+
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: false,
+      });
+    }
 
     streamRef.current = stream;
 
@@ -239,6 +256,10 @@ function ARQuizGame() {
       streamRef.current.getTracks().forEach((track) => track.stop());
       streamRef.current = null;
     }
+
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
   }
 
   function cleanupWebRTC() {
@@ -248,6 +269,7 @@ function ARQuizGame() {
     }
 
     hostSocketIdRef.current = null;
+    pendingIceCandidatesRef.current = [];
   }
 
   async function createOfferToHost(hostSocketId) {
@@ -345,6 +367,13 @@ function ARQuizGame() {
 
     try {
       await pc.setRemoteDescription(new RTCSessionDescription(answer));
+
+      const pendingCandidates = pendingIceCandidatesRef.current;
+      pendingIceCandidatesRef.current = [];
+
+      for (const candidate of pendingCandidates) {
+        await pc.addIceCandidate(new RTCIceCandidate(candidate));
+      }
     } catch (err) {
       console.error("AR 玩家設定 WebRTC answer 失敗：", err);
     }
@@ -353,7 +382,12 @@ function ARQuizGame() {
   async function handleRemoteIceCandidate(fromSocketId, candidate) {
     const pc = peerConnectionRef.current;
 
-    if (!pc || !candidate) return;
+    if (!candidate) return;
+
+    if (!pc) {
+      pendingIceCandidatesRef.current.push(candidate);
+      return;
+    }
 
     if (
       fromSocketId &&
@@ -364,6 +398,11 @@ function ARQuizGame() {
     }
 
     try {
+      if (!pc.remoteDescription) {
+        pendingIceCandidatesRef.current.push(candidate);
+        return;
+      }
+
       await pc.addIceCandidate(new RTCIceCandidate(candidate));
     } catch (err) {
       console.error("AR 玩家加入 ICE candidate 失敗：", err);
@@ -447,6 +486,7 @@ function ARQuizGame() {
   }
 
   function disconnectSocket() {
+    socketRef.current?.removeAllListeners();
     socketRef.current?.disconnect();
     socketRef.current = null;
   }
@@ -455,6 +495,11 @@ function ARQuizGame() {
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
+    }
+
+    if (answerHoldTimeoutRef.current) {
+      clearTimeout(answerHoldTimeoutRef.current);
+      answerHoldTimeoutRef.current = null;
     }
   }
 
@@ -501,6 +546,11 @@ function ARQuizGame() {
       startTime: 0,
     };
 
+    if (answerHoldTimeoutRef.current) {
+      clearTimeout(answerHoldTimeoutRef.current);
+      answerHoldTimeoutRef.current = null;
+    }
+
     startTimer(limit);
   }
 
@@ -542,9 +592,10 @@ function ARQuizGame() {
         "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm"
       );
 
-      handLandmarkerRef.current = await HandLandmarker.createFromOptions(
-        vision,
-        {
+      let handLandmarker;
+
+      try {
+        handLandmarker = await HandLandmarker.createFromOptions(vision, {
           baseOptions: {
             modelAssetPath:
               "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task",
@@ -552,8 +603,26 @@ function ARQuizGame() {
           },
           runningMode: "VIDEO",
           numHands: 1,
-        }
-      );
+        });
+      } catch (gpuError) {
+        console.warn("Hand tracking GPU 初始化失敗，改用 CPU：", gpuError);
+        handLandmarker = await HandLandmarker.createFromOptions(vision, {
+          baseOptions: {
+            modelAssetPath:
+              "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task",
+            delegate: "CPU",
+          },
+          runningMode: "VIDEO",
+          numHands: 1,
+        });
+      }
+
+      if (!mountedRef.current) {
+        handLandmarker.close?.();
+        return;
+      }
+
+      handLandmarkerRef.current = handLandmarker;
 
       detectHandsLoop();
     } catch (err) {
@@ -566,6 +635,9 @@ function ARQuizGame() {
       cancelAnimationFrame(animationRef.current);
       animationRef.current = null;
     }
+
+    handLandmarkerRef.current?.close?.();
+    handLandmarkerRef.current = null;
   }
 
   function detectHandsLoop() {
@@ -596,7 +668,9 @@ function ARQuizGame() {
       }
     }
 
-    animationRef.current = requestAnimationFrame(detectHandsLoop);
+    if (mountedRef.current) {
+      animationRef.current = requestAnimationFrame(detectHandsLoop);
+    }
   }
 
   function resetPointing() {
@@ -671,7 +745,9 @@ function ARQuizGame() {
 
       setPointingProgress(1);
 
-      setTimeout(() => {
+      submittingRef.current = true;
+      answerHoldTimeoutRef.current = setTimeout(() => {
+        answerHoldTimeoutRef.current = null;
         resetPointing();
         handleAnswer(finalTarget);
       }, 120);
@@ -681,11 +757,12 @@ function ARQuizGame() {
   async function handleAnswer(answer) {
     const activeQuestion = currentQuestionRef.current;
 
-    if (!activeQuestion || answeredRef.current || submittingRef.current) {
+    if (!activeQuestion || answeredRef.current) {
       return;
     }
 
     if (!currentUser?.id) {
+      submittingRef.current = false;
       alert("找不到登入使用者，請重新登入");
       return;
     }
@@ -830,7 +907,24 @@ function ARQuizGame() {
         </div>
       </div>
 
-      <div className="ar-pointing-hint">手指指向答案</div>
+      <section className="ar-question-card" aria-live="polite">
+        <div className="ar-question-meta">
+          <span>
+            第 {currentIndex + 1} 題／共 {questions.length} 題
+          </span>
+          <span className="ar-question-mode">AR 手勢作答</span>
+        </div>
+        <h1>
+          {currentQuestion.question_text ||
+            currentQuestion.question ||
+            "題目內容載入中…"}
+        </h1>
+      </section>
+
+      <div className="ar-pointing-hint">
+        <span className="ar-hint-dot" />
+        將食指停在答案上 1.2 秒，或直接點選
+      </div>
 
       {cameraError && <div className="ar-camera-error">{cameraError}</div>}
 
@@ -848,9 +942,8 @@ function ARQuizGame() {
             onClick={() => handleAnswer(letter)}
             disabled={answered || timeLeft <= 0}
           >
-            <span>{letter}</span>
-
-            {getOptionText(letter)}
+            <span className="ar-option-letter">{letter}</span>
+            <span className="ar-option-text">{getOptionText(letter)}</span>
 
             {timeLeft <= 0 && letter === currentQuestion.correct_answer && (
               <span className="option-correct-check" aria-label="正確答案">
