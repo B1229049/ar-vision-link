@@ -261,22 +261,7 @@ function LoggedOutLanding() {
       <section className="landing-band play-band">
         <div className="landing-split">
           <div className="landing-copy"><h2 className="landing-heading">不只按答案，直接在鏡頭裡作答。</h2><p className="landing-intro">AR 模式透過手部追蹤辨識指向位置，題目、倒數、分數與排行都疊加在真實畫面上；主持端同步看到玩家狀況。</p></div>
-          <div className="ar-game-preview" aria-label="AR 手勢答題介面示意">
-            <div className="ar-game-camera-slot" aria-hidden="true" />
-            <div className="ar-game-topbar"><strong>AR VISION LINK</strong><span>LIVE</span></div>
-            <div className="ar-game-question">
-              <small>第 3 題 / 共 10 題</small>
-              <strong>CPU 的主要功能是什麼？</strong>
-            </div>
-            <div className="ar-game-timer"><b>12</b><small>秒</small></div>
-            <div className="ar-game-options" aria-hidden="true">
-              <span className="answer-a">A · 儲存檔案</span>
-              <span className="answer-b">B · 執行指令</span>
-              <span className="answer-c">C · 連接網路</span>
-              <span className="answer-d">D · 輸出畫面</span>
-            </div>
-            <div className="ar-game-footer"><span>手勢辨識中</span><b>2,480 PTS</b></div>
-          </div>
+          <div className="ar-game-preview" aria-hidden="true" />
         </div>
       </section>
 
