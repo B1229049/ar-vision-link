@@ -7,6 +7,28 @@ import {
 } from "@mediapipe/tasks-vision";
 import "../styles/ARQuizGame.css";
 
+const OPTION_POSITION_SLOTS = ["a", "b", "c", "d"];
+
+function createRandomOptionPositions() {
+  const shuffledSlots = [...OPTION_POSITION_SLOTS];
+
+  for (let i = shuffledSlots.length - 1; i > 0; i -= 1) {
+    const randomIndex = Math.floor(Math.random() * (i + 1));
+
+    [shuffledSlots[i], shuffledSlots[randomIndex]] = [
+      shuffledSlots[randomIndex],
+      shuffledSlots[i],
+    ];
+  }
+
+  return {
+    A: shuffledSlots[0],
+    B: shuffledSlots[1],
+    C: shuffledSlots[2],
+    D: shuffledSlots[3],
+  };
+}
+
 function ARQuizGame() {
   const { sessionId } = useParams();
   const navigate = useNavigate();
@@ -73,6 +95,9 @@ function ARQuizGame() {
   const [pointingTarget, setPointingTarget] = useState("");
   const [pointingProgress, setPointingProgress] = useState(0);
   const [fingerPoint, setFingerPoint] = useState(null);
+  const [optionPositions, setOptionPositions] = useState(() =>
+    createRandomOptionPositions()
+  );
 
   const currentQuestion = questions[currentIndex];
 
@@ -122,6 +147,7 @@ function ARQuizGame() {
 
   useEffect(() => {
     resetQuestionState();
+    setOptionPositions(createRandomOptionPositions());
   }, [currentIndex, questions]);
 
   async function getIceConfig() {
@@ -144,20 +170,55 @@ function ARQuizGame() {
   }
 
   async function ensureLocalStream() {
-    if (streamRef.current) return streamRef.current;
+    if (streamRef.current) {
+      return streamRef.current;
+    }
 
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: {
-        facingMode: "environment",
-      },
-      audio: false,
-    });
+    const stream =
+      await navigator.mediaDevices.getUserMedia({
+        video: {
+          // user 代表前鏡頭，exact 可避免手機改用後鏡頭
+          facingMode: {
+            exact: "user",
+          },
+          width: {
+            ideal: 640,
+          },
+          height: {
+            ideal: 480,
+          },
+          frameRate: {
+            ideal: 30,
+            max: 30,
+          },
+        },
+        audio: false,
+      });
 
     streamRef.current = stream;
 
     if (videoRef.current) {
-      videoRef.current.srcObject = stream;
-      await videoRef.current.play?.();
+      const video = videoRef.current;
+
+      video.srcObject = stream;
+
+      await new Promise((resolve) => {
+        if (
+          video.readyState >=
+          HTMLMediaElement.HAVE_CURRENT_DATA
+        ) {
+          resolve();
+          return;
+        }
+
+        video.addEventListener(
+          "loadeddata",
+          resolve,
+          { once: true }
+        );
+      });
+
+      await video.play();
     }
 
     return stream;
@@ -737,7 +798,7 @@ function ARQuizGame() {
             optionRefs.current[letter] = el;
           }}
           data-answer={letter}
-          className={`ar-option ar-option-${letter.toLowerCase()} ${getOptionClass(
+          className={`ar-option ar-option-${optionPositions[letter]} ${getOptionClass(
             letter
           )}`}
           onClick={() => handleAnswer(letter)}
