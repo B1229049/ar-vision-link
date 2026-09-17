@@ -247,7 +247,7 @@ function LoggedOutLanding() {
           <div className="quiz-creator-preview" aria-label="AI 建立測驗介面示意">
             <header><strong>QUIZ CENTER</strong></header>
             <div className="quiz-preview-body">
-              <aside><strong>建立方式</strong><span>手動建立</span><span>貼上文字</span><span>上傳教材</span><span>AI 生成</span></aside>
+              <aside><span>▦ 總覽</span><span>▤ 我的測驗</span><span>▥ 歷史紀錄</span><span>♙ 建立房間</span></aside>
               <div className="quiz-preview-main">
                 <div className="quiz-file">教材檔案：ComputerScience.pdf</div>
                 <div className="quiz-generating">✦ 正在從教材產生 5 道題目...</div>
@@ -269,9 +269,31 @@ function LoggedOutLanding() {
         <div className="landing-split">
           <div className="landing-copy"><h2 className="landing-heading">身分不是帳號欄位，而是整個體驗的入口。</h2><p className="landing-intro">從臉部登入到多人 AR Camera，讓公開資訊、虛擬替身與活動成果跟著使用者出現在現場。</p></div>
           <article className="identity-preview">
-            <h3>一個身分，連結所有歷程</h3><p>個人資料、虛擬替身、測驗成績與臉部資料維持在同一個使用者身分下。</p>
-            <div className="identity-profile"><div className="identity-avatar" aria-hidden="true" /><div className="identity-data"><strong>個人資料</strong><span>名稱 · 李田所</span><span>使用者ID · 114</span><span>個人介紹 · 嗨!一庫走</span></div></div>
+            <h3>一個身分，連結所有歷程</h3>
+            <p>個人資料、虛擬替身、測驗成績與臉部資料維持在同一個使用者身分下。</p>
+            <div className="identity-profile">
+              <div className="identity-person">
+                <div className="identity-user-mark" aria-hidden="true"><span /></div>
+                <h4>李田所</h4>
+                <small>自我介紹</small>
+                <p>嗨 一庫走!</p>
+              </div>
+              <div className="identity-data">
+                <span><small>使用者 ID</small><b>13</b></span>
+                <span><small>建立時間</small><b>2026/06/01</b></span>
+                <span className="identity-action">歷史紀錄</span>
+                <span className="identity-action">重新註冊臉部</span>
+                <strong>編輯資料</strong>
+              </div>
+            </div>
           </article>
+        </div>
+      </section>
+
+      <section className="landing-band ar-camera-band">
+        <div className="landing-split">
+          <div className="landing-copy"><h2 className="landing-heading">從鏡頭進入<br />AR世界</h2><p className="landing-intro">AR Camera 結合臉部追蹤、即時辨識與 2D／3D 特效，讓每一次自拍和多人互動都能留下更有趣的畫面。</p></div>
+          <div className="ar-camera-showcase-slot" aria-label="AR Camera 展示圖預留區" />
         </div>
       </section>
 
