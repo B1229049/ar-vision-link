@@ -15,7 +15,7 @@
 
 ---
 
-## 目錄
+# 目錄
 
 - [專案介紹](#專案介紹)
 - [功能特色](#功能特色)
@@ -30,7 +30,7 @@
 
 ---
 
-## 專案介紹
+# 專案介紹
 
 AR Vision Link 是一套以瀏覽器為核心的互動式測驗平台。系統將傳統選擇題遊戲與攝影機、即時視訊、人臉辨識及 AR 技術整合，讓主持人與玩家能在同一場線上活動中即時互動。
 
@@ -48,7 +48,7 @@ AR Vision Link 是一套以瀏覽器為核心的互動式測驗平台。系統�
 
 ---
 
-## 功能特色
+# 功能特色
 
 ### 即時多人測驗
 
@@ -123,22 +123,22 @@ AR Vision Link 是一套以瀏覽器為核心的互動式測驗平台。系統�
 
 ---
 
-## 產品畫面
+# 產品畫面
 
 ### Quiz Center
 
 題庫建立、題庫管理與歷史紀錄集中在同一個控制中心。
 
-![Quiz Center 題庫控制中心](public/generated/quiz-center.png)
+<div align="center">
+  <img src="public/generated/quiz-center.png" alt="Quiz Center 題庫控制中心" width="80%" />
+</div>
 
 ### 遊戲畫面
 
-玩家作答與主持人控制台即時同步，適合使用左右並排方式展示。
+玩家作答與主持人控制台即時同步，完整呈現從 Lobby 到即時答題的遊戲流程。
 
 <div align="center">
-  <img src="public/generated/ar-quiz-lobby.png" alt="AR 模式遊戲 Lobby" width="32%" />
-  <img src="public/generated/game-host-console.png" alt="主持人控制台" width="32%" />
-  <img src="public/generated/game-player.png" alt="玩家答題畫面" width="32%" />
+  <img src="public/generated/game-overview.png" alt="遊戲 Lobby、主持人控制台與玩家答題畫面" width="80%" />
 </div>
 
 ### AR Quiz
@@ -146,7 +146,7 @@ AR Vision Link 是一套以瀏覽器為核心的互動式測驗平台。系統�
 展示手勢辨識、相機背景、答案區域與即時回饋。
 
 <div align="center">
-  <img src="public/generated/ar-quiz-answer.png" alt="AR 手勢作答畫面" width="46%" />
+  <img src="public/generated/ar-quiz-answer.png" alt="AR 手勢作答畫面" width="28%" />
 </div>
 
 ### AR 自拍
@@ -154,19 +154,21 @@ AR Vision Link 是一套以瀏覽器為核心的互動式測驗平台。系統�
 可將多種 2D 與 3D 濾鏡整理成一張橫向展示圖。
 
 <div align="center">
-  <img src="public/generated/ar-camera-entry.png" alt="AR Camera 模式選擇畫面" width="46%" />
-  <img src="public/generated/ar-camera-selfie.png" alt="AR Camera 自拍特效畫面" width="46%" />
+  <img src="public/generated/ar-camera-entry.png" alt="AR Camera 模式選擇畫面" width="28%" />
+  <img src="public/generated/ar-camera-selfie.png" alt="AR Camera 自拍特效畫面" width="28%" />
 </div>
 
 ### 虛擬替身換裝
 
 展示角色預覽、分類選擇與不同完成造型。
 
-![虛擬替身換裝介面](public/generated/home-avatar-dressup.png)
+<div align="center">
+  <img src="public/generated/home-avatar-dressup.png" alt="虛擬替身換裝介面" width="80%" />
+</div>
 
 ---
 
-## 系統使用流程
+# 系統使用流程
 
 ### 主持人流程
 
@@ -218,7 +220,7 @@ stateDiagram-v2
 
 ---
 
-## 技術架構
+# 技術架構
 
 ```mermaid
 flowchart TB
@@ -276,7 +278,7 @@ flowchart TB
 
 ---
 
-## 即時通訊設計
+# 即時通訊設計
 
 ### 遊戲事件
 
@@ -307,7 +309,7 @@ flowchart TB
 
 ---
 
-## 人臉辨識與 AR
+# 人臉辨識與 AR
 
 ### 人臉登入流程
 
@@ -355,7 +357,7 @@ WebGL → WASM → CPU
 
 ---
 
-## 專案結構
+# 專案結構
 
 ```text
 ar-vision-link/
@@ -389,7 +391,7 @@ ar-vision-link/
 
 ---
 
-## 主要頁面
+# 主要頁面
 
 | 分類 | 頁面 | 說明 |
 | --- | --- | --- |
