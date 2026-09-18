@@ -251,7 +251,7 @@ function LoggedOutLanding() {
               <div className="quiz-preview-main">
                 <div className="quiz-file">教材檔案：ComputerScience.pdf</div>
                 <div className="quiz-generating">✦ 正在從教材產生 5 道題目...</div>
-                <div className="quiz-question"><strong>Q1 · 被稱為「電腦的大腦」，負責處理資料與執行指令的核心硬體是下列哪一個？</strong><div><span className="answer-a correct">A · 中央處理器 (CPU)</span><span className="answer-b">B · 固態硬碟 (SSD)</span><span className="answer-c">C · 滑鼠 (Mouse)</span><span className="answer-d">D · 顯示卡 (GPU)</span></div></div>
+                <div className="quiz-question"><strong>Q1 · 被稱為「電腦的大腦」，負責處理資料與執行指令的核心硬體是下列哪一個？</strong><div><span className="answer-a correct">A. 中央處理器 (CPU)</span><span className="answer-b">B. 固態硬碟 (SSD)</span><span className="answer-c">C. 滑鼠 (Mouse)</span><span className="answer-d">D. 顯示卡 (GPU)</span></div></div>
               </div>
             </div>
           </div>
@@ -261,7 +261,14 @@ function LoggedOutLanding() {
       <section className="landing-band play-band">
         <div className="landing-split">
           <div className="landing-copy"><h2 className="landing-heading">不只按答案，直接在鏡頭裡作答。</h2><p className="landing-intro">AR 模式透過手部追蹤辨識指向位置，題目、倒數、分數與排行都疊加在真實畫面上；主持端同步看到玩家狀況。</p></div>
-          <div className="ar-game-preview" aria-hidden="true" />
+          <div className="ar-game-preview" aria-label="AR 模式房間與手勢答題畫面">
+            <figure className="ar-game-shot ar-game-shot-lobby">
+              <img src={`${import.meta.env.BASE_URL}generated/ar-quiz-lobby.png`} alt="AR 模式遊戲房間畫面" />
+            </figure>
+            <figure className="ar-game-shot ar-game-shot-answer">
+              <img src={`${import.meta.env.BASE_URL}generated/ar-quiz-answer.png`} alt="AR 手勢作答畫面" />
+            </figure>
+          </div>
         </div>
       </section>
 
@@ -307,12 +314,20 @@ function LoggedOutLanding() {
       <section className="landing-band expression-band">
         <div className="landing-split">
           <div className="landing-copy"><h2 className="landing-heading">留下自己的風格。</h2><p className="landing-intro">可為自己的虛擬替身搭配各種服裝，各式各樣的造型等你來收集。</p></div>
-          <figure className="expression-showcase">
-            <img
-              src={`${import.meta.env.BASE_URL}generated/avatar-style-showcase.png`}
-              alt="九套虛擬替身時裝的角色群像"
-            />
-          </figure>
+          <div className="expression-showcase" aria-label="虛擬替身換裝與造型展示">
+            <figure className="expression-shot expression-shot-dressup">
+              <img
+                src={`${import.meta.env.BASE_URL}generated/home-avatar-dressup.png`}
+                alt="虛擬替身換裝介面"
+              />
+            </figure>
+            <figure className="expression-shot expression-shot-styles">
+              <img
+                src={`${import.meta.env.BASE_URL}generated/avatar-style-showcase.png`}
+                alt="多套虛擬替身造型展示"
+              />
+            </figure>
+          </div>
         </div>
       </section>
 

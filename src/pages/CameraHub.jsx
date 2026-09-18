@@ -14,8 +14,8 @@ function CameraHub() {
         >
           <span className="camera-hub-content">
             <span className="camera-hub-copy">
-              <strong>舊有內容</strong>
-              <small>臉部掃描辨識</small>
+              <strong>臉部辨識</strong>
+              <small>辨識出你，顯示你的名牌</small>
             </span>
             <span className="camera-hub-action">開啟相機 →</span>
           </span>
