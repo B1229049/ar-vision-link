@@ -50,6 +50,11 @@
   white-space: nowrap;
 }
 
+.nav-logo.is-locked {
+  cursor: default;
+  user-select: none;
+}
+
 .nav-links {
   display: flex;
   gap: 12px;

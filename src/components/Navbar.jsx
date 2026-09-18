@@ -4,6 +4,10 @@ import "../styles/Navbar.css";
 function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
+  const isQuizGameplay =
+    location.pathname.startsWith("/quiz/game/") ||
+    location.pathname.startsWith("/ar-quiz/") ||
+    location.pathname.startsWith("/quiz/host-console/");
   let currentUser = null;
 
   try {
@@ -26,13 +30,16 @@ function Navbar() {
   }
 
   return (
-    <nav className={`navbar ${currentUser ? "is-authenticated" : "is-guest"}`}>
+    <nav className={`navbar ${currentUser ? "is-authenticated" : "is-guest"} ${isQuizGameplay ? "is-gameplay" : ""}`}>
       <div className="navbar-inner">
-        <div className="nav-logo" onClick={() => go("/")}>
+        <div
+          className={`nav-logo ${isQuizGameplay ? "is-locked" : ""}`}
+          onClick={isQuizGameplay ? undefined : () => go("/")}
+        >
           AR Vision Link
         </div>
 
-        <div className="nav-links">
+        {!isQuizGameplay && <div className="nav-links">
           {currentUser && <button className="nav-home" onClick={() => go("/")}>主頁</button>}
 
         {!currentUser && (
@@ -56,7 +63,7 @@ function Navbar() {
 
           </>
         )}
-        </div>
+        </div>}
       </div>
     </nav>
   );

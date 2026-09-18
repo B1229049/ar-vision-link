@@ -68,6 +68,10 @@ function Icon({ name }) {
 function MobileBottomNav() {
   const navigate = useNavigate();
   const location = useLocation();
+  const isQuizGameplay =
+    location.pathname.startsWith("/quiz/game/") ||
+    location.pathname.startsWith("/ar-quiz/") ||
+    location.pathname.startsWith("/quiz/host-console/");
 
   const currentUser = JSON.parse(
     localStorage.getItem("currentUser")
@@ -76,7 +80,7 @@ function MobileBottomNav() {
   if (
     !currentUser ||
     location.pathname === "/ar-selfie" ||
-    location.pathname.startsWith("/ar-quiz/")
+    isQuizGameplay
   ) {
     return null;
   }
