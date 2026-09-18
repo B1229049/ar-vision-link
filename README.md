@@ -1,6 +1,6 @@
 # AR Vision Link
 
-<div align="center">
+<div >
 
 **結合即時多人測驗、AR 互動、WebRTC 視訊與人臉辨識的線上學習平台**
 
@@ -12,7 +12,7 @@
 
 
 </div>
-
+專案網址：https://b1229049.github.io/ar-vision-link/
 ---
 
 # 目錄
