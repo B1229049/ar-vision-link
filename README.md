@@ -9,10 +9,21 @@
 [![Node.js](https://img.shields.io/badge/Node.js-Express-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![Socket.IO](https://img.shields.io/badge/Socket.IO-Realtime-010101?logo=socket.io&logoColor=white)](https://socket.io/)
 [![Supabase](https://img.shields.io/badge/Supabase-Cloud-3FCF8E?logo=supabase&logoColor=white)](https://supabase.com/)
+[![React Router](https://img.shields.io/badge/React_Router-7-CA4245?logo=reactrouter&logoColor=white)](https://reactrouter.com/)
+[![Express](https://img.shields.io/badge/Express-4-000000?logo=express&logoColor=white)](https://expressjs.com/)
+[![WebRTC](https://img.shields.io/badge/WebRTC-P2P-333333?logo=webrtc&logoColor=white)](https://webrtc.org/)
+[![TensorFlow.js](https://img.shields.io/badge/TensorFlow.js-4-FF6F00?logo=tensorflow&logoColor=white)](https://www.tensorflow.org/js)
+[![MediaPipe](https://img.shields.io/badge/MediaPipe-Tasks_Vision-0097A7?logo=google&logoColor=white)](https://ai.google.dev/edge/mediapipe/solutions/guide)
+[![Three.js](https://img.shields.io/badge/Three.js-0.185-000000?logo=threedotjs&logoColor=white)](https://threejs.org/)
+[![Gemini](https://img.shields.io/badge/Gemini-AI-4285F4?logo=googlegemini&logoColor=white)](https://ai.google.dev/)
+[![GitHub Pages](https://img.shields.io/badge/GitHub_Pages-Deployed-222222?logo=github&logoColor=white)](https://pages.github.com/)
 
 
 </div>
-專案網址：https://b1229049.github.io/ar-vision-link/
+
+<hr />
+
+**專案網址：** [https://b1229049.github.io/ar-vision-link/](https://b1229049.github.io/ar-vision-link/)
 
 ---
 
@@ -29,7 +40,7 @@
 - [專案結構](#專案結構)
 - [主要頁面](#主要頁面)
 - [文件](#相關文件)
-- [影片](#報告影片 & 專題demo)
+- [影片](#report-video-demo)
 
 ---
 
@@ -425,6 +436,8 @@ ar-vision-link/
 - 第2次上台簡報
 
 ---
+
+<a id="report-video-demo"></a>
 
 # 報告影片 & 專題demo
 
