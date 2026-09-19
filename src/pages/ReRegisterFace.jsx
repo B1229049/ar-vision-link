@@ -145,13 +145,25 @@ function ReRegisterFace() {
 
     if (!video || !canvas) return;
 
-    canvas.width = 640;
-    canvas.height = 480;
+    const sourceWidth = video.videoWidth;
+    const sourceHeight = video.videoHeight;
+
+    if (!sourceWidth || !sourceHeight) {
+      alert("相機畫面尚未準備完成，請稍後再拍照");
+      return;
+    }
+
+    const maximumSide = 1280;
+    const scale = Math.min(1, maximumSide / Math.max(sourceWidth, sourceHeight));
+
+    canvas.width = Math.round(sourceWidth * scale);
+    canvas.height = Math.round(sourceHeight * scale);
 
     const ctx = canvas.getContext("2d");
-    ctx.drawImage(video, 0, 0, 640, 480);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-    const imageData = canvas.toDataURL("image/jpeg", 0.85);
+    const imageData = canvas.toDataURL("image/jpeg", 0.92);
 
     setCapturedImage(imageData);
     setMode("captured");
