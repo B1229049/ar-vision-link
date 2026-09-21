@@ -38,6 +38,7 @@
 - [人臉辨識與 AR](#人臉辨識與-ar)
 - [計分機制](#計分機制)
 - [專案結構](#專案結構)
+- [資料庫設計](資料庫設計)
 - [主要頁面](#主要頁面)
 - [文件](#相關文件)
 - [影片](#report-video-demo)
@@ -452,6 +453,172 @@ ar-vision-link/
 ├─ vite.config.js
 └─ package.json
 ```
+
+---
+
+# 資料庫設計
+
+### 3.1 `users`：使用者資料
+
+儲存使用者基本資料、人臉特徵、權限、虛擬角色設定及持有代幣。
+
+| 欄位 | 型別 | 約束 | 說明 |
+| --- | --- | --- | --- |
+| `id` | `int8` | PK | 使用者唯一識別碼。 |
+| `name` | `varchar` | NOT NULL | 使用者名稱。 |
+| `description` | `text` |  | 個人簡介。 |
+| `is_active` | `bool` |  | 帳號是否啟用。 |
+| `created_at` | `timestamptz` | NOT NULL | 帳號建立時間。 |
+| `updated_at` | `timestamptz` | NOT NULL | 資料最後更新時間。 |
+| `face_embedding` | `_float8` |  | 人臉特徵向量陣列。 |
+| `profile_url` | `text` |  | 個人頭像網址。 |
+| `role` | `text` |  | 使用者角色。 |
+| `admin` | `bool` |  | 是否具有管理員權限。 |
+| `avatar_config` | `jsonb` |  | 虛擬角色外觀設定。 |
+| `coins` | `int4` |  | 使用者持有的代幣數量。 |
+| `owned_outfits` | `_text` |  | 已擁有的服裝 ID 陣列。 |
+
+### 3.2 `user_face_images`：使用者人臉影像
+
+一位使用者可擁有多張不同角度或類型的人臉影像。
+
+| 欄位 | 型別 | 約束 | 說明 |
+| --- | --- | --- | --- |
+| `id` | `int8` | PK | 人臉影像唯一識別碼。 |
+| `user_id` | `int8` | FK → `users.id` | 所屬使用者。 |
+| `image_url` | `text` | NOT NULL | 人臉影像網址或儲存位置。 |
+| `image_type` | `text` |  | 影像類型或拍攝角度。 |
+| `created_at` | `timestamptz` | NOT NULL | 影像建立時間。 |
+
+### 3.3 `quizzes`：測驗主檔
+
+儲存測驗的標題及建立該測驗的主持人。
+
+| 欄位 | 型別 | 約束 | 說明 |
+| --- | --- | --- | --- |
+| `quiz_id` | `int8` | PK | 測驗唯一識別碼。 |
+| `host_id` | `int8` | FK → `users.id` | 建立測驗的主持人。 |
+| `title` | `varchar` | NOT NULL | 測驗標題。 |
+| `created_at` | `timestamptz` | NOT NULL | 測驗建立時間。 |
+
+### 3.4 `questions`：測驗題目
+
+每筆資料代表一個測驗中的一道題目。
+
+| 欄位 | 型別 | 約束 | 說明 |
+| --- | --- | --- | --- |
+| `question_id` | `int8` | PK | 題目唯一識別碼。 |
+| `quiz_id` | `int8` | FK → `quizzes.quiz_id` | 題目所屬測驗。 |
+| `question_text` | `text` | NOT NULL | 題目內容。 |
+| `options` | `jsonb` | NOT NULL | 題目選項，通常包含 A～D。 |
+| `correct_answer` | `varchar` | NOT NULL | 正確答案。 |
+| `time_limit` | `int4` | NOT NULL | 作答時間限制，單位為秒。 |
+| `created_at` | `timestamptz` | NOT NULL | 題目建立時間。 |
+
+### 3.5 `game_sessions`：測驗遊戲場次
+
+儲存每次即時測驗的房間、進度與遊戲模式。
+
+| 欄位 | 型別 | 約束 | 說明 |
+| --- | --- | --- | --- |
+| `session_id` | `int8` | PK | 遊戲場次唯一識別碼。 |
+| `quiz_id` | `int8` | FK → `quizzes.quiz_id` | 本場次使用的測驗。 |
+| `room_code` | `varchar` | UNIQUE | 玩家加入房間所使用的代碼。 |
+| `started_at` | `timestamptz` |  | 遊戲開始時間。 |
+| `ended_at` | `timestamptz` |  | 遊戲結束時間。 |
+| `current_question` | `int4` |  | 目前進行到的題目順序。 |
+| `game_finished` | `bool` |  | 遊戲是否已結束。 |
+| `game_mode` | `text` |  | 遊戲模式，例如一般模式或 AR 模式。 |
+
+### 3.6 `player_records`：玩家場次紀錄
+
+記錄玩家參與特定遊戲場次後的總成績與排名。
+
+| 欄位 | 型別 | 約束 | 說明 |
+| --- | --- | --- | --- |
+| `record_id` | `int8` | PK | 玩家紀錄唯一識別碼。 |
+| `session_id` | `int8` | FK → `game_sessions.session_id` | 玩家參與的遊戲場次。 |
+| `user_id` | `int8` | FK → `users.id` | 參與遊戲的使用者。 |
+| `score` | `int4` |  | 玩家總分。 |
+| `correct_count` | `int4` |  | 答對題數。 |
+| `rank` | `int4` |  | 本場次最終排名。 |
+| `joined_at` | `timestamptz` | NOT NULL | 加入遊戲的時間。 |
+
+建議為 `(session_id, user_id)` 建立唯一約束，避免同一使用者在同一場次產生重複紀錄。
+
+### 3.7 `player_answers`：玩家作答紀錄
+
+儲存玩家在每個場次中對每道題目的答案、結果與得分。
+
+| 欄位 | 型別 | 約束 | 說明 |
+| --- | --- | --- | --- |
+| `answer_id` | `int8` | PK | 作答紀錄唯一識別碼。 |
+| `session_id` | `int8` | FK → `game_sessions.session_id` | 所屬遊戲場次。 |
+| `question_id` | `int8` | FK → `questions.question_id` | 對應題目。 |
+| `user_id` | `int8` | FK → `users.id` | 作答使用者。 |
+| `answer` | `varchar` |  | 玩家選擇的答案。 |
+| `is_correct` | `bool` |  | 答案是否正確。 |
+| `score` | `int4` |  | 此題獲得的分數。 |
+| `answered_at` | `timestamptz` | NOT NULL | 作答時間。 |
+
+建議為 `(session_id, question_id, user_id)` 建立唯一約束，確保每名玩家每題只保留一筆正式答案。
+
+### 3.8 `vision_sessions`：視覺辨識場次
+
+記錄進行人臉或視覺辨識的裝置與場次狀態。
+
+| 欄位 | 型別 | 約束 | 說明 |
+| --- | --- | --- | --- |
+| `id` | `int8` | PK | 視覺辨識場次唯一識別碼。 |
+| `session_code` | `text` | UNIQUE | 辨識場次代碼。 |
+| `device_id` | `text` |  | 執行辨識的裝置識別碼。 |
+| `started_at` | `timestamptz` | NOT NULL | 辨識開始時間。 |
+| `ended_at` | `timestamptz` |  | 辨識結束時間。 |
+| `status` | `text` |  | 場次目前狀態。 |
+
+### 3.9 `vision_detection_logs`：視覺偵測紀錄
+
+記錄辨識場次中偵測到的使用者、信心值與人臉框座標。
+
+| 欄位 | 型別 | 約束 | 說明 |
+| --- | --- | --- | --- |
+| `id` | `int8` | PK | 偵測紀錄唯一識別碼。 |
+| `session_id` | `int8` | FK → `vision_sessions.id` | 所屬視覺辨識場次。 |
+| `detected_user_id` | `int8` | FK → `users.id` | 辨識出的使用者。 |
+| `detected_at` | `timestamptz` | NOT NULL | 偵測時間。 |
+| `confidence` | `numeric` |  | 人臉辨識信心值。 |
+| `face_x` | `numeric` |  | 人臉框左上角 X 座標。 |
+| `face_y` | `numeric` |  | 人臉框左上角 Y 座標。 |
+| `face_width` | `numeric` |  | 人臉框寬度。 |
+| `face_height` | `numeric` |  | 人臉框高度。 |
+| `device_id` | `text` |  | 執行偵測的裝置識別碼。 |
+| `extra_data` | `jsonb` |  | 額外的偵測資訊。 |
+
+### 3.10 `coin_rewards`：代幣獎勵
+
+儲存可供使用者領取的限時代幣獎勵。
+
+| 欄位 | 型別 | 約束 | 說明 |
+| --- | --- | --- | --- |
+| `id` | `int8` | PK | 獎勵唯一識別碼。 |
+| `token` | `uuid` | UNIQUE | 對外使用且不可預測的領取代碼。 |
+| `coins` | `int4` | NOT NULL | 可領取的代幣數量。 |
+| `expires_at` | `timestamptz` |  | 獎勵到期時間。 |
+| `created_by` | `int8` | FK → `users.id` | 建立獎勵的使用者或管理員。 |
+| `created_at` | `timestamptz` | NOT NULL | 獎勵建立時間。 |
+
+### 3.11 `coin_reward_claims`：代幣領取紀錄
+
+記錄哪些使用者已領取特定代幣獎勵。
+
+| 欄位 | 型別 | 約束 | 說明 |
+| --- | --- | --- | --- |
+| `reward_id` | `int8` | PK、FK → `coin_rewards.id` | 被領取的獎勵。 |
+| `user_id` | `int8` | PK、FK → `users.id` | 領取獎勵的使用者。 |
+| `coins` | `int4` | NOT NULL | 實際領取的代幣數量。 |
+| `claimed_at` | `timestamptz` | NOT NULL | 領取時間。 |
+
+`reward_id` 與 `user_id` 組成複合主鍵，可防止同一使用者重複領取同一份獎勵。
 
 ---
 
