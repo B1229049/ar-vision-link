@@ -385,16 +385,66 @@ ar-vision-link/
 │  ├─ store/                     # 商城套裝圖層
 │  ├─ generated/                 # 產品與角色展示素材
 │  └─ tfjs-backend-*.wasm        # TensorFlow.js WASM 執行檔
-├─ src/
-│  ├─ assets/                    # 前端靜態圖片
-│  ├─ components/                # 共用元件、路由守衛、角色及視訊元件
-│  ├─ data/                      # 商城商品目錄
-│  ├─ pages/                     # 功能頁面
-│  ├─ styles/                    # 頁面及元件樣式
-│  ├─ utils/                     # AR、角色設定與圖片合成工具
-│  ├─ App.jsx                    # 應用路由
-│  └─ main.jsx                   # React 進入點
-├─ test/                         # 早期版本的獨立應用副本
+├── src/
+│  ├── assets/                         # 靜態圖片與圖示資源
+│  │
+│  ├── components/                     # 可重複使用的 React 元件
+│  │   ├── AdminRoute.jsx              # 管理員權限路由
+│  │   ├── AvatarRenderer.jsx          # 虛擬角色渲染元件
+│  │   ├── LobbyProfileModal.jsx       # 大廳玩家資料彈出視窗
+│  │   ├── MobileBottomNav.jsx         # 行動版底部導覽列
+│  │   ├── Navbar.jsx                  # 網站頂部導覽列
+│  │   ├── ProfileImage.jsx            # 使用者頭像顯示元件
+│  │   ├── ProtectedRoute.jsx          # 登入權限保護路由
+│  │   ├── QuizDashboardLayout.jsx     # 測驗後台共用版面
+│  │   ├── TrackedPlayerVideo.jsx      # 玩家影像追蹤與顯示元件
+│  │   └── VirtualAvatarHead.jsx       # 虛擬角色頭部元件
+│  │
+│  ├── data/                           # 商店與靜態資料
+│  │   ├── storeCatalog.js             # 商店目錄設定
+│  │   └── storeCatalogData.js         # 商店商品資料
+│  │
+│  ├── pages/                          # 各功能頁面
+│  │   ├── Admin.jsx                   # 管理員頁面
+│  │   ├── ARQuizGame.jsx              # AR 手勢互動測驗頁面
+│  │   ├── ARSelfie.jsx                # AR 自拍頁面
+│  │   ├── AvatarAdmin.jsx             # 虛擬角色管理頁面
+│  │   ├── AvatarDressup.jsx           # 虛擬角色換裝頁面
+│  │   ├── Camera.jsx                  # 相機與人臉辨識頁面
+│  │   ├── CameraHub.jsx               # 相機功能入口頁面
+│  │   ├── CreateQuiz.jsx              # 建立測驗頁面
+│  │   ├── EditProfile.jsx             # 編輯個人資料頁面
+│  │   ├── FaceLogin.jsx               # 人臉辨識登入頁面
+│  │   ├── Home.jsx                    # 首頁
+│  │   ├── HostConsole.jsx             # 主持人遊戲控制台
+│  │   ├── HostLobby.jsx               # 主持人等待大廳
+│  │   ├── JoinQuiz.jsx                # 玩家加入測驗頁面
+│  │   ├── Leaderboard.jsx             # 排行榜頁面
+│  │   ├── ManageQuizzes.jsx           # 測驗管理與編輯頁面
+│  │   ├── Profile.jsx                 # 個人資料頁面
+│  │   ├── QuizGame.jsx                # 一般模式測驗頁面
+│  │   ├── QuizHistory.jsx             # 測驗歷史紀錄頁面
+│  │   ├── QuizHome.jsx                # 測驗功能首頁
+│  │   ├── Register.jsx                # 使用者註冊頁面
+│  │   ├── ReRegisterFace.jsx          # 重新註冊人臉資料頁面
+│  │   └── Store.jsx                   # 虛擬商品商店頁面
+│  │
+│  ├── styles/                         # 各頁面與元件的 CSS 樣式
+│  │
+│  ├── utils/                          # 共用工具函式與 AR 設定
+│  │   ├── arSelfie3D.js               # AR 自拍 3D 處理功能
+│  │   ├── arSelfieEffects.js          # AR 自拍特效處理
+│  │   ├── avatarConfig.js             # 虛擬角色基本設定
+│  │   ├── avatarItemSettings.js       # 虛擬角色物品設定
+│  │   ├── profileImage.js             # 個人頭像處理工具
+│  │   ├── quizVisuals.js              # 測驗視覺效果工具
+│  │   └── renderAvatarImage.js        # 虛擬角色圖片輸出工具
+│  │
+│  ├── App.css                         # App 根元件樣式
+│  ├── App.jsx                         # 路由與主要應用程式元件
+│  ├── index.css                       # 全域基礎樣式
+│  └── main.jsx                        # React 應用程式進入點
+│
 ├─ avatar-group-composer.html    # 角色圖層合成校正工具
 ├─ avatar-relative-calibrator.html
 ├─ store-outfit-calibrator.html  # 商城套裝校正工具
